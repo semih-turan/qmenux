@@ -7,8 +7,9 @@ for (const [port, heading] of [[3000, 'Menü'], [3001, 'İşletme yönetimi'], [
     await expect(page.locator('html')).toHaveAttribute('lang', 'tr');
     await expect(page.getByRole('main')).toHaveCount(1);
     await expect(page.getByRole('heading', { level: 1, name: heading, exact: true })).toBeVisible();
-    await expect(page.getByRole('button')).toHaveCount(0);
-    await expect(page.getByRole('textbox')).toHaveCount(0);
+    // Inspect application content; Next.js development tools live outside main.
+    await expect(page.getByRole('main').getByRole('button')).toHaveCount(0);
+    await expect(page.getByRole('main').getByRole('textbox')).toHaveCount(0);
     for (const width of [320, 375, 390, 430]) {
       await page.setViewportSize({ width, height: 844 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

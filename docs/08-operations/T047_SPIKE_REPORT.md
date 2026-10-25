@@ -72,3 +72,14 @@ T000/legal gates, default-branch protection, PR #1 human review, ORM/region/plan
 Reviewed commit 16623d7 and connected callers at the expected load of one developer running local probes. Confirmed one defect: a nonresponding HTTP server bypassed the nominal readiness loop timeout because fetch had no abort signal. Reproduced waiting past seven seconds with a temporary API fixture, then added readiness/request abort deadlines and a regression test that requires self-failure around five seconds and output cleanup. No new infrastructure stage, cloud action or ORM choice was performed. Other local checks remain subject to the scope limits above.
 
 The timeout fix at `5087032` also passed [actual Ubuntu push CI](https://github.com/semih-turan/qmenux/actions/runs/40199917283) on 2026-10-25: Quality and Secret scan successful; the five-second deadline/cleanup regression passed in 5142ms. This is root workflow evidence, not a Vercel deployment or execution of the isolated ORM/PostgreSQL probe. Cloud scope remains deferred.
+
+## Existing Vercel project inspection/configuration — 2026-10-25
+Owner subsequently connected an existing project named qmenux and requested Vercel Production-target development. This changes the earlier local-only direction for that existing project; it does not approve the four proposed spike projects or complete the ORM decision.
+
+Observed deployment: qmenux.vercel.app, ID dpl_ABkso91tmnt8Q7AydhywMeWFQccc, Production, main alias, Ready with no application build. Initial settings were framework Other and root directory `.`. Actual HTTP: `/` 404, `/AGENTS.md` 200, `/docs/01-product/PRD.md` 200. The repository was being served as static output rather than as the intended app.
+
+Corrected only existing-project metadata: framework Next.js, root directory apps/menu-pwa, retained Node 24.x/default framework build/output. Verified with project inspect. No new deployment/project/domain/environment pull or credentials change. Rechecking HTTP still gives the old static results; settings do not rebuild an existing deployment. Do not describe the live site as fixed until a new authorized deployment is verified.
+
+Main lacks the application source; PR #1 is open. Its d9b2df4 PR run 40196232076 failed on global button count 1 vs expected 0, while the same commit's push run succeeded. The smoke check now scopes no-button/no-textbox assertions to application main content, excluding framework development UI. Local lint/typecheck/tests/build pass after this test-only fix; it is uncommitted and has no hosted CI evidence yet. Do not bypass the failed PR check or merge without explicit authorization.
+
+INFRA-001 remains unsatisfied: metadata correction/static serving is not a Next.js/NestJS deployment proof; API is not deployed by the single menu project. Production readiness and real tenant use remain gated separately.

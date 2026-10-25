@@ -91,3 +91,11 @@ Owner explicitly answered “Evet, bağımlı T047 dalını aç” to creating `
 
 ## T047 cloud scope decision — 2026-10-25
 Owner explicitly answered “Hayır, şimdilik yalnızca yerel deneme” to the four-project Vercel Preview proposal. Scope is local experiments only. Do not create/link/deploy projects or substitute other hosted resources. The Preview plan is deferred, with no pending approval request; new explicit authorization is required to resume cloud work. This decision neither approves an ORM nor satisfies INFRA-001/T048, legal or production gates.
+
+## Existing Vercel project direction — 2026-10-25
+- Owner stated they connected QMenuX to Vercel and requested development on the provider's Production target. This supersedes the earlier local-only preference for work on the existing qmenux project. The four separate qmenux-t047-* projects remain uncreated; no new projects, Git merge/commit/push, database credentials or real-business activation are inferred.
+- ORM preference question was superseded by this deployment steering; no Drizzle/Prisma choice was supplied. ADR-ORM-047 remains Proposed, not approved.
+- Read-only inspection found existing qmenux deployment serving main as Other from repository root, not the Next.js app. Root returned 404; AGENTS.md and docs/01-product/PRD.md returned 200. No successful application build can be inferred from that deployment's Ready status.
+- Applied a bounded, reversible configuration correction to the existing project only: framework nextjs and rootDirectory apps/menu-pwa; Node 24.x retained. This assigns the existing provider project to the first public menu shell; it does not make qmenux.vercel.app a canonical product domain or implement the landing.
+- No deployment triggered. Current live static deployment remains unchanged until an authorized source publication/rebuild; production settings correction is not a release acceptance. Source is absent from main and PR #1 has a failed PR Quality check despite its successful push check. Preserve required Git review/check/merge gates; no automatic merge.
+- Production target labeling does not satisfy T000/legal/security release gates. Current app has no operational identity/RLS/approval/license enforcement; real tenant use cannot be marked approved. Vercel-native API packaging, Neon pooled/direct proof and ORM production acceptance remain open.
