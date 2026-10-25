@@ -86,3 +86,15 @@ Git governance policy and root `.gitignore` template documented. Added T052 (rep
 - Risks/limits: Linux runner/actions/download behavior and fork approval policy remain unverified until hosted run. Existing ESLint 9 compatibility limitation remains; no production/security/legal readiness claimed. No physical-device or tenant-isolation QA performed in this task.
 - Commit: not committed. Suggested commit after authorization: `ci(T053): validate pull requests and scan secrets`.
 - Next: owner authorization to commit/push (or owner publication), then inspect actual CI evidence. T047 service spike requires separate nonproduction service access; no service connected here.
+
+## T053 hosted CI evidence — 2026-10-25
+- User requested next step in response to the concrete T053 commit/push request. On reinspection, clean branch already contained externally published `a7cc4b9a06aa38798605ec7c344e5275230f71fd`; no duplicate commit/push was needed or performed.
+- Branch: `feat/T001-monorepo-setup`; [PR #1](https://github.com/semih-turan/qmenux/pull/1), target main. No new branch, commit, push, merge or settings change performed by agent.
+- [PR run 40195730650](https://github.com/semih-turan/qmenux/actions/runs/40195730650): SUCCESS. Secret scan passed (6s); Quality passed (1m19s). `gh run watch --exit-status` exited 0.
+- [Push run 40195729972](https://github.com/semih-turan/qmenux/actions/runs/40195729972): SUCCESS; Quality and Secret scan both completed successfully at the same head SHA.
+- Hosted logs verified: Ubuntu 24.04.5, runner 2.338.0, Node v24.22.1, pnpm 10.29.2; frozen install PASS, full dependency audit PASS (no known vulnerabilities), lint PASS (5 tasks), typecheck PASS (4 tasks), Chromium + Ubuntu dependency installation PASS, API test PASS (1), browser tests PASS (3), builds PASS (4). Gitleaks download/checksum and full-history scan steps PASS. Workflow has no production-secret references; no production integration exercised.
+- Read-only queries: `gh run list/view/watch`, PR list/reviews, `gh api repos/semih-turan/qmenux/branches/main` and branch rules endpoint. Main reports protected=false; branch rules and PR reviews are empty at inspection. Protection remains an owner setup item; reviewer acceptance remains pending.
+- Files updated: README.md, GIT_WORKFLOW.md, TASKS.md and this log with actual hosted evidence. No code/workflow/dependency changes; no additional application tests needed after documentation-only edits.
+- Verification: `git diff --check` PASS; diff reviewed; HEAD/index preserved. Evidence changes not committed; tested application/workflow SHA remains a7cc4b9.
+- Status: GIT-002 execution evidence now exists, but T053 and T001 remain IN_REVIEW until required reviewer acceptance. T000/legal gates unchanged. No legal approval or production readiness inferred from CI success.
+- Next: human review/explicit merge decision and default-branch protection setup by owner; then T047 nonproduction hosting/ORM proof with separately authorized service access. No automatic merge/deployment.

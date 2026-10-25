@@ -50,7 +50,7 @@ Status: Approved workflow | 2026-10-25
 - Next task and review request
 
 ## T053 checks and branch protection
-Implementation: `.github/workflows/ci.yml`; prepared locally, remote execution/branch protection not claimed configured.
+Implementation: `.github/workflows/ci.yml`; [hosted PR run](https://github.com/semih-turan/qmenux/actions/runs/40195730650) and [push run](https://github.com/semih-turan/qmenux/actions/runs/40195729972) passed at `a7cc4b9` on 2026-10-25. Branch protection is not configured (GitHub API reports main protected=false); reviewer acceptance remains pending.
 
 - `Quality`: Ubuntu 24.04; Node from `.node-version`; pnpm from `packageManager`; frozen install; full dependency audit at low-or-higher severity; lint/typecheck; Chromium and Linux OS dependencies; API/mobile-width browser tests; all application builds. Any failed command fails the job. Playwright `test.only` is rejected in CI.
 - `Secret scan`: separate Ubuntu job with full checkout history (`fetch-depth: 0`), pinned/checksum-verified Gitleaks 8.30.1 and `git --redact --no-banner --log-opts="--all" .`. Covers all fetched refs; local-only/unpushed refs and ignored working files are outside remote coverage. A leak or scanner/download failure fails the job; no blanket baseline/allowlist was added.

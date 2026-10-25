@@ -175,7 +175,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - Open: T000/legal/feature gates, real CI, ESLint dependency compatibility follow-up and T047 deployment/ORM proof. Tenant isolation is not implemented and must not be claimed tested.
 
 ## T053 execution contract — 2026-10-25
-- Owner: Engineering; reviewer/name/date: pending. Status: IN_REVIEW, not DONE; remote run evidence missing.
+- Owner: Engineering; reviewer/name/date: pending. Status: IN_REVIEW, not DONE; hosted runs passed, named/dated reviewer acceptance pending.
 - Scope authorized: prepare CI locally after user requested next step; no commit, push, PR creation, branch protection or production access authorized.
 - Branch/base: continued clean `feat/T001-monorepo-setup` at user-created `d5465d5` as one cohesive T001/T053 foundation acceptance unit; no new branch or merge. T001 CI acceptance is not marked satisfied. Existing docs branch preserved.
 - Dependencies: runnable T001 scripts exist; T052 Git policy applies, formal task/reviewer closure not inferred from commits. T000/legal gates remain unchanged under local foundation scope.
@@ -185,4 +185,12 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - Tests/evidence: [T053 progress record](PROGRESS.md#t053-ci-preparation--2026-10-25); workflow lint, redacted history/source scans, transient synthetic-secret rejection and focused-test rejection; frozen install and all quality scripts in CI mode.
 - Rollback: remove/reverse only T053 changes after checking for later user edits; coordinate any future required-check settings with owner; no data migration/history rewrite.
 - Commit: not committed, index unchanged. Proposed commit: `ci(T053): validate pull requests and scan secrets`.
-- Next: explicit commit/push authorization or owner-published changes; record GitHub run URL/SHA/results and reviewer acceptance before DONE. T047 isolated hosting/ORM proof follows foundation acceptance and separate service authorization.
+- Next: reviewer acceptance and owner-configured branch protection/review policy; no automatic merge. Hosted evidence is recorded below. T047 isolated hosting/ORM proof follows foundation acceptance and separate service authorization.
+
+## T053 hosted CI evidence — 2026-10-25
+- Tested commit: `a7cc4b9a06aa38798605ec7c344e5275230f71fd`, branch `feat/T001-monorepo-setup`, [PR #1](https://github.com/semih-turan/qmenux/pull/1).
+- [PR CI](https://github.com/semih-turan/qmenux/actions/runs/40195730650): SUCCESS; Quality and Secret scan both passed. [Push CI](https://github.com/semih-turan/qmenux/actions/runs/40195729972): SUCCESS; both jobs passed.
+- Hosted environment: Ubuntu 24.04.5, runner 2.338.0, Node 24.22.1 and pnpm 10.29.2. Locked install, audit, 5 lint tasks, 4 app typechecks, Chromium/OS installation, 1 API + 3 browser tests and 4 builds passed. No production credentials configured in the workflow.
+- Evidence inspection: `gh run view`, `gh run watch --exit-status`, filtered job logs and read-only PR/branch API queries; detailed record in [PROGRESS.md](PROGRESS.md#t053-hosted-ci-evidence--2026-10-25).
+- Reviewer gate: GitHub PR reviews list empty at inspection; no named/dated acceptance inferred. T053 and T001 remain IN_REVIEW, not DONE. Main reports `protected: false`, applicable branch rules empty; recommendations are not enforced.
+- Publication: CI commit was already present locally/remotely when this turn began; no duplicate agent commit/push. This evidence update is uncommitted. No merge, rule change or deployment performed.
