@@ -93,11 +93,18 @@ export async function exerciseAuthExpiry(database: Database, owner: Client): Pro
       assert.equal((await owner.query("SELECT has_table_privilege('qmenux_runtime',$1,'DELETE') AS allowed", [table])).rows[0].allowed, false);
     }
 
-    await owner.query('BEGIN'); await owner.query(sql('down')); await owner.query('COMMIT');
-    assert.deepEqual(await counts(), { attempts: '0', sessions: '2', operators: '2' }, 'Down must preserve live credentials');
-    await assert.rejects(cleanupExpiredAuth(database), (error: { getResponse?: () => unknown }) =>
-      JSON.stringify(error.getResponse?.()) === '{"status":"unavailable"}');
-    await owner.query('BEGIN'); await owner.query(sql('up')); await owner.query('COMMIT');
+    const hasMicrosoft = (await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0007_microsoft_identity') AS present")).rows[0].present;
+    if (hasMicrosoft) {
+      await owner.query('BEGIN');
+      await assert.rejects(owner.query(sql('down')), (e: { code: string }) => e.code === 'P0001');
+      await owner.query('ROLLBACK');
+    } else {
+      await owner.query('BEGIN'); await owner.query(sql('down')); await owner.query('COMMIT');
+      assert.deepEqual(await counts(), { attempts: '0', sessions: '2', operators: '2' }, 'Down must preserve live credentials');
+      await assert.rejects(cleanupExpiredAuth(database), (error: { getResponse?: () => unknown }) =>
+        JSON.stringify(error.getResponse?.()) === '{"status":"unavailable"}');
+      await owner.query('BEGIN'); await owner.query(sql('up')); await owner.query('COMMIT');
+    }
     assert.deepEqual(await cleanupExpiredAuth(database), { identity: 0, operator: 0 });
     assert.deepEqual(await protectedCounts(), preserved);
   } finally {

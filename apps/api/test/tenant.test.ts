@@ -15,6 +15,7 @@ import { exerciseAuth } from './auth-fixture.js';
 import { exerciseMemberships } from './membership-fixture.js';
 import { exerciseOperators } from './operator-fixture.js';
 import { exerciseAuthExpiry } from './auth-expiry-fixture.js';
+import { exerciseMicrosoftIdentity } from './microsoft-identity-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
 const b = 'a0000000-0000-4000-8000-000000000002';
@@ -228,6 +229,8 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await owner.query('BEGIN');
     await assert.rejects(owner.query(expiryUp), (e: { code: string }) => e.code === 'P0001');
     await owner.query('ROLLBACK');
+    await exerciseAuthExpiry(database, owner);
+    await exerciseMicrosoftIdentity(database, owner);
     await exerciseAuthExpiry(database, owner);
   } finally {
     await app?.close();

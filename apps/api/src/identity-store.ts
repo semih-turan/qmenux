@@ -40,6 +40,21 @@ export class IdentityStore {
       [subject, secretHash(token), previous ? secretHash(previous) : null]))[0]!.id;
   }
 
+  async beginMicrosoft(state: string, browser: string, verifier: string, nonce: string): Promise<void> {
+    await this.query('SELECT qmenux_identity.begin_microsoft_login($1,$2,$3,$4)',
+      [secretHash(state), secretHash(browser), verifier, nonce]);
+  }
+
+  async consumeMicrosoft(state: string, browser: string): Promise<{ verifier: string; nonce: string } | undefined> {
+    return (await this.query<{ verifier: string; nonce: string }>('SELECT * FROM qmenux_identity.consume_microsoft_login($1,$2)',
+      [secretHash(state), secretHash(browser)]))[0];
+  }
+
+  async createMicrosoftSession(subject: string, token: string, previous?: string): Promise<string | null> {
+    return (await this.query<{ id: string | null }>('SELECT qmenux_identity.create_microsoft_session($1,$2,$3) AS id',
+      [subject, secretHash(token), previous ? secretHash(previous) : null]))[0]!.id;
+  }
+
   async readSession(token: string): Promise<RegisteredUser | undefined> {
     return (await this.query<RegisteredUser>('SELECT * FROM qmenux_identity.read_session($1)', [secretHash(token)]))[0];
   }
