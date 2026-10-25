@@ -5,6 +5,7 @@ import { TenantTransactions } from './tenant-transactions.js';
 import { AuthController } from './auth.controller.js';
 import { GoogleOidc } from './google-oidc.js';
 import { IdentityStore } from './identity-store.js';
+import { TenantAuthorization } from './tenant-authorization.js';
 
-@Module({ controllers: [HealthController, AuthController], providers: [Database, TenantTransactions, GoogleOidc, IdentityStore] })
+@Module({ controllers: [HealthController, AuthController], providers: [Database, TenantTransactions, GoogleOidc, IdentityStore, TenantAuthorization] })
 export class AppModule {}

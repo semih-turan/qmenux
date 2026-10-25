@@ -72,3 +72,6 @@ T002 baseline is imported into the owner-approved dependent T003 branch. Local r
 
 ## Identity development checkpoint — 2026-10-25
 T004 IN_PROGRESS: Google code/PKCE validation and durable revocable API sessions implemented and tested with signed synthetic provider responses plus private local/Neon PostgreSQL. Vercel provider configuration remains disabled; registration creates no tenant privileges/license. Next T004 slices are membership/RBAC and privileged Access/MFA, Microsoft/Apple adapters, admin mobile BFF and provider/security/privacy/abuse/retention acceptance. T005 remains dependent on reviewed identity/authorization. T043 stays last; no V1 payment gateway.
+
+## Membership authorization checkpoint — 2026-10-25
+T004 now includes an internal OWNER/EDITOR membership/permission boundary with mandatory entitlement and session revocation after authorization changes. No private business endpoint, membership mutation or license entitlement implementation is enabled. Continue separate operator audience/Access/MFA and remaining identity/mobile/provider gates before T005; T004 remains IN_PROGRESS pending review. T043 landing remains last; no V1 payments.

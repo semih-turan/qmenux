@@ -12,6 +12,7 @@ import { Client, Pool } from 'pg';
 import { Database } from '../src/database.js';
 import { tenantSlug, TenantTransactions } from '../src/tenant-transactions.js';
 import { exerciseAuth } from './auth-fixture.js';
+import { exerciseMemberships } from './membership-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
 const b = 'a0000000-0000-4000-8000-000000000002';
@@ -186,6 +187,23 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await exerciseAuth(database, owner);
     await owner.query('BEGIN');
     await assert.rejects(owner.query(sql('migrations/0003_identity_sessions.down.sql')), (e: {code:string})=>e.code==='P0001');
+    await owner.query('ROLLBACK');
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0004_tenant_memberships.up.sql'));
+    await owner.query('ROLLBACK');
+    assert.equal((await owner.query("SELECT to_regclass('qmenux_identity.memberships') IS NULL AS absent")).rows[0].absent,true);
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0004_tenant_memberships.up.sql'));
+    await owner.query('COMMIT');
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0004_tenant_memberships.down.sql'));
+    await owner.query('COMMIT');
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0004_tenant_memberships.up.sql'));
+    await owner.query('COMMIT');
+    await exerciseMemberships(database,owner);
+    await owner.query('BEGIN');
+    await assert.rejects(owner.query(sql('migrations/0004_tenant_memberships.down.sql')), (e:{code:string})=>e.code==='P0001');
     await owner.query('ROLLBACK');
   } finally {
     await app?.close();

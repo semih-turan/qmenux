@@ -1,9 +1,11 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
+import type { PoolClient } from 'pg';
 import { Database } from './database.js';
 
 export const secretHash = (value: string) => createHash('sha256').update(value).digest('hex');
 export type RegisteredUser = Readonly<{ id: string; status: 'REGISTERED' }>;
+export type TenantMembership = Readonly<{ userId: string; role: 'OWNER' | 'EDITOR' }>;
 
 @Injectable()
 export class IdentityStore {
@@ -44,5 +46,10 @@ export class IdentityStore {
 
   async revokeSession(token: string): Promise<void> {
     await this.query('SELECT qmenux_identity.revoke_session($1)', [secretHash(token)]);
+  }
+
+  async tenantMembership(client: PoolClient, token: string): Promise<TenantMembership | undefined> {
+    // Use the caller's checked-out tenant transaction, never a second pooled query.
+    return (await client.query<TenantMembership>('SELECT * FROM qmenux_identity.tenant_membership($1)', [secretHash(token)])).rows[0];
   }
 }

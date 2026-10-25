@@ -37,7 +37,10 @@ try{
     await owner.query('BEGIN');await owner.query(sql('up'));await owner.query('COMMIT');
     await owner.query('BEGIN');await owner.query(sql('down'));await owner.query('COMMIT');
     await owner.query('BEGIN');await owner.query(sql('up'));await owner.query('COMMIT');
-  }else assert.deepEqual(versions,['0001_tenant_catalog','0002_tenant_resolution','0003_identity_sessions']);
+  }else{
+    assert([3,4].includes(versions.length));
+    assert.deepEqual(versions,['0001_tenant_catalog','0002_tenant_resolution','0003_identity_sessions','0004_tenant_memberships'].slice(0,versions.length));
+  }
   for(const table of ['users','external_identities','login_attempts','sessions']){
     assert.equal((await owner.query(`SELECT count(*) FROM qmenux_identity.${table}`)).rows[0].count,'0');
   }

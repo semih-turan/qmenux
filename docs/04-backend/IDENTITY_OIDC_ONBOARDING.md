@@ -46,3 +46,23 @@ Data inventory for review: stable internal UUID, Google issuer/subject (personal
 Activation requires deliberate `AUTH_GOOGLE_ENABLED=true`, server-only Google client ID/secret and exact AUTH_BASE_URL (`https://api.qmenux.com` or the isolated API provider alias `https://qmenux-api.vercel.app`), with the corresponding exact `/v1/auth/google/callback` registered in Google Cloud. No arbitrary Preview origin, request-supplied callback or client-side secret. Configuration is currently absent/disabled; no remote environment values changed. Real-provider console configuration and end-to-end login have not been performed. Provider enablement must wait for the gates above.
 
 Tests use a private signed provider simulation and real disposable PostgreSQL HTTP handlers; the manual Neon probe exercises the actual identity store with synthetic subjects only, not a Google account. Sources checked 2026-10-25: [Google OIDC setup/server flow](https://developers.google.com/identity/openid-connect/openid-connect), [openid-client code grant](https://github.com/panva/openid-client/blob/main/docs/functions/authorizationCodeGrant.md), [explicit JWS signature checks](https://github.com/panva/openid-client/blob/main/docs/functions/enableNonRepudiationChecks.md).
+
+## T004 tenant membership and RBAC slice — 2026-10-25
+`qmenux_identity.memberships` binds an existing internal user to an existing tenant with OWNER or EDITOR role. Status defaults PENDING; only ACTIVE memberships can authorize. No signup/login callback inserts a membership. Runtime cannot enumerate or mutate the table. Membership is tenant-scoped with ENABLE/FORCE RLS; a restricted fixed-search-path function additionally constrains tenant explicitly because its owner can bypass RLS.
+
+`TenantAuthorization.run` is the private-management application boundary: strict tenant host candidate → same checked-out tenant transaction → hashed session lookup + unexpired/unsuspended identity + ACTIVE membership → server-selected permission → mandatory trusted license/entitlement policy → work. User UUID/role comes from the database, never request headers, body or query. Missing session/membership/permission/entitlement denies 403 without executing work; unknown/pending tenant hosts still fail 404. Database failures roll back and return minimal 503. There is no cached role, bearer/provider-token shortcut or platform-role fallback.
+
+| Capability | OWNER | EDITOR |
+|---|---|---|
+| catalog:read | Allow with entitlement | Allow with entitlement |
+| catalog:write (draft only) | Allow with entitlement | Allow with entitlement |
+| membership:manage | Allow with entitlement | Deny |
+| publish, license grants, platform/superadmin, all unrecognized capabilities | Deny | Deny |
+
+The membership-management capability does not provide SQL grants or a mutation endpoint; audited superadmin/invitation/member administration contracts remain pending. No active membership, tenant approval or license is seeded by the migration. The wrapper has no default entitlement approval: the actual license read contract belongs to T010 and must be supplied/reviewed before registering a business controller. Test fixtures alone use an explicit synthetic entitlement policy.
+
+Every membership insert/update/delete and every user-status update invalidates that user's existing server sessions. Role/approval/suspension changes therefore require fresh authentication; restoring a suspended user cannot revive old cookies. In-flight transactions already admitted before a concurrent change are not retroactively aborted. No long-lived process-local session/role state is used.
+
+This slice remains internal. No business controller or admin tenant-selection/BFF contract is registered; the public `{slug}` resolver is not a completed authenticated API-host selection flow. Auth provider configuration and `/auth/me` tenantAccess remain disabled/false until remaining gates are met. Separate operator Access/MFA/audience, Microsoft/Apple and mobile login are still required. Additional privacy inventory: tenant/user association, role, membership state and creation time; only synthetic test data used. Retention/legal review is unchanged.
+
+PostgreSQL sources checked 2026-10-25 for this slice: [row security and owner bypass](https://www.postgresql.org/docs/18/ddl-rowsecurity.html), [definer search paths/privileges](https://www.postgresql.org/docs/18/sql-createfunction.html), [row-trigger context](https://www.postgresql.org/docs/18/plpgsql-trigger.html).
