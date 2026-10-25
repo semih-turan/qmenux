@@ -61,11 +61,14 @@ export class OperatorAuthorization {
     });
   }
 
-  async signOut(assertion: unknown, token: unknown): Promise<void> {
+  async signOut(assertion: unknown, token: unknown, proof?: unknown, browser?: unknown): Promise<void> {
+    if ((proof !== undefined || browser !== undefined) && (!validToken(proof) || !validToken(browser))) throw new ForbiddenException();
     if (!validToken(token)) throw new ForbiddenException();
     const identity = await this.access.verify(assertion);
     await this.transaction(async (client) => {
       await client.query('SELECT qmenux_operator.revoke_session($1,$2,$3,$4)', [identity.issuer, identity.subject, identity.audience, secretHash(token)]);
+      if (proof !== undefined) await client.query('SELECT qmenux_operator.revoke_passkey_proof($1,$2,$3,$4,$5)',
+        [identity.issuer, identity.subject, identity.audience, secretHash(proof as string), secretHash(browser as string)]);
     });
   }
 }

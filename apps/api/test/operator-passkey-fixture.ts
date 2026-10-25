@@ -148,6 +148,9 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     await assert.rejects(run(proof,secret()),status(403));
     assert.equal(await passkeys.policy(proof,browserProof)({issuer,subject:'other',audience}),false);
     assert.equal(await passkeys.policy(proof,browserProof)({issuer,subject,audience:'f'.repeat(64)}),false);
+    const logoutSql=(direction:string)=>readFileSync(new URL(`../../../../infrastructure/database/migrations/0015_operator_logout.${direction}.sql`,import.meta.url),'utf8');
+    const logoutMigration=async(direction:string,commit=true)=>{await owner.query('BEGIN');try{await owner.query(logoutSql(direction));await owner.query(commit?'COMMIT':'ROLLBACK');}catch(error){await owner.query('ROLLBACK');throw error;}};
+    await logoutMigration('up',false); await logoutMigration('up'); await logoutMigration('down'); await logoutMigration('up');
     const token=await run(proof);
     process.env.OPERATOR_PASSKEY_ENABLED='false';
     await assert.rejects(run(proof),status(503));
@@ -214,6 +217,22 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     const newer=(replayResults.find(result=>result.status==='fulfilled') as PromiseFulfilledResult<string>).value;
     assert.equal(await passkeys.policy(proof,browserProof)({issuer,subject,audience}),false,'New ceremony replaces prior evidence');
     const newerToken=await run(newer);
+    await logoutMigration('down');
+    await assert.rejects(authorization.signOut(assertion(),newerToken,newer,browserProof),status(503));
+    assert.equal(await authorization.run(assertion(),newerToken,'platform:read',passkeys.policy(newer,browserProof),async()=>true),true,'Proof revocation failure rolls back session revocation');
+    await logoutMigration('up');
+    await owner.query("UPDATE qmenux_operator.passkey_proofs SET expires_at=clock_timestamp()-interval '1 second' WHERE operator_id=$1",[id]);
+    await assert.rejects(authorization.run(assertion(),newerToken,'platform:read',passkeys.policy(newer,browserProof),async()=>true),status(403));
+    await owner.query("UPDATE qmenux_operator.passkey_proofs SET expires_at=clock_timestamp()+interval '5 minutes' WHERE operator_id=$1",[id]);
+    await assert.rejects(authorization.signOut(assertion(),newerToken,newer),status(403));
+    await authorization.signOut(assertion({sub:'other'}),newerToken,newer,browserProof);
+    assert.equal(await passkeys.policy(newer,browserProof)({issuer,subject,audience}),true);
+    await authorization.signOut(assertion(),newerToken,newer,secret());
+    assert.equal(await passkeys.policy(newer,browserProof)({issuer,subject,audience}),true,'Wrong browser cannot revoke MFA evidence');
+    await authorization.signOut(assertion(),newerToken,newer,browserProof);
+    await authorization.signOut(assertion(),newerToken,newer,browserProof);
+    assert.equal(await passkeys.policy(newer,browserProof)({issuer,subject,audience}),false,'Logout revokes reusable MFA proof even after session already gone');
+
     await owner.query("UPDATE qmenux_operator.passkey_proofs SET expires_at=clock_timestamp()-interval '1 second' WHERE operator_id=$1",[id]);
     await assert.rejects(authorization.run(assertion(),newerToken,'platform:read',passkeys.policy(newer,browserProof),async()=>true),status(403));
 
@@ -246,6 +265,7 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     assert.equal(functions.length,10);
     for(const row of functions){assert.deepEqual(row.proconfig,['search_path=pg_catalog, pg_temp']);assert.equal(row.prosecdef,row.proname!=='passkey_event_immutable');assert.equal(row.public,false);assert.equal(row.runtime,!['passkey_change','passkey_invalidate','passkey_event_immutable'].includes(row.proname));}
     await assert.rejects(migrate('down'),code('P0001'));
+    await logoutMigration('down');
     assert.deepEqual((await owner.query('SELECT * FROM qmenux.tenants ORDER BY id')).rows,tenants);
     assert.deepEqual((await owner.query('SELECT * FROM qmenux_identity.memberships ORDER BY tenant_id,user_id')).rows,members);
     assert(network.length>0);assert(network.every(url=>url===`${issuer}/cdn-cgi/access/certs`));
