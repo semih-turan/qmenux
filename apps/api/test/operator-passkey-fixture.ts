@@ -151,7 +151,32 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     const logoutSql=(direction:string)=>readFileSync(new URL(`../../../../infrastructure/database/migrations/0015_operator_logout.${direction}.sql`,import.meta.url),'utf8');
     const logoutMigration=async(direction:string,commit=true)=>{await owner.query('BEGIN');try{await owner.query(logoutSql(direction));await owner.query(commit?'COMMIT':'ROLLBACK');}catch(error){await owner.query('ROLLBACK');throw error;}};
     await logoutMigration('up',false); await logoutMigration('up'); await logoutMigration('down'); await logoutMigration('up');
+    const browserSql=(direction:string)=>readFileSync(new URL(`../../../../infrastructure/database/migrations/0016_operator_browser_sessions.${direction}.sql`,import.meta.url),'utf8');
+    const browserMigration=async(direction:string,commit=true)=>{await owner.query('BEGIN');try{await owner.query(browserSql(direction));await owner.query(commit?'COMMIT':'ROLLBACK');}catch(error){await owner.query('ROLLBACK');throw error;}};
+    await browserMigration('up',false); await browserMigration('up'); await browserMigration('down'); await browserMigration('up');
+
     const token=await run(proof);
+    const bound=await authorization.signInBrowser(assertion(),passkeys.policy(proof,browserProof));
+    assert.match(bound.csrf,/^[A-Za-z0-9_-]{43}$/);assert.notEqual(bound.csrf,bound.session);
+    assert.equal((await owner.query('SELECT csrf_hash FROM qmenux_operator.sessions WHERE token_hash=$1',[secretHash(bound.session)])).rows[0].csrf_hash,secretHash(bound.csrf));
+    const peerBound=await authorization.signInBrowser(assertion(),passkeys.policy(proof,browserProof));
+    await assert.rejects(authorization.runBrowser(assertion(),bound.session,peerBound.csrf,'platform:read',passkeys.policy(proof,browserProof),async()=>true),status(403));
+    await authorization.signOutBrowser(assertion(),peerBound.session,peerBound.csrf,secret(),browserProof);
+    const browserFunctions=(await owner.query("SELECT prosecdef,proconfig,has_function_privilege('qmenux_runtime',p.oid,'EXECUTE') AS runtime,EXISTS(SELECT FROM aclexplode(p.proacl) WHERE grantee=0 AND privilege_type='EXECUTE') AS public FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='qmenux_operator' AND p.proname IN ('create_browser_session','read_browser_session','revoke_browser_session')")).rows;
+    assert.equal(browserFunctions.length,3);for(const f of browserFunctions)assert.deepEqual(f,{prosecdef:true,proconfig:['search_path=pg_catalog, pg_temp'],runtime:true,public:false});
+    const readBound=(csrf:unknown)=>authorization.runBrowser(assertion(),bound.session,csrf,'platform:read',passkeys.policy(proof,browserProof),async(_client,operator)=>operator.id);
+    for(const csrf of [undefined,'bad',secret()]) await assert.rejects(readBound(csrf),status(403));
+    assert.equal(await readBound(bound.csrf),id);
+    await assert.rejects(authorization.run(assertion(),bound.session,'platform:read',passkeys.policy(proof,browserProof),async()=>true),status(403));
+    await assert.rejects(authorization.runBrowser(assertion(),token,bound.csrf,'platform:read',passkeys.policy(proof,browserProof),async()=>true),status(403));
+    await assert.rejects(browserMigration('down'),code('P0001'));
+    await authorization.signOut(assertion(),bound.session);
+    assert.equal(await readBound(bound.csrf),id,'Legacy logout cannot retire browser sessions');
+    await assert.rejects(authorization.signOutBrowser(assertion(),bound.session,secret(),proof,browserProof),status(403));
+    assert.equal(await readBound(bound.csrf),id);
+    await authorization.signOutBrowser(assertion(),bound.session,bound.csrf,secret(),browserProof);
+    await assert.rejects(readBound(bound.csrf),status(403));
+
     process.env.OPERATOR_PASSKEY_ENABLED='false';
     await assert.rejects(run(proof),status(503));
     process.env.OPERATOR_PASSKEY_ENABLED='true';
@@ -217,10 +242,12 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     const newer=(replayResults.find(result=>result.status==='fulfilled') as PromiseFulfilledResult<string>).value;
     assert.equal(await passkeys.policy(proof,browserProof)({issuer,subject,audience}),false,'New ceremony replaces prior evidence');
     const newerToken=await run(newer);
+    await browserMigration('down');
     await logoutMigration('down');
     await assert.rejects(authorization.signOut(assertion(),newerToken,newer,browserProof),status(503));
     assert.equal(await authorization.run(assertion(),newerToken,'platform:read',passkeys.policy(newer,browserProof),async()=>true),true,'Proof revocation failure rolls back session revocation');
     await logoutMigration('up');
+    await browserMigration('up');
     await owner.query("UPDATE qmenux_operator.passkey_proofs SET expires_at=clock_timestamp()-interval '1 second' WHERE operator_id=$1",[id]);
     await assert.rejects(authorization.run(assertion(),newerToken,'platform:read',passkeys.policy(newer,browserProof),async()=>true),status(403));
     await owner.query("UPDATE qmenux_operator.passkey_proofs SET expires_at=clock_timestamp()+interval '5 minutes' WHERE operator_id=$1",[id]);
@@ -229,7 +256,9 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     assert.equal(await passkeys.policy(newer,browserProof)({issuer,subject,audience}),true);
     await authorization.signOut(assertion(),newerToken,newer,secret());
     assert.equal(await passkeys.policy(newer,browserProof)({issuer,subject,audience}),true,'Wrong browser cannot revoke MFA evidence');
-    await authorization.signOut(assertion(),newerToken,newer,browserProof);
+    const logoutPair=await authorization.signInBrowser(assertion(),passkeys.policy(newer,browserProof));
+    await authorization.signOutBrowser(assertion(),logoutPair.session,logoutPair.csrf,newer,browserProof);
+    await authorization.signOutBrowser(assertion(),logoutPair.session,logoutPair.csrf,newer,browserProof);
     await authorization.signOut(assertion(),newerToken,newer,browserProof);
     assert.equal(await passkeys.policy(newer,browserProof)({issuer,subject,audience}),false,'Logout revokes reusable MFA proof even after session already gone');
 
@@ -265,6 +294,7 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     assert.equal(functions.length,10);
     for(const row of functions){assert.deepEqual(row.proconfig,['search_path=pg_catalog, pg_temp']);assert.equal(row.prosecdef,row.proname!=='passkey_event_immutable');assert.equal(row.public,false);assert.equal(row.runtime,!['passkey_change','passkey_invalidate','passkey_event_immutable'].includes(row.proname));}
     await assert.rejects(migrate('down'),code('P0001'));
+    await browserMigration('down');
     await logoutMigration('down');
     assert.deepEqual((await owner.query('SELECT * FROM qmenux.tenants ORDER BY id')).rows,tenants);
     assert.deepEqual((await owner.query('SELECT * FROM qmenux_identity.memberships ORDER BY tenant_id,user_id')).rows,members);

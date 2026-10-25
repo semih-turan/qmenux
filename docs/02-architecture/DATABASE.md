@@ -72,3 +72,6 @@ Create tenant-isolated `integration_clients`, `integration_credentials`, `channe
 ## Operator passkeys —0014 local prerequisite
 
 Additive0014 extends only qmenux_operator with private enrollment grants/public credentials, one-use challenge hashes, short browser-bound proof hashes and append-only security events. Fixed EXECUTE-only contracts retain explicit identity/application predicates, row locks/counter concurrency and revocation; runtime gets no table access. No operator/grant/key or tenant entitlement is seeded. Populated/hidden-data/later-version rollback is refused; retain history and use forward corrections.0001–0013 and manual Neon probe guards remain unchanged. [Detailed authority/privacy/rollback/test contract](../04-backend/OPERATOR_PASSKEY_CONTRACT.md).
+
+
+0016 (local only) adds operator browser-session CSRF hash binding and three explicit EXECUTE contracts. Legacy/browser lookups and logout cannot substitute; populated bound-session down is refused. Existing session revocation/expiry applies unchanged. Earlier migrations and cloud/manual-probe scope are unchanged; see the operator passkey contract for full transport/review limitations.

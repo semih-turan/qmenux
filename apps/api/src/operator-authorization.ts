@@ -38,12 +38,21 @@ export class OperatorAuthorization {
   }
 
   async signIn(assertion: unknown, mfa: OperatorMfaPolicy, previous?: unknown): Promise<string> {
+    return this.createSession(assertion, mfa, previous);
+  }
+
+  async signInBrowser(assertion: unknown, mfa: OperatorMfaPolicy, previous?: unknown) {
+    const csrf = randomBytes(32).toString('base64url');
+    return { session: await this.createSession(assertion, mfa, previous, csrf), csrf };
+  }
+
+  private async createSession(assertion: unknown, mfa: OperatorMfaPolicy, previous?: unknown, csrf?: string): Promise<string> {
     if (previous !== undefined && !validToken(previous)) throw new ForbiddenException();
     const identity = await this.identity(assertion, mfa);
     const token = randomBytes(32).toString('base64url');
     await this.transaction(async (client) => {
-      const { rows } = await client.query<{ id: string | null }>('SELECT qmenux_operator.create_session($1,$2,$3,$4,$5) AS id',
-        [identity.issuer, identity.subject, identity.audience, secretHash(token), previous ? secretHash(previous) : null]);
+      const { rows } = await client.query<{ id: string | null }>(csrf ? 'SELECT qmenux_operator.create_browser_session($1,$2,$3,$4,$5,$6) AS id' : 'SELECT qmenux_operator.create_session($1,$2,$3,$4,$5) AS id',
+        [identity.issuer, identity.subject, identity.audience, secretHash(token), previous ? secretHash(previous) : null, ...(csrf ? [secretHash(csrf)] : [])]);
       if (!rows[0]?.id) throw new ForbiddenException();
     });
     return token;
@@ -51,13 +60,36 @@ export class OperatorAuthorization {
 
   async run<T>(assertion: unknown, token: unknown, permission: 'platform:read', mfa: OperatorMfaPolicy,
     work: (client: PoolClient, operator: AuthorizedOperator) => Promise<T>): Promise<T> {
+    return this.authorized(assertion, token, permission, mfa, work);
+  }
+
+  async runBrowser<T>(assertion: unknown, token: unknown, csrf: unknown, permission: 'platform:read', mfa: OperatorMfaPolicy,
+    work: (client: PoolClient, operator: AuthorizedOperator) => Promise<T>): Promise<T> {
+    if (!validToken(csrf)) throw new ForbiddenException();
+    return this.authorized(assertion, token, permission, mfa, work, csrf);
+  }
+
+  private async authorized<T>(assertion: unknown, token: unknown, permission: 'platform:read', mfa: OperatorMfaPolicy,
+    work: (client: PoolClient, operator: AuthorizedOperator) => Promise<T>, csrf?: string): Promise<T> {
     if (!validToken(token) || permission !== 'platform:read') throw new ForbiddenException();
     const identity = await this.identity(assertion, mfa);
     return this.transaction(async (client) => {
-      const { rows } = await client.query<AuthorizedOperator>('SELECT * FROM qmenux_operator.read_session($1,$2,$3,$4)',
-        [identity.issuer, identity.subject, identity.audience, secretHash(token)]);
+      const { rows } = await client.query<AuthorizedOperator>(csrf ? 'SELECT * FROM qmenux_operator.read_browser_session($1,$2,$3,$4,$5)' : 'SELECT * FROM qmenux_operator.read_session($1,$2,$3,$4)',
+        [identity.issuer, identity.subject, identity.audience, secretHash(token), ...(csrf ? [secretHash(csrf)] : [])]);
       if (!rows[0] || rows[0].role !== 'PLATFORM_ADMIN') throw new ForbiddenException();
       return work(client, Object.freeze(rows[0]));
+    });
+  }
+
+  async signOutBrowser(assertion: unknown, token: unknown, csrf: unknown, proof: unknown, browser: unknown): Promise<void> {
+    if (![token, csrf, proof, browser].every(validToken)) throw new ForbiddenException();
+    const identity = await this.access.verify(assertion);
+    await this.transaction(async (client) => {
+      const result = await client.query<{ valid: boolean }>('SELECT qmenux_operator.revoke_browser_session($1,$2,$3,$4,$5) AS valid',
+        [identity.issuer, identity.subject, identity.audience, secretHash(token as string), secretHash(csrf as string)]);
+      if (result.rows[0]?.valid !== true) throw new ForbiddenException();
+      await client.query('SELECT qmenux_operator.revoke_passkey_proof($1,$2,$3,$4,$5)',
+        [identity.issuer, identity.subject, identity.audience, secretHash(proof as string), secretHash(browser as string)]);
     });
   }
 

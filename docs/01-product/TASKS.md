@@ -507,3 +507,9 @@ T004/T040 scope: `apps/admin-pwa` handlers/UI/styles, `.env.example`, handler/br
 
 - IN_PROGRESS overall; local prerequisite on feat/T004-operator-logout from e6a7933. Optional proof/browser pair extends internal signOut; future privileged BFF must use it.0015 provides narrow identity/application/browser-constrained proof revocation in the same transaction as session revocation. No new route/role or enablement.
 - PostgreSQL regression covers mismatch/incomplete input, repeat logout, expired proof, and rollback of session revocation if proof retirement fails. Existing session-only callers preserved. Full verification results recorded in PROGRESS.md; no DONE or deployment claim. Down removes only the function/ledger after callers are removed, preserving rows and never restoring revoked credentials.
+
+## T004 privileged browser session binding —2026-10-26
+
+- IN_PROGRESS overall; dependent feat/T004-operator-browser-sessions from fe5124b. Internal signInBrowser/runBrowser/signOutBrowser explicitly require server-bound session CSRF, current Access/MFA/operator authority and platform:read only.0016 stores only a CSRF hash, separates legacy/browser lookup/logout contracts and adds three fixed-path EXECUTE-only functions. No public route, real operator or deployment enabled.
+- Local PostgreSQL/native-passkey tests verify hash storage, wrong/missing/same-user peer proof denial, legacy/browser non-substitution, legacy logout inability to retire browser session, wrong-CSRF preservation, matching logout and migration atomic rollback/down/reapply/populated refusal. Down locks/refuses any bound rows; no forced credential deletion.0001–0015 unchanged.
+- Remaining: canonical protected BFF/API and mobile browser delivery, operator-session audit, reviewed enrollment/recovery, operation-bound high-impact step-up and actual provider/device/security/legal/named review. Full verification evidence is in PROGRESS.md; no DONE claim.
