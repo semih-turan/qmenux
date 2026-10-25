@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/v1/internal/maintenance/auth-expiry",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}

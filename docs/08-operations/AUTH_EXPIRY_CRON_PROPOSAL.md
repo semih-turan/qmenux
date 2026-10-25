@@ -1,11 +1,11 @@
 # Expired credential cron — review proposal
 
-Status: PROPOSED, not enabled | 2026-10-25 | Owner: Engineering | Architecture exception awaiting explicit owner approval; reviewer/date not recorded.
+Status: OWNER-APPROVED exception; ENABLED; first automatic invocation pending | 2026-10-25 | Owner: Engineering | Explicit approval: “Evet, yalnız bu temizlik işine istisna ver ve etkinleştir”. Technical reviewer/name and real-user release acceptance remain pending.
 
 ## Concrete proposal
-Allow exactly one bounded expired-credential maintenance job to call the existing protected API endpoint directly from Vercel Cron, without a separate worker. Copy the inactive [configuration draft](../../infrastructure/spikes/auth-expiry-cron.proposed.json) to `apps/api/vercel.json` only after approval and deploy only qmenux-api. Schedule `0 3 * * *` means daily03:00UTC /06:00 Europe/Istanbul on the current date. Existing API Production target uses the development database; this proposal does not approve real-business launch, legal retention or a general cron/worker architecture.
+Allow exactly one bounded expired-credential maintenance job to call the existing protected API endpoint directly from Vercel Cron, without a separate worker. The approved [configuration draft](../../infrastructure/spikes/auth-expiry-cron.proposed.json) is now active at [apps/api/vercel.json](../../apps/api/vercel.json), deployed only to qmenux-api after explicit approval. Schedule `0 3 * * *` means daily03:00UTC /06:00 Europe/Istanbul on the current date. Existing API Production target uses the development database; this proposal does not approve real-business launch, legal retention or a general cron/worker architecture.
 
-## Existing policy conflict
+## Policy conflict resolved by the narrow owner approval
 The binding [v8 infrastructure document](VERCEL_NEON_INFRASTRUCTURE.md#confirmed-choices-and-non-choices) states:
 
 > Separate worker hosting is REQUIRED for continuously consuming queues, long-running imports/PDF/AI processing, retries and cron-driven workloads.
@@ -14,9 +14,9 @@ The [Vercel Functions constraints](VERCEL_NEON_INFRASTRUCTURE.md#vercel-function
 
 > Use scheduled external triggers/Vercel Cron for bounded enqueue-only actions if appropriate, with authenticated idempotent handlers and provider plan verification.
 
-The proposed handler directly runs a bounded SQL sweep; it does not enqueue work. The general production-development authorization does not silently amend those architecture rules. Explicitly approve this named exception before enabling the schedule; leave the general worker rule unchanged for imports/PDF/AI, durable retries and other cron-driven workloads. No worker/Redis provider is selected by this exception.
+The proposed handler directly runs a bounded SQL sweep; it does not enqueue work. The general production-development authorization does not silently amend those architecture rules. The owner explicitly approved this named exception on2026-10-25; leave the general worker rule unchanged for imports/PDF/AI, durable retries and other cron-driven workloads. No worker/Redis provider is selected by this exception.
 
-## Evidence already available
+## Pre-activation evidence already available
 - Clean entry branch feat/T004-identity-foundation, HEAD20dbeea; no agent Git writes.
 - Read-only Vercel team API reports current plan `pro`. This records the existing account, not a plan selection, purchase or real-business capacity approval.
 - Existing API cron definitions `[]`; current deployment dpl_8a2QCytamkLArxh69DtarJfQYYLd. No schedule currently defined.
@@ -37,7 +37,16 @@ Do not add another secret, role, service, queue, environment target or schema. K
 
 Rollback: disable the job in Vercel if immediate stop is needed; remove its configuration and redeploy to retire the definition. Verify the provider state. Do not rely solely on application rollback; do not delete data/keys or alter other jobs. The manual CLI and protected endpoint can remain available.
 
-## Verification performed for this proposal
+## Historical verification performed for the inactive proposal
 JSON parse/exact path/daily schedule, current-date UTC→Europe/Istanbul conversion, absence of active apps/api/vercel.json, exclusion of infrastructure draft from deployment inputs and diff checks. Application code, secrets, DB and deployment unchanged; no new lint/build/application test claim.
 
 Sources checked2026-10-25: [Vercel configuration](https://vercel.com/docs/project-configuration/vercel-json#crons), [GET/UTC invocation](https://vercel.com/docs/cron-jobs), [delivery/error/plan behavior](https://vercel.com/docs/cron-jobs/manage-cron-jobs).
+
+## Activation evidence — 2026-10-25
+Owner approval quoted above authorizes exactly this exception. Clean entry feat/T004-identity-foundation at f91694a; no agent Git writes. The active config contains exactly one GET job, `0 3 * * *`, path `/v1/internal/maintenance/auth-expiry`. JSON/path/count/timezone assertions PASS; CLI dry upload73 files/309467 bytes includes apps/api/vercel.json and excludes private/config/docs/infrastructure file contents.
+
+Pinned local Node24.22.1: root `pnpm lint` and `pnpm typecheck` PASS; `pnpm --filter @qmenux/api test` PASS, including fresh API build and all5 real HTTP/PostgreSQL/RLS/expiry tests. Unchanged frontend tasks reused local Turbo cache. No new dependency, migration, runtime behavior, credential, privilege or frontend change.
+
+Native Vercel Production deployment dpl_G818sj8dtCBbWoRFfQCgSRehUbQp READY; [immutable API](https://qmenux-1gu53npvd-semihs-projects-fff996f3.vercel.app), canonical api.qmenux.com. Remote CLI65.1.0/pnpm10.29.2, iad1, build11s. Build-only Turbo warnings about DATABASE_URL/CRON_SECRET are intentional: secrets remain runtime-only, not forwarded into build/browser bundles. Existing API Production target retains the development database and existing secret.
+
+Read-only provider project verification PASS: cron deploymentId matches the new deployment, disabledAt=null, exactly one definition matching the expected host/path/schedule. Canonical liveness/readiness/providers200; all providers remain disabled. Missing/incorrect Bearer requests401 with no-store. No key was retrieved/rotated and no authenticated manual run was newly triggered in this activation step; the preceding HTTP-adapter evidence remains historical. First actual scheduled invocation is still unobserved (next expected2026-10-26 at06:00 Europe/Istanbul); record its actual provider status later, not as passed now. No hosted CI, browser/device or unrelated frontend build rerun. T004 remains IN_PROGRESS; reviewer/legal/retention/MFA/real-user gates remain open.

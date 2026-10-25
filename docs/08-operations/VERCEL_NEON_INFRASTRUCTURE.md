@@ -6,6 +6,7 @@ Status: Binding platform choice; implementation TODO. Date: 2026-10-25.
 - **Vercel** hosts all Next.js frontends and the stateless NestJS HTTP API (through supported Vercel Functions adapter/bundling). Confirm NestJS compatibility and cold-start behavior with a minimal spike before building feature modules.
 - Cloudflare R2 stores images and generated PDFs; Cloudflare DNS/WAF/Access remains proposed subject to actual DNS, TLS, proxy and Vercel domain verification.
 - **Separate worker hosting is REQUIRED for continuously consuming queues**, long-running imports/PDF/AI processing, retries and cron-driven workloads. Exact worker host is an OPEN T000 decision; do not assert it runs on Vercel.
+- **Owner-approved exception (2026-10-25, ADR-AUTH-CRON-004):** only the protected bounded expired-credential sweep may run directly from Vercel Cron, daily03:00UTC/06:00Europe-Istanbul. Existing API-only secret/runtime and100-row/table caps remain; no other cron/worker, real-user or retention-policy approval is implied.
 - Redis provider is OPEN. Upstash Redis is a candidate for caching/rate limiting; verify BullMQ command/connection compatibility before choosing a queue Redis. Do not assume every serverless Redis REST product supports BullMQ.
 - ORM is OPEN: Drizzle recommended for lean SQL and RLS-aware patterns; Prisma also possible. Select in T000/T047 with a proof of concept.
 
@@ -24,7 +25,7 @@ Status: Binding platform choice; implementation TODO. Date: 2026-10-25.
 
 ## Vercel Functions constraints
 - No reliance on process memory for sessions, scheduled jobs, tenant state or cross-request cache.
-- No in-process NestJS cron, long-lived queue worker or websocket server. Use scheduled external triggers/Vercel Cron for bounded enqueue-only actions if appropriate, with authenticated idempotent handlers and provider plan verification.
+- No in-process NestJS cron, long-lived queue worker or websocket server. Use scheduled external triggers/Vercel Cron for bounded enqueue-only actions if appropriate, with authenticated idempotent handlers and provider plan verification; the named ADR-AUTH-CRON-004 expired-credential exception is the only approved direct-sweep exception.
 - Set explicit execution limits, concurrency, memory, request size and cold-start budgets after checking current Vercel plan docs; do not hardcode unsupported limits.
 - NestJS bootstrapping must be reused within warm invocation only as an optimization, not correctness dependency. Test package bundling, native modules, file upload limits and deployment size.
 - Direct-to-R2 presigned uploads for images, validate content type/size/virus policy; no large uploads through API memory.
@@ -116,3 +117,6 @@ The existing qmenux-api Production-target development project has a separately g
 No crons configuration or scheduled invocation was installed. This preserves the current manual scheduling decision and does not claim durable worker/retention acceptance. Review the approved enqueue/worker model and provider plan before scheduling. Official [Vercel cron authentication](https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs) and [GET invocation](https://vercel.com/docs/cron-jobs) checked2026-10-25; header shape is compatible but scheduled execution was not tested. No continuous in-process job or external infrastructure was added.
 
 Provision a fresh32-byte base64url value through the API project's encrypted Production env only, redeploy and verify authorized/denied calls. An empty value disables the adapter. Rotation/revocation must account for environment snapshots in older immutable deployments, retiring/restricting old maintenance deployments as appropriate. Do not overwrite an existing owner key or copy secrets to Preview/admin/superadmin. This step creates its first key; prior deployments have no maintenance controller. Temporary local provisioning data is private and removed after verification. See PROGRESS for actual deployment/runtime evidence; user-facing login remains disabled.
+
+## Enabled bounded expiry cron — 2026-10-25
+ADR-AUTH-CRON-004's explicit owner exception is active in apps/api/vercel.json. Only qmenux-api has one daily `0 3 * * *` definition for `/v1/internal/maintenance/auth-expiry` (06:00 Europe/Istanbul). Provider verification matches READY deployment dpl_G818sj8dtCBbWoRFfQCgSRehUbQp with disabledAt=null. Existing API-only Production secret/development runtime retained; other worker requirements unchanged. [Activation evidence, best-effort limits and rollback](AUTH_EXPIRY_CRON_PROPOSAL.md#activation-evidence--2026-10-25). First automatic run remains pending; this is not a deletion-time SLA or real-user release approval.
