@@ -1,9 +1,9 @@
-# QR Menu SaaS — Documentation Index
+# QMenuX — Documentation Index
 
 > Status: Draft v0.1 | Date: 2026-10-25 | Owner: Product/Engineering | Review before production.
 
 ## Product baseline
-Single-price, single-edition, multi-tenant restaurant QR menu SaaS. Public menus at `{slug}.qmenux.com`, business admin at `admin.qmenux.com`, restricted platform control at `superman.qmenux.com`. All administration is **mobile-primary PWA**. Future AI features consume separately purchased credits; payment gateway is provider-agnostic. The canonical production domain is `qmenux.com`.
+Single-price, single-edition, multi-tenant QR menu SaaS for cafés, coffee shops, bakeries, restaurants and other foodservice businesses. Public menus at `{slug}.qmenux.com`, business admin at `admin.qmenux.com`, restricted platform control at `superman.qmenux.com`. All administration is **mobile-primary PWA**. Future AI features consume separately purchased credits; payment gateway is provider-agnostic. The canonical production domain is `qmenux.com`.
 
 ## Non-negotiables
 - Public QR menu works without account or app installation.
@@ -20,7 +20,7 @@ Start with `docs/01-product/PRD.md`, then `docs/02-architecture/ARCHITECTURE.md`
 `apps/{landing,menu-pwa,admin-pwa,superadmin-pwa,api,worker}`; `packages/{ui,contracts,themes,config,database}`; `infrastructure/`; `docs/`. These are planned directories, not implemented code.
 
 ## Open product decisions
-Brand/domain, exact fixed price and billing interval, payment provider, legal entity/merchant account, grace-period policy, custom-domain launch timing, number of branches covered, retention periods, official regulatory legal sign-off.
+Exact fixed price and license interval, operating legal entity, tenant/branch license scope, merchant approval criteria, grace/expiry policy, retention periods, IdP audience/session topology, ORM, worker/Redis providers, regions, Vercel plan and official legal sign-off remain open. Brand/domain, Neon, Vercel and R2 are decided. Payment provider and custom-domain rollout are future decisions; no V1 gateway is authorized.
 
 ## Task-driven execution and legal review
 Begin with `docs/01-product/TASKS.md` (T000). Legal workflow documents are in `docs/05-compliance/`. Official source links are included, but their applicability requires legal/accounting review.
@@ -60,3 +60,6 @@ QMenuX uses terracotta `#E86A33`, charcoal `#252420`, ivory `#F7F5F0` for a sect
 
 ## v9 Git workflow
 An existing Git repository is assumed. Read `docs/08-operations/GIT_WORKFLOW.md` before Codex implementation. Work in per-task branches, preserve user modifications, use task-scoped Conventional Commits, and require explicit authorization before commits, pushes or merges. Root `.gitignore` is a template; merge it with existing ignore rules rather than overwriting custom rules.
+
+## Repository review — T052
+Documentation is tracked in baseline commit `111542c`. T052 changes are under review on `docs/T052-repository-baseline`; no agent commit or push is authorized. See the [T052 evidence and task contract](docs/01-product/TASKS.md#t052-execution-record--2026-10-25) and [unresolved review findings](docs/02-architecture/DECISIONS.md#t052-review-findings--2026-10-25). T000 and applicable legal gates remain open before T001.

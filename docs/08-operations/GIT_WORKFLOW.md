@@ -26,7 +26,7 @@ Status: Approved workflow | 2026-10-25
 8. Stop and request review before merging into default branch. Prefer pull requests and CI status checks.
 
 ## Security and ignored files
-- Use root `.gitignore` (provided) for `.env*` except `!.env.example`, `node_modules`, `.next`, `.turbo`, `dist`, coverage, logs, temporary outputs and editor caches.
+- Use root `.gitignore` for `.env*` except `!.env.example`, `node_modules`, `.next`, `.turbo`, `dist`, coverage, logs, temporary outputs and editor caches.
 - `.env.example` must contain placeholder values only. Do not commit real Neon URLs, R2 credentials, OAuth secrets, private keys, provider tokens or personal data.
 - `.gitignore` does **not** untrack already-tracked secrets; if found, stop, report exposure and request credential rotation and cleanup.
 - GitHub recommended: protect default branch, require PR + checks, least-privilege repo access, secret scanning, no force pushes.
@@ -48,3 +48,11 @@ Status: Approved workflow | 2026-10-25
 - Commit hash (or `not committed`)
 - Risks/blockers
 - Next task and review request
+
+## T052 repository checkpoint — 2026-10-25
+- User authorized starting T052 and creating `docs/T052-repository-baseline`; this does not authorize commits, pushes, merges or T001.
+- At execution start, `main` was clean at `111542c`; local `origin/main` and remote HEAD recorded `main`. No fetch or remote policy inspection was performed, so server freshness/protection remains unverified.
+- Documentation already exists in Git at `111542c`; preserve it. The earlier review's uncommitted-baseline observation was superseded by this user-created commit. No dirty-tree branch exception was used.
+- Root `.gitignore` added. `.DS_Store` is already tracked; ignore rules do not remove it from the index. Existing file/index entry preserved; scoped removal from tracking remains a review item.
+- Before requesting commit approval, review tracked diff AND untracked `.gitignore`, inspect for credentials, verify ignores, and stage only explicit approved paths if staging is requested. Keep index unchanged during this preparation.
+- Proposed task commit after review: `docs(T052): establish repository governance baseline`. T052 remains IN_REVIEW until GIT-001 evidence and required reviewer acceptance are recorded.

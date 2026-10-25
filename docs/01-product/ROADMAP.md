@@ -55,3 +55,9 @@ Do not treat M4 Billing as V1. Approval is a superadmin action, not payment stat
 
 ## v9 Git execution sequencing
 Before T001 implementation, complete T052: inspect the existing Git repository, safely incorporate documentation and ignore rules, and request authorization for a baseline commit. T053 follows T001 once runnable scripts exist. Each subsequent task uses a reviewed task branch; default branch remains stable. Do not delay foundational backend work solely to build marketing landing (T043 remains last).
+
+## T052 review checkpoint — 2026-10-25
+- Existing documentation baseline is now tracked at `111542c`; T052 ignore rules and evidence await reviewer acceptance and separately authorized commit. No fresh initial documentation commit is needed.
+- T052 precedes T001; T000 and LEG-001–005 gates remain in force. T052 authorization does not authorize application scaffolding or waive legal gates.
+- Proposed dependency clarifications (not yet approved task changes): T001 local scaffold/scripts → T053 real PR CI; T047 before ORM-dependent T002 → T003 → T048. See [review findings](../02-architecture/DECISIONS.md#t052-review-findings--2026-10-25).
+- Existing binding order remains: auth/shared management UI early; superadmin approval/manual licensing before tenant operation; T049 before async feature activation; V1 features and release gates before T043 landing; payments/AI remain future.

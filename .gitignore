@@ -1,0 +1,33 @@
+# Local configuration and secrets
+.env*
+!.env.example
+
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+
+# Build, test and deployment output
+.next/
+.turbo/
+.vercel/
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+*.tmp
+
+# OS and editor caches
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

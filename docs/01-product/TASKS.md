@@ -8,7 +8,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 ## Phase 0 — Requirements and legal foundations (before feature coding)
 | ID | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|
-| T000 | Review PRD, confirm domain, license interval, tenant/branch scope, operating legal entity | — | Signed decision record | TODO |
+| T000 | Review PRD, confirm domain, license interval, tenant/branch scope, operating legal entity | — | Signed decision record | IN_PROGRESS |
 | LEG-001 | Official source register and legal applicability mapping | T000 | Each LEG rule has source, scope, effective date, reviewer | TODO |
 | LEG-002 | Merchant B2B SaaS agreement, notices, DPA applicability | T000 | Counsel-reviewed document versions | TODO |
 | LEG-003 | KVKK data map, cookie design, retention, subprocessors | T000 | Approved data inventory and consent flow | TODO |
@@ -154,7 +154,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 ## v9 — Git governance and CI (2026-10-25)
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
-| T052 | V1 foundation | Adopt Git workflow in existing repository, preserve history, validate `.gitignore`, establish reviewed docs baseline | T000 documentation review | GIT-001: existing history intact; clean scoped baseline; no secrets; branch policy documented | TODO |
+| T052 | V1 foundation | Adopt Git workflow in existing repository, preserve history, validate `.gitignore`, establish reviewed docs baseline | T000 documentation review | GIT-001: existing history intact; clean scoped baseline; no secrets; branch policy documented | IN_REVIEW |
 | T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | TODO |
 
 ### v9 execution constraints
@@ -162,3 +162,25 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - T053 can be implemented once project scripts exist; do not mark complete based on YAML alone.
 - Every task must report Git branch, reviewed diff, test evidence and commit hash or `not committed`.
 - Commits, pushes and merges require explicit user authorization. T043 marketing landing stays LAST.
+
+## T052 execution record — 2026-10-25
+- Objective: preserve the existing repository and prepare reviewed ignore/governance changes before T001.
+- Dependency: T000 documentation review performed; T000 product/legal approval is still open.
+- Owner: Product/Engineering; execution: Codex; reviewer approval: pending.
+- Branch: `docs/T052-repository-baseline`, created with user authorization from clean `main` at `111542c`.
+- Files: `.gitignore`, README.md, this file, PROGRESS.md, ROADMAP.md, DECISIONS.md, GIT_WORKFLOW.md.
+- Steps: reinspect Git; preserve existing documentation commit; add ignore rules; record conflicts without approving their resolutions; verify ignores/history/index and review the diff.
+- Acceptance: GIT-001 evidence below, reviewed scoped changes, no discovered credentials, and named reviewer/date acceptance. Status: IN_REVIEW, not DONE.
+- Evidence: documentation baseline `111542c` already exists; agent made no commit. Verification commands/results are recorded in [PROGRESS.md](PROGRESS.md#t052-repository-governance--2026-10-25).
+- Open review: tracked `.DS_Store` preserved; legal-ID collisions and dependency proposals recorded in [DECISIONS.md](../02-architecture/DECISIONS.md#t052-review-findings--2026-10-25). No task/ADR/legal approval inferred.
+- Rollback: reverse only the seven T052 file changes after checking for later user edits; remove the task-created `.gitignore` only if still unchanged. No database migration, history reset or user-file deletion required.
+- Next: reviewer acceptance and separate commit authorization; T000 decision/legal-gate review before T001 implementation.
+
+## T000 review preparation — 2026-10-25
+- Status: IN_PROGRESS; no completion or legal approval claimed.
+- Scope: decision worksheet only, prepared after user requested the next step; no T001 implementation.
+- Files: DECISIONS.md, this backlog, PROGRESS.md; existing T052 changes preserved on `docs/T052-repository-baseline` as a cohesive documentation review.
+- Evidence: [owner decision worksheet](../02-architecture/DECISIONS.md#t000-decision-worksheet--2026-10-25) separates confirmed baseline, unanswered owner inputs and later technical/legal decisions.
+- Acceptance still required: named/dated signed decision record, unresolved gates explicitly assigned; legal approvals recorded by qualified reviewers separately.
+- Rollback: reverse only this preparation's appended sections and T000 status change, preserving T052/user edits.
+- Commit: not committed. Next: collect owner answers; record actual decisions before any foundation implementation authorization.

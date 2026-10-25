@@ -65,3 +65,46 @@ Brand `QMenuX`; apex `qmenux.com`; owner PWA `admin.qmenux.com`; superadmin PWA 
 - Task branches and task-tagged Conventional Commits; stable default branch, PR/CI reviews.
 - Agent must request authorization for commits, pushes and merges; no autonomous remote writes.
 - T052 Git baseline precedes T001; T053 CI after runnable project scripts exist.
+
+## T052 review findings — 2026-10-25
+Status: OPEN review record, not an approval of new architecture or legal rules. Owner: Product/Engineering; named reviewer and dated decisions pending. Record decisions here and synchronize TASKS.md/ROADMAP.md before affected implementation. T052 authorization covers repository governance only.
+
+| Finding | Required decision or clarification | Gate |
+|---|---|---|
+| Legal IDs have two meanings | TASKS LEG-001 is source-register work; LEGAL_REQUIREMENTS_REGISTER LEG-001 is printed-menu obligation. Separate task/requirement namespaces and map CT tests explicitly; do not infer equivalence from matching IDs. No IDs renamed in T052. | Before legal-sensitive implementation or compliance completion claims |
+| T001/T053 CI overlap | T001 currently includes CI and requires CI green; T053 depends on T001 and implements CI. Proposed: T001 provides locally verified scripts/scaffold; T053 owns actual PR CI execution. Acceptance change requires owner approval. | Before T001 acceptance |
+| ORM selection order | Proposed: T001 → T047 deployment/ORM spike → ORM-dependent T002 schema → T003 isolation → T048 Neon pool proof. Do not choose ORM incidentally in scaffold. | Before schema implementation |
+| Identity and approval sequencing | Make amended T006/T011 auth and T044 UI dependencies explicit. Build relevant T040 auth and T011 operator shell before T041 approval; enable tenant operation only through T041/T042. | Before operational panels |
+| Publication and async dependencies | T018 needs immutable published snapshots (T026 or an explicitly approved earlier contract). T018/T027/T031/T034/T024 require T049 before production activation, as v8 already states. | Before affected feature activation |
+| T046 contract timing | Proposed: define registry contracts before T020, finish ten-theme regression evidence afterward; current task depends on T020. | Before theme implementation |
+| Missing T023 | Confirm intentionally unused/reserved; do not invent a task. | Backlog review |
+| Legacy wording | PRD/THEME_SYSTEM opening sections still say four themes; v3/v7 explicitly supersede them with exactly ten catalog IDs. DEPLOYMENT legacy containers/hosts are superseded by v8/canonical domains. Future billing sections do not authorize V1 checkout. | Consolidate before affected work; keep explicit overrides authoritative |
+| Approval metadata | ADR-001/002 remain Proposed although the user's architecture-review instruction identifies modular monolith/RLS as approved stack. Record formal reviewer/date/evidence; do not fabricate signed approval or mark T000 complete. | T000 architecture sign-off |
+| Session and public routing contract | Decide management-origin session/BFF arrangement and trusted tenant forwarding to api.qmenux.com; API host alone cannot resolve the guest tenant. BFF is a candidate, not an accepted architecture. | Before auth/public API implementation |
+
+T000 decision checklist remains open: legal entity, price/term, tenant/branch licensing, merchant approval and initial privileged-operator bootstrap, expiry/grace/public-menu behavior, Microsoft account audience, password policy, redirect/session contract, region/transfer review, retention, geofence denial/accuracy/AND-OR policy, Wi-Fi reveal policy, scan counting/deduplication and sold-out PDF rules. Worker/Redis/ORM/plan choices require their designated spikes. No legal item is approved by this review.
+
+## T000 decision worksheet — 2026-10-25
+Status: IN_PROGRESS; user authorized moving to the next review step. This worksheet is preparation, not signed approval. Continue on the existing documentation branch to preserve uncommitted T052 work; no new branch, commit or merge performed.
+
+### Confirmed baseline
+QMenuX/canonical hosts, café-and-restaurant scope, TypeScript/Next.js/NestJS modular monolith with hexagonal boundaries, pnpm/Turborepo, Neon/RLS, Vercel HTTP hosting, R2, ten public themes/one fixed management design, manual privileged approval/licensing, no V1 checkout, early identity and landing last. These derive from the explicit architecture-review request and binding v6–v9 decisions; they do not demonstrate deployment or legal readiness.
+
+### Owner inputs required
+| Decision | Current state | Proposed option for review | Evidence |
+|---|---|---|---|
+| Operating legal entity | Unknown; Bisetra is mentioned as a possibility only | Supply contracting entity, or explicitly record not yet established; do not add tax/personal identifiers to Git | Awaiting owner; counsel/accountant review separate |
+| License scope | Tenant/branch coverage undecided | One license per tenant; one operational branch in V1; extra-branch entitlement undecided | Awaiting owner |
+| License period and price | Undecided | Annual manually granted license; price remains unpublished/TBD until separately decided | Awaiting owner; no free-trial promise |
+| Merchant approval | Superadmin approval mandatory; criteria undecided | Manual business/contact/classification review, explicit approval then separate dated license grant | Awaiting owner; legal review of collected data pending |
+| Microsoft audience | Outlook personal required; organizational accounts optional | Personal + work/school if owner wants both, with explicit issuer/audience validation | Awaiting owner; provider tests pending |
+| Password policy | Optional email/password not decided | Federated Google/Microsoft/Apple only initially; platform MFA/access remains separate | Awaiting owner; recovery and account-linking design pending |
+
+### Decisions reserved for relevant work
+- Before license implementation: grace period, expiry/suspension public-menu policy, term calculation and initial operator provisioning.
+- Before schema/deployment: T047 ORM/driver proof, regions/plan and legal transfer review; no production services authorized.
+- Before async feature activation: T049 worker/queue choice, budget, recovery and outbox delivery evidence.
+- Before sensitive features: counsel-reviewed rule/task ID mapping, retention/subprocessors, geofence permission/accuracy/combination policy, Wi-Fi reveal, analytics validity/dedup and PDF sold-out rules.
+- Before T001 acceptance: owner decision on T001/T053 CI ownership proposal. T000/LEG-001–005 gates remain in force; worksheet preparation does not waive them.
+
+Approval format: decision ID/topic, selected value, reviewer name/role, date, evidence reference. Unknown answers remain OPEN; no inferred legal or architectural sign-off. T000 is not DONE.
