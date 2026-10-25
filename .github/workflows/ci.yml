@@ -44,6 +44,11 @@ jobs:
         run: pnpm lint
       - name: Typecheck
         run: pnpm typecheck
+      - name: Make local PostgreSQL tools available
+        shell: bash
+        run: |
+          command -v pg_config
+          pg_config --bindir >> "$GITHUB_PATH"
       - name: Install test browser and OS dependencies
         run: pnpm exec playwright install --with-deps chromium
       - name: Run API and mobile-width browser tests

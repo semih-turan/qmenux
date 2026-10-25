@@ -19,8 +19,8 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 | ID | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|
 | T001 | Initialize pnpm/Turborepo, lint, typecheck, CI | T000; local-only exception below | CI green | IN_REVIEW |
-| T002 | PostgreSQL schema and migration strategy | T001 | Migrations and rollback drill | TODO |
-| T003 | Tenant resolver and RLS integration tests | T002 | Cross-tenant denial tests | TODO |
+| T002 | PostgreSQL schema and migration strategy | T001 | Migrations and rollback drill | IN_PROGRESS |
+| T003 | Tenant resolver and RLS integration tests | T002 | Cross-tenant denial tests | IN_PROGRESS |
 | T004 | Identity, RBAC, privileged MFA | T003 | Auth and MFA tests | TODO |
 | T005 | Catalog domain and APIs | T003,T004 | Contract tests, price history | TODO |
 | T006 | Mobile admin shell and product CRUD | T005 | iPhone/Android touch workflow tests | TODO |
@@ -251,3 +251,11 @@ User supplied a new development password locally and authorized converting the p
 Owner authorized completing the remaining Vercel/Neon development steps without routine confirmation. [Pooled RLS/direct migration probe](../../infrastructure/spikes/orm/neon-rls.mjs) passed with a separate non-owner runtime role, 20 serial read/write transactions, two overlapping transactions, migration rollback and complete synthetic-fixture cleanup. Added uncached API `/v1/health/ready` with safe 503 behavior, strict runtime URL/role checks, bounded pg pool and Vercel suspension lifecycle handling. Published existing qmenux-api as `dpl_59gn8bpc1CkGn1sAsXnZNTZRMuW7`; live liveness/readiness and 20 concurrent readiness requests PASS. Only the development runtime URL was attached as an API Production-target Secret; no direct owner credential or Preview binding. [Commands, tests, security fix and remaining gates](PROGRESS.md#pooled-rls-direct-migrations-and-api-readiness--2026-10-25).
 
 T048 now IN_PROGRESS with real synthetic INFRA-002 evidence; T047 remains IN_PROGRESS. Application schema/tenant authorization tasks T002/T003, ORM decision/reviewer acceptance and real-business release gates remain open. No task marked DONE, no automatic legal/architectural approval or Git publication inferred.
+
+## T003 execution contract — 2026-10-25
+- Branch `feat/T003-tenant-context`, based on `467f1e2` by explicit owner “evet” exception to default-branch starting policy. Existing branches/history/remotes and sibling `qmenux-t002` worktree preserved. T002 SQL dependency copied byte-identically; no Git merge, staging, commit or push performed.
+- Scope: strict canonical host candidate resolution, restricted bootstrap function, one checked-out transaction for role/context checks, lookup, transaction-local RLS, mandatory server policy and work. Reject foreign tenant IDs/forwarded hosts as authority; no business endpoint, social login, activation, publication or license policy added.
+- Acceptance evidence: real local PostgreSQL HTTP/RLS tests, migration rollback/reapply, own/foreign read/write, unknown/pending/reserved host, missing/denied authorization, pool reuse and concurrent isolation; same production transaction service passes manual Neon tests with synthetic fixtures removed. Root lint/typecheck/seven tests/four builds and audit PASS. [Detailed evidence](PROGRESS.md#t003-tenant-resolution-and-transaction-isolation--2026-10-25).
+- Deployment: existing API only, dpl_GzDGMgw8nk24b8Pq4FwPzjCxkj7E; health/readiness and 20 concurrent readiness requests pass. No credential/configuration changes or canonical DNS changes.
+- Rollback: remove caller dependency before applying `0002_tenant_resolution.down.sql` atomically via direct owner; drops only resolver/ledger entry. Baseline down refuses business data and later versions. Never delete production data for rollback.
+- Reviewer/name/date: pending. T002/T003/T048 remain IN_PROGRESS; identity/license and published-public-read policies, hosted CI for this diff, legal/release gates and architecture acceptance remain open. Next task T004. Proposed commit after separate authorization: `feat(T003): enforce tenant transaction isolation`.

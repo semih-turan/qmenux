@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bash run-local.sh",
     "test:neon-context": "node neon-context.mjs",
-    "test:neon-rls": "node neon-rls.mjs"
+    "test:neon-rls": "node neon-rls.mjs",
+    "test:tenant-neon": "node t003-neon.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

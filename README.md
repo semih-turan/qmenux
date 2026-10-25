@@ -116,8 +116,13 @@ The existing API project now connects to **qmenux-dev**, through a restricted `q
 
 - `GET /v1/health` remains uncached liveness: `{ "status": "ok" }`.
 - [`GET /v1/health/ready`](https://qmenux-api.vercel.app/v1/health/ready) returns uncached `200 { "status": "ready" }` only after a database role/context check; missing/invalid configuration, unsafe role or database failure returns minimal `503 { "status": "unavailable" }`. It exposes no URLs, role names or database errors.
-- The API uses pg 8.23.1 with verified TLS/channel binding, max=1 pool, five-second connection/query deadlines, and Vercel's pool-suspension lifecycle helper. This is an infrastructure metadata query, not a tenant-data API or approved ORM selection.
+- The API uses pg 8.23.1 with verified TLS/channel binding, max=2 pool, five-second connection/query deadlines, and Vercel's pool-suspension lifecycle helper. This is an infrastructure metadata query, not a tenant-data API or approved ORM selection.
 
 The [manual Neon RLS probe](infrastructure/spikes/orm/README.md#authenticated-pooled-rls-and-direct-migration-probe) exercises synthetic tenant reads/writes with separate owner/runtime roles, pooled reuse, overlapping transactions and direct migration rollback. It removes its fixture schema/grants afterward. Cloud credentials never run in root CI. Execution/deployment evidence and remaining gates are in [PROGRESS.md](docs/01-product/PROGRESS.md#pooled-rls-direct-migrations-and-api-readiness--2026-10-25).
 
 The workspace scopes a Zod override to `@vercel/cli-config` at 4.6.7 for [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), found through the Vercel helper's transitive dependency. Remove the override once upstream includes the patch. Full dependency audit passed after this fix.
+
+## T003 development tenant boundary
+The API now has an internal `TenantTransactions` service: canonical tenant host → active candidate lookup → transaction-local RLS → mandatory trusted server authorization → work → commit/rollback. No business controller is registered; membership, public publication and license policies remain separate gates. Hostname alone never grants access. See [tenant isolation](docs/02-architecture/MULTI_TENANCY.md) and [execution evidence](docs/01-product/PROGRESS.md#t003-tenant-resolution-and-transaction-isolation--2026-10-25).
+
+Root `pnpm test` now also requires local PostgreSQL server/client tools (`initdb`, `pg_ctl`, `createdb`, `psql`) on PATH. Its integration test creates and removes a private socket-only cluster with synthetic data and no cloud credentials. CI exposes the Ubuntu runner's PostgreSQL binaries; this working-tree CI change has not run on GitHub.

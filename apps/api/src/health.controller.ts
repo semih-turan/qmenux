@@ -1,9 +1,9 @@
 import { Controller, Get, Header, ServiceUnavailableException } from '@nestjs/common';
-import { DatabaseReadiness } from './database-readiness.js';
+import { Database } from './database.js';
 
 @Controller('health')
 export class HealthController {
-  constructor(private readonly database: DatabaseReadiness) {}
+  constructor(private readonly database: Database) {}
 
   @Get()
   @Header('Cache-Control', 'no-store')

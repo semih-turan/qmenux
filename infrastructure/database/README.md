@@ -1,0 +1,50 @@
+# T002 initial tenant/catalog schema
+
+SQL-first, ORM-neutral development migration: five business tables plus a private migration ledger. This is the first bounded product slice, not the complete V1 database. No package, ORM, personal-data seed, legal rule or billing default is introduced.
+
+## Scope and boundaries
+
+`qmenux.tenants` → `branches` → `menus` → `categories` → `products` use UUIDs, timestamptz audit fields, ordered catalog indexes and composite tenant-scoped foreign keys. Prices are nonnegative PostgreSQL integer TRY minor units. Slugs are lowercase ASCII DNS labels (max 63 characters), excluding punycode and current reserved hosts. Names cannot be whitespace-only.
+
+Tenants default to PENDING_APPROVAL. Runtime can read only its tenant row and cannot create/activate/delete tenants. Menus remain draft-only until immutable revisions, privileged publication and entitlement checks exist; runtime cannot set menu state. Product availability is AVAILABLE/SOLD_OUT/HIDDEN independently of publication. No public menu or automatic license/activation path is implemented.
+
+All business tables use ENABLE and FORCE RLS with transaction-local `app.tenant_id`. Missing/empty context exposes no rows; malformed UUID context errors closed. Migration owner and runtime are separate. Up refuses elevated runtime flags/parent memberships and execution as runtime. Grants exclude schema DDL, TRUNCATE, tenant writes and migration-ledger access.
+
+RLS isolates tenants; it does not authenticate principals or check membership/approval/license. T003/T004/T040–T042 must enforce those checks before a server transaction sets context. The internal T003 transaction boundary now uses a narrow tenancy candidate lookup; no business controller is registered. Identity, media, approved allergen/nutrition provenance, licenses and immutable revisions are added in later task-scoped migrations.
+
+## Apply and rollback
+
+Use an independently verified **direct migration-owner connection**, never the pooled runtime URL. Keep credentials in PostgreSQL service/password files outside Git with mode 0600, not command arguments. Example with a preconfigured development-only service:
+
+```sh
+PGSERVICE=qmenux-dev-owner psql -X --single-transaction -v ON_ERROR_STOP=1 \
+  -f infrastructure/database/migrations/0001_tenant_catalog.up.sql
+PGSERVICE=qmenux-dev-owner psql -X --single-transaction -v ON_ERROR_STOP=1 \
+  -f infrastructure/database/migrations/0001_tenant_catalog.down.sql
+```
+
+Verify project `icy-tooth-77695631`, branch `qmenux-dev`/`br-crimson-sky-b8i9xve7`, database `neondb` and its direct endpoint before connecting; SQL cannot attest provider branch identity. Always execute the whole file atomically with ON_ERROR_STOP. Up uses advisory/lock/statement limits and refuses an existing schema. Do not drop objects to bypass this. Applied files are immutable; add new numbered forward migrations. The ledger records version/time; a general checksum/reconciliation engine is deliberately not added.
+
+Down is **empty-development rollback only**: lock business tables, refuse any business rows/later version, use row_security=off so hidden rows cannot appear empty, and drop only known tables/the empty schema without CASCADE. Data-bearing/production rollback requires reviewed forward correction and backup/restore procedures. Future changes follow expand/backfill/switch/contract.
+
+## Tests
+
+```sh
+bash -n infrastructure/database/test-local.sh
+bash infrastructure/database/test-local.sh
+```
+
+Requires Bash, standard grep and local PostgreSQL tools (tested 17.11). The script creates a private socket-only disposable cluster, never accepts a remote URL, and removes/stops its cluster on exit/signals. Private socket trust is a test-only pattern. Non-superuser migration owner and separate restricted non-owner runtime reproduce Neon role boundaries; synthetic data tests always roll back.
+
+Assertions cover forced RLS/ownership, pending/draft defaults, all reserved names, slug format/uniqueness, composite FK isolation at every parent, missing/invalid context, both tenant contexts, foreign-row/write denial, own CRUD, field checks and forbidden activation/publication/DDL/TRUNCATE/ledger access. Negative controls reject elevated runtime and disabled RLS. Migration tests reject duplicate up, preserve data when down is refused, reject later versions/RLS-hidden-data rollback, and verify empty down/reapply.
+
+The same up/invariant/down/reapply checks passed on Neon PostgreSQL 18.6 through the verified development direct connection. Six tables remain, with **zero business rows**; T003 subsequently added ledger version 0002. Existing API readiness stayed 200/no-store. T003 pooled application-schema and hostname tests now pass; identity/license checks remain later gates; no task DONE or launch/ORM approval inferred.
+
+Sources checked 2026-10-25: [PostgreSQL constraints](https://www.postgresql.org/docs/18/ddl-constraints.html), [RLS](https://www.postgresql.org/docs/18/ddl-rowsecurity.html), [psql atomic execution](https://www.postgresql.org/docs/18/app-psql.html). [Task evidence](../../docs/01-product/PROGRESS.md#t002-initial-tenantcatalog-schema--2026-10-25).
+
+## T003 resolver migration and integrated tests
+The baseline originated in sibling `qmenux-t002` at main 111542c. This dependent T003 branch starts at 467f1e2 by owner authorization and copies baseline SQL/tests unchanged; sibling worktree is untouched. Root tooling is now available. Root `pnpm test` includes a real private-cluster PostgreSQL/HTTP integration test, without cloud credentials. CI adds PostgreSQL tools to PATH; this diff has not run in hosted CI.
+
+Apply `migrations/0002_tenant_resolution.up.sql` after 0001 using the same direct-owner atomic psql command above. It expects exactly baseline version 0001. Roll back 0002 first with `0002_tenant_resolution.down.sql`, then 0001 only if empty. No CASCADE, data deletion or baseline rewrite. Stop dependent callers before rollback. Up/down require the entire file in one transaction.
+
+0002 adds a fixed-search-path, fully qualified SECURITY DEFINER lookup returning only an ACTIVE candidate UUID. PUBLIC execution is revoked; runtime-only execution is granted. This bootstrap is not identity/entitlement authorization. API requires an explicit trusted server policy before any business work. Local integration tests cover privileges, rollback/reapply and cross-tenant HTTP/RLS behavior; manual `test:tenant-neon` uses the same production service and removes synthetic fixtures afterward. Never execute `t003-fixture.sql` outside an isolated empty development database. [Evidence](../../docs/01-product/PROGRESS.md#t003-tenant-resolution-and-transaction-isolation--2026-10-25).

@@ -22,3 +22,10 @@ Separate platform authorization and MFA; optional Zero Trust/IP policy; audit al
 
 ## External principal tenant resolution
 For integration requests, tenant scope comes from verified credential/token claims and server-side mapping, not a client-supplied `tenant_id`, hostname alone, query parameter or Telegram/WhatsApp chat identifier. Branch restrictions and RLS remain active. A platform principal must use explicitly audited platform-only use cases.
+
+## T003 development implementation — 2026-10-25
+`TenantTransactions.run(host, authorize, work)` is an internal application contract. Host must be a canonical ASCII `{slug}.qmenux.com` single DNS label; reserved hosts, punycode, ports, trailing dots, URLs, Unicode and multiple hosts fail closed. No custom-domain or trusted-proxy forwarding configuration exists. HTTP clients cannot choose `app.tenant_id`; candidate UUID comes from the restricted tenancy lookup. API/admin/superadmin hosts cannot use this tenant-menu resolver; their authenticated tenant-selection contracts belong to T004/T035/T037.
+
+The same checked-out transaction performs runtime-role/context verification, candidate lookup, parameterized transaction-local RLS, mandatory server authorization and work. Missing/denied authorization never executes work. Commit/rollback clears local context; failed reset destroys the connection. There are no automatic retries. Readiness uses the same role/context boundary and a rollback without tenant lookup.
+
+ACTIVE lookup is not license/membership/publication authorization. Until reviewed identity and license/publication policies exist, no business controller is registered in AppModule. Tests use a separate test module and synthetic principals/fixtures. See proposed ADR-TENANT-003 in DECISIONS.md; production architecture approval remains pending.
