@@ -128,3 +128,12 @@ Git governance policy and root `.gitignore` template documented. Added T052 (rep
 - Final Node 24.22.1/pnpm 10.29.2 CI-mode checks, forced execution: lint PASS (5 package tasks plus root), typecheck PASS (4 apps plus root), tests PASS (1 API + 1 timeout regression + 3 Chromium), builds PASS (4 apps), real API trace PASS (20 concurrent responses, 175ms local startup diagnostic). Initial JS lint flagged AbortSignal as undeclared; corrected access to globalThis.AbortSignal and final checks passed.
 - Verification: git diff --check PASS; scoped diff/new test reviewed; HEAD/index preserved, no commits. No Vercel/Neon or hosted CI verification performed for this fix, as cloud scope remains declined.
 - Outcome: this local review/fix step is complete; T047 overall remains IN_PROGRESS with cloud evidence deferred and ORM OPEN. No subsequent task started. Rollback only the scoped timeout/test/script/doc edits after checking for later user changes.
+
+## T047 timeout-fix CI verification — 2026-10-25
+- Per owner instruction, performed only the next verification step; no subsequent task started.
+- Entry: clean feat/T047-vercel-nestjs-spike at externally published 5087032adec0c7b07134ebf79946dd2f14898ee6. No agent commit/push/merge or branch change. No open PR for this head branch found at inspection.
+- [Push CI run 40199917283](https://github.com/semih-turan/qmenux/actions/runs/40199917283): SUCCESS; Quality (1m24s) and Secret scan (5s) passed. gh run watch --exit-status exited 0; final job status and logs inspected.
+- Ubuntu runner with Node 24.22.1/pnpm 10.29.2: frozen install PASS, full audit PASS (no known vulnerabilities), lint PASS (5 tasks), typecheck PASS (4 app tasks), Chromium/OS installation PASS, tests PASS (1 API + 1 timeout regression + 3 browser), builds PASS (4 apps). Regression self-failure and traced-output cleanup passed in 5142ms.
+- Scope: hosted CI validates root workflow/tests, not the isolated ORM database test, Vercel deployment, cold starts or Neon/PgBouncer. Those declined/deferred checks remain untouched; ORM OPEN and T047 IN_PROGRESS.
+- Files: this log, TASKS.md and T047 report updated with real run evidence; no code/dependency changes. git diff --check PASS; index/HEAD preserved. Evidence edits uncommitted; no app tests repeated for documentation-only updates.
+- Outcome: this single verification step complete. No task marked DONE and no human reviewer approval inferred. No Vercel/Neon action or remote setting changed.

@@ -70,3 +70,5 @@ T000/legal gates, default-branch protection, PR #1 human review, ORM/region/plan
 
 ## Local final review — 2026-10-25
 Reviewed commit 16623d7 and connected callers at the expected load of one developer running local probes. Confirmed one defect: a nonresponding HTTP server bypassed the nominal readiness loop timeout because fetch had no abort signal. Reproduced waiting past seven seconds with a temporary API fixture, then added readiness/request abort deadlines and a regression test that requires self-failure around five seconds and output cleanup. No new infrastructure stage, cloud action or ORM choice was performed. Other local checks remain subject to the scope limits above.
+
+The timeout fix at `5087032` also passed [actual Ubuntu push CI](https://github.com/semih-turan/qmenux/actions/runs/40199917283) on 2026-10-25: Quality and Secret scan successful; the five-second deadline/cleanup regression passed in 5142ms. This is root workflow evidence, not a Vercel deployment or execution of the isolated ORM/PostgreSQL probe. Cloud scope remains deferred.

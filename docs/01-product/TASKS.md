@@ -213,3 +213,6 @@ Local experiment work and checks are prepared for review. Owner explicitly limit
 
 ### T047 local review and bounded timeout fix — 2026-10-25
 Only the next local-review step was performed, per owner instruction to avoid executing all subsequent tasks. Reviewed 16623d7 and reproduced a missing fetch deadline with a listening/nonresponding API. Added abort deadlines in trace-api.mjs, one regression test in trace-api.test.mjs and wired it into existing root tests/lint. Evidence is in PROGRESS.md. T047 remains IN_PROGRESS; cloud work stays declined/deferred and ORM OPEN. No commit/push/merge or next task authorized by this fix.
+
+### T047 timeout-fix CI evidence — 2026-10-25
+[Run 40199917283](https://github.com/semih-turan/qmenux/actions/runs/40199917283) passed at 5087032adec0c7b07134ebf79946dd2f14898ee6: Quality and Secret scan successful, including the timeout regression (about 5.14s), API/browser tests and four builds. Only this next verification step performed. No PR for the T047 head branch found; no PR created. Root CI success does not execute the isolated ORM DB probe or satisfy Vercel/Neon acceptance; T047 remains IN_PROGRESS and ORM OPEN. Details in PROGRESS.md; documentation update uncommitted.
