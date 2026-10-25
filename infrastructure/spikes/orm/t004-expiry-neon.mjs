@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import console from 'node:console';
+import process from 'node:process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath, URL } from 'node:url';
+import { Client, Pool } from 'pg';
+import { Database } from '../../../apps/api/dist/src/database.js';
+import { exerciseAuthExpiry } from '../../../apps/api/dist/test/auth-expiry-fixture.js';
+
+const sql = side => readFileSync(new URL(`../../database/migrations/0006_auth_expiry.${side}.sql`, import.meta.url), 'utf8');
+let owner, database;
+let stage = 'configuration';
+try {
+  process.loadEnvFile(fileURLToPath(new URL('../../../.env.neon-development.local', import.meta.url)));
+  process.loadEnvFile(fileURLToPath(new URL('../../../.env.neon-migration.local', import.meta.url)));
+  for (const [key, role, pooled] of [['DATABASE_URL', 'qmenux_runtime', true], ['DATABASE_DIRECT_URL', 'neondb_owner', false]]) {
+    const url = new URL(process.env[key]);
+    assert.equal(url.hostname, `ep-bold-darkness-b8anifaq${pooled ? '-pooler' : ''}.c-14.us-east-1.aws.neon.tech`);
+    assert.equal(decodeURIComponent(url.username), role); assert.equal(url.pathname, '/neondb'); assert(url.password);
+    assert.equal(url.port, ''); assert.equal(url.hash, '');
+    assert.deepEqual([...url.searchParams], [['sslmode', 'verify-full'], ['channel_binding', 'require']]);
+  }
+  assert.notEqual(process.env.NODE_TLS_REJECT_UNAUTHORIZED, '0');
+  const limits = { connectionTimeoutMillis: 30000, query_timeout: 10000, enableChannelBinding: true };
+  owner = new Client({ connectionString: process.env.DATABASE_DIRECT_URL, ...limits }); await owner.connect();
+  stage = 'empty isolated development preflight';
+  const tables = ['qmenux.tenants', 'qmenux_identity.users', 'qmenux_identity.external_identities', 'qmenux_identity.memberships',
+    'qmenux_identity.login_attempts', 'qmenux_identity.sessions', 'qmenux_operator.operators', 'qmenux_operator.sessions'];
+  for (const table of tables) assert.equal((await owner.query(`SELECT count(*) FROM ${table}`)).rows[0].count, '0');
+  const versions = (await owner.query('SELECT version FROM qmenux.schema_migrations ORDER BY version')).rows.map(r => r.version);
+  const expected = ['0001_tenant_catalog', '0002_tenant_resolution', '0003_identity_sessions', '0004_tenant_memberships', '0005_operator_sessions', '0006_auth_expiry'];
+  assert([5, 6].includes(versions.length)); assert.deepEqual(versions, expected.slice(0, versions.length));
+  stage = 'atomic direct migration';
+  if (versions.length === 5) {
+    await owner.query('BEGIN'); await owner.query(sql('up')); await owner.query('ROLLBACK');
+    assert.equal((await owner.query("SELECT to_regprocedure('qmenux_identity.cleanup_expired()') IS NULL AS absent")).rows[0].absent, true);
+    await owner.query('BEGIN'); await owner.query(sql('up')); await owner.query('COMMIT');
+  }
+  database = new Database(new Pool({ connectionString: process.env.DATABASE_URL, max: 2, ...limits }));
+  stage = 'bounded purge, exact expiry, locks, overlap and rollback';
+  await exerciseAuthExpiry(database, owner);
+  for (const table of tables) assert.equal((await owner.query(`SELECT count(*) FROM ${table}`)).rows[0].count, '0');
+  console.log('PASS: bounded expired-only purge; live identities/sessions preserved; exact boundary, locked rows, overlapping transactions, rollback/down/reapply; synthetic fixtures removed; 0006 retained');
+} catch (error) {
+  const line = error.stack?.match(/auth-expiry-fixture\.js:(\d+):\d+/)?.[1];
+  console.error(`FAIL: ${stage}${line ? ` at fixture line ${line}` : ''}; details redacted`); process.exitCode = 1;
+} finally {
+  if (database) try { await database.onModuleDestroy(); } catch { process.exitCode = 1; }
+  if (owner) await owner.end();
+}

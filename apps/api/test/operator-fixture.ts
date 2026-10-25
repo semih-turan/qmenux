@@ -105,7 +105,8 @@ export async function exerciseOperators(database: Database, owner: Client): Prom
       has_function_privilege('qmenux_runtime',p.oid,'EXECUTE') AS runtime,
       EXISTS (SELECT FROM aclexplode(p.proacl) WHERE grantee=0 AND privilege_type='EXECUTE') AS public
       FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='qmenux_operator'`);
-    assert.equal(privileges.rowCount, 4);
+    const hasExpiry = (await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0006_auth_expiry') AS present")).rows[0].present;
+    assert.equal(privileges.rowCount, hasExpiry ? 5 : 4);
     for (const row of privileges.rows) {
       assert.equal(row.prosecdef, true); assert.deepEqual(row.proconfig, ['search_path=pg_catalog, pg_temp']);
       assert.equal(row.public, false); assert.equal(row.runtime, row.proname !== 'revoke_changed_operator');

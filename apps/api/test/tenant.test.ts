@@ -14,6 +14,7 @@ import { tenantSlug, TenantTransactions } from '../src/tenant-transactions.js';
 import { exerciseAuth } from './auth-fixture.js';
 import { exerciseMemberships } from './membership-fixture.js';
 import { exerciseOperators } from './operator-fixture.js';
+import { exerciseAuthExpiry } from './auth-expiry-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
 const b = 'a0000000-0000-4000-8000-000000000002';
@@ -220,6 +221,14 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await owner.query('BEGIN');
     await assert.rejects(owner.query(operatorDown), (e: { code: string }) => e.code === 'P0001');
     await owner.query('ROLLBACK');
+    const expiryUp = sql('migrations/0006_auth_expiry.up.sql');
+    await owner.query('BEGIN'); await owner.query(expiryUp); await owner.query('ROLLBACK');
+    assert.equal((await owner.query("SELECT to_regprocedure('qmenux_identity.cleanup_expired()') IS NULL AS absent")).rows[0].absent, true);
+    await owner.query('BEGIN'); await owner.query(expiryUp); await owner.query('COMMIT');
+    await owner.query('BEGIN');
+    await assert.rejects(owner.query(expiryUp), (e: { code: string }) => e.code === 'P0001');
+    await owner.query('ROLLBACK');
+    await exerciseAuthExpiry(database, owner);
   } finally {
     await app?.close();
     await database?.onModuleDestroy();

@@ -13,7 +13,9 @@
     "test:tenant-neon": "node t003-neon.mjs",
     "test:identity-neon": "node t004-neon.mjs",
     "test:membership-neon": "node t004-membership-neon.mjs",
-    "test:operator-neon": "node t004-operator-neon.mjs"
+    "test:operator-neon": "node t004-operator-neon.mjs",
+    "test:auth-expiry-neon": "node t004-expiry-neon.mjs",
+    "maintenance:auth-expiry": "node cleanup-auth.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",
