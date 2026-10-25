@@ -13,6 +13,7 @@ import { Database } from '../src/database.js';
 import { tenantSlug, TenantTransactions } from '../src/tenant-transactions.js';
 import { exerciseAuth } from './auth-fixture.js';
 import { exerciseMemberships } from './membership-fixture.js';
+import { exerciseOperators } from './operator-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
 const b = 'a0000000-0000-4000-8000-000000000002';
@@ -204,6 +205,20 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await exerciseMemberships(database,owner);
     await owner.query('BEGIN');
     await assert.rejects(owner.query(sql('migrations/0004_tenant_memberships.down.sql')), (e:{code:string})=>e.code==='P0001');
+    await owner.query('ROLLBACK');
+    const operatorUp = sql('migrations/0005_operator_sessions.up.sql');
+    const operatorDown = sql('migrations/0005_operator_sessions.down.sql');
+    await owner.query('BEGIN'); await owner.query(operatorUp); await owner.query('ROLLBACK');
+    assert.equal((await owner.query("SELECT to_regnamespace('qmenux_operator') IS NULL AS absent")).rows[0].absent, true);
+    await owner.query('BEGIN'); await owner.query(operatorUp); await owner.query('COMMIT');
+    await owner.query('BEGIN'); await owner.query(operatorDown); await owner.query('COMMIT');
+    await owner.query('BEGIN'); await owner.query(operatorUp); await owner.query('COMMIT');
+    await owner.query('BEGIN');
+    await assert.rejects(owner.query(operatorUp), (e: { code: string }) => e.code === 'P0001');
+    await owner.query('ROLLBACK');
+    await exerciseOperators(database, owner);
+    await owner.query('BEGIN');
+    await assert.rejects(owner.query(operatorDown), (e: { code: string }) => e.code === 'P0001');
     await owner.query('ROLLBACK');
   } finally {
     await app?.close();

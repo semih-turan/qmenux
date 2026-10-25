@@ -1,7 +1,7 @@
 import { Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-export type AccessIdentity = Readonly<{ issuer: string; subject: string }>;
+export type AccessIdentity = Readonly<{ issuer: string; subject: string; audience: string }>;
 
 @Injectable()
 export class OperatorAccess {
@@ -31,7 +31,7 @@ export class OperatorAccess {
         || !Array.isArray(payload.aud) || payload.aud.length !== 1 || payload.aud[0] !== audience
         || Object.hasOwn(payload, 'common_name') || Object.hasOwn(payload, 'service_token_id')) throw new Error();
       // Access identity alone grants no platform role, MFA proof, session or step-up.
-      return Object.freeze({ issuer, subject: payload.sub });
+      return Object.freeze({ issuer, subject: payload.sub, audience });
     } catch { throw new UnauthorizedException(); }
   }
 }

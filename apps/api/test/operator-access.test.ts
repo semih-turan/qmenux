@@ -63,7 +63,7 @@ test('operator Access verifies dedicated signed identity without granting privil
       `${token()},${token()}`, 'a'.repeat(8193)]) await assert.rejects(access.verify(invalid), UnauthorizedException);
     assert.equal(requests, 0);
     const identity = await access.verify(token({ email: 'ignored@example.invalid', role: 'SUPERADMIN', amr: ['mfa'] }));
-    assert.deepEqual(identity, { issuer, subject: 'synthetic-operator' });
+    assert.deepEqual(identity, { issuer, subject: 'synthetic-operator', audience });
     assert(Object.isFrozen(identity));
     assert.equal(requests, 1);
     await Promise.all(Array.from({ length: 20 }, () => access.verify(token())));

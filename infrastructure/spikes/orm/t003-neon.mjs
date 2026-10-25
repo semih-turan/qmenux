@@ -46,8 +46,8 @@ try {
     await owner.query('BEGIN');await owner.query(down);await owner.query('COMMIT');
     await owner.query('BEGIN');await owner.query(up);await owner.query('COMMIT');
   }else{
-    assert([2,3,4].includes(versions.length));
-    assert.deepEqual(versions,['0001_tenant_catalog','0002_tenant_resolution','0003_identity_sessions','0004_tenant_memberships'].slice(0,versions.length));
+    assert([2,3,4,5].includes(versions.length));
+    assert.deepEqual(versions,['0001_tenant_catalog','0002_tenant_resolution','0003_identity_sessions','0004_tenant_memberships','0005_operator_sessions'].slice(0,versions.length));
   }
   stage='synthetic fixture';
   await owner.query('BEGIN');await owner.query(sql('t003-fixture.sql'));await owner.query('COMMIT');seeded=true;
