@@ -3,7 +3,7 @@
 > Status: Draft v0.1 | Date: 2026-10-25 | Owner: Product/Engineering | Review before production.
 
 ## Requirements
-Four initial themes: Luxury, Minimal, Modern, Traditional. One edition includes all themes. Tenant may choose theme, brand color, logo and supported tokens. Theme switching must not modify catalog data.
+Exactly ten public themes, with stable IDs defined in [PUBLIC_THEME_CATALOG.md](PUBLIC_THEME_CATALOG.md). One edition includes all ten themes. Admin and superadmin use one fixed shared design system. Tenant may choose theme, brand color, logo and supported tokens. Theme switching must not modify catalog data.
 
 ## Design
 ThemeRegistry maps immutable `{themeId, version}` to a component bundle. Each implements Header, CategoryNavigation, ProductCard, ProductDetail and Footer. Typed design tokens drive colors, typography, spacing and radius; validate contrast and unsafe CSS inputs.

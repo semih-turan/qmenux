@@ -70,3 +70,11 @@ Git governance policy and root `.gitignore` template documented. Added T052 (rep
 - Evidence: confirmed stack/product baseline separated from unknown entity, license scope/period/price, merchant criteria and identity choices. Proposed values are not approvals.
 - Verification: `git diff --check` passed; reviewed scoped preparation diff. No application lint/typecheck/test/build exists to run.
 - Next/blockers: owner answers and applicable legal reviews; T000 is not DONE and T001 has not started. No production credentials requested or services connected.
+
+## T000 documentation alignment and T001 handoff — 2026-10-25
+- User requested the next step; continued independent preparation while unanswered owner/legal decisions remain OPEN.
+- At entry, working tree was clean on `docs/T052-repository-baseline`, HEAD `a888b1d`; existing documentation changes had been committed externally. Agent did not create that commit or push it. Remote freshness/merge/reviewer acceptance remains unverified.
+- Files: PRD.md and THEME_SYSTEM.md opening theme requirements aligned with existing ten-theme decisions; DECISIONS.md finding updated; TASKS.md detailed T001 file scope, gates, commands and rollback; this log updated.
+- T000 remains IN_PROGRESS, T001 TODO, T052 IN_REVIEW; no legal/task approval inferred from existing commit.
+- Verification: `git diff --check` passed; scoped diff reviewed; legacy four-theme assertions absent from the two corrected specs. Application lint/typecheck/test/build not run because no scaffold exists.
+- Next: owner decision record or explicit amendment for unrelated foundation work; resolve T001/T053 acceptance overlap before implementation. No dependencies installed, application code written, branch created, commit/push/merge made or service connected.

@@ -184,3 +184,29 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - Acceptance still required: named/dated signed decision record, unresolved gates explicitly assigned; legal approvals recorded by qualified reviewers separately.
 - Rollback: reverse only this preparation's appended sections and T000 status change, preserving T052/user edits.
 - Commit: not committed. Next: collect owner answers; record actual decisions before any foundation implementation authorization.
+
+## T001 implementation handoff — prepared during T000, 2026-10-25
+Status: PLAN ONLY; T001 remains TODO. Owner: Engineering; reviewer: pending. This handoff does not approve unresolved product decisions, waive legal gates or change existing T001/T053 acceptance criteria.
+
+### Entry gates
+- Complete T000 decision record and applicable Phase 0 legal gates, or obtain an explicit owner-approved amendment defining which unrelated foundation work may proceed while reviews remain pending. No waiver is inferred from a general request to continue.
+- Resolve T001/T053 overlap: current T001 still requires CI green. Proposed split remains pending; local checks alone cannot satisfy current acceptance.
+- Review T052 and existing documentation baseline. Start implementation on `feat/T001-monorepo-setup` from a clean approved default branch; never merge/push existing documentation changes automatically.
+
+### Bounded file scope
+- Root: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `turbo.json`, placeholder-only `.env.example`.
+- `packages/config/`: shared TypeScript/lint configuration and package metadata.
+- `apps/menu-pwa/`, `apps/admin-pwa/`, `apps/superadmin-pwa/`: minimal Next.js application/build scaffolds; no finished landing or fabricated authenticated workflows.
+- `apps/api/`: minimal NestJS bootstrap, module and `/v1/health` endpoint with one meaningful smoke test; no database/provider credentials.
+- README development commands plus TASKS/PROGRESS execution evidence. CI workflow paths remain subject to the T001/T053 ownership resolution.
+- Do not add empty placeholder packages, ORM, Redis, worker hosting, payment routes or AI adapters merely to mirror the target directory tree. Add shared packages when an actual consumer needs them.
+
+### Execution and verification
+1. Verify supported runtime/framework/tool versions against official documentation at implementation time; pin the selected package-manager version and commit-ready lockfile.
+2. Define workspace scripts `lint`, `typecheck`, `test`, `build` and Turbo dependencies/cache outputs. Ensure missing scripts cannot silently turn required checks into apparent success.
+3. Build minimal applications without tenant data, active licensing or fake social sign-in. Health responses expose no environment variables or internal credentials.
+4. Run `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`; record actual output and inspect health behavior. No commands in this list have been run yet.
+5. Review environment separation, module imports, browser bundles and `git diff --check`; record errors and unrun checks honestly. Any shell UI requires the mobile/accessibility checks applicable to its implemented content.
+6. Fulfill current CI acceptance or its explicitly approved replacement; T053 needs actual authorized PR/test-branch execution. T047 independently verifies deployed Next.js/NestJS behavior and ORM candidates.
+
+Rollback: remove/reverse only task-created scaffolding after checking for subsequent user changes. No database migration, production service connection or data rollback is involved. Do not reset Git history. Completion requires evidence and reviewer acceptance; no commit, push, merge or deployment is authorized by this plan.

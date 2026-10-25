@@ -17,7 +17,7 @@ Enable Turkish food-service businesses to manage legally informative, attractive
 3. Branch-aware domain model; minimum one branch in V1; multi-branch UI may follow later.
 4. Categories, products, price in TRY minor units, image uploads, ingredients, 14 allergen categories, energy data fields and publication validation.
 5. Product availability and scheduled/manual publication with change audit; QR print exports and printable physical menu.
-6. Four curated themes with tenant configuration; theme version pinning and preview.
+6. Exactly ten public themes using the IDs in PUBLIC_THEME_CATALOG.md; tenant configuration, theme version pinning and preview. Admin/superadmin share one fixed design system.
 7. Business mobile PWA and isolated superadmin mobile PWA; public mobile-first menu with offline freshness warnings.
 8. Single-license subscription, start/end/grace timestamps, manual activation/renewal by authorized operator; owner sees days left.
 9. Baseline analytics with privacy-conscious event aggregation; no unnecessary visitor profiling.
