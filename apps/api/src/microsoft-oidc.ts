@@ -1,6 +1,6 @@
 import { Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import * as oidc from 'openid-client';
-import { authOrigin } from './google-oidc.js';
+import { authOrigin, oidcCallback, checkOidcCallback, type AuthApp } from './oidc-callback.js';
 
 export const microsoftTenant = '9188040d-6c67-4c5b-b112-36a304b66dad';
 export const microsoftIssuer = `https://login.microsoftonline.com/${microsoftTenant}/v2.0`;
@@ -25,23 +25,23 @@ export class MicrosoftOidc {
     catch { this.configuration = undefined; throw new ServiceUnavailableException({ status: 'unavailable' }); }
   }
 
-  async start(): Promise<{ url: string; state: string; verifier: string; nonce: string }> {
+  async start(app: AuthApp = 'api'): Promise<{ url: string; state: string; verifier: string; nonce: string }> {
+    const redirect = oidcCallback('microsoft', app);
     const config = await this.config();
     const state = oidc.randomState();
     const verifier = oidc.randomPKCECodeVerifier();
     const nonce = oidc.randomNonce();
     const url = oidc.buildAuthorizationUrl(config, {
-      response_type: 'code', scope: 'openid', redirect_uri: `${authOrigin()}/v1/auth/microsoft/callback`,
+      response_type: 'code', scope: 'openid', redirect_uri: redirect,
       state, nonce, code_challenge: await oidc.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256',
     });
     return { url: url.href, state, verifier, nonce };
   }
 
-  async finish(url: URL, attempt: { verifier: string; nonce: string }, state: string): Promise<string> {
+  async finish(url: URL, attempt: { verifier: string; nonce: string }, state: string, app: AuthApp = 'api'): Promise<string> {
     const config = await this.config();
     try {
-      if (url.origin !== authOrigin() || url.pathname !== '/v1/auth/microsoft/callback'
-        || url.hash || url.username || url.password) throw new Error('Invalid callback');
+      checkOidcCallback(url, 'microsoft', app);
       const tokens = await oidc.authorizationCodeGrant(config, url, {
         expectedState: state, expectedNonce: attempt.nonce, pkceCodeVerifier: attempt.verifier, idTokenExpected: true,
       });

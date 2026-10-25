@@ -1,7 +1,9 @@
+import { APP_FILTER } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { HealthController } from './health.controller.js';
 import { Database } from './database.js';
 import { TenantTransactions } from './tenant-transactions.js';
+import { AdminAuthController, AdminAuthErrors } from './admin-auth.controller.js';
 import { AuthController } from './auth.controller.js';
 import { GoogleOidc } from './google-oidc.js';
 import { MicrosoftOidc } from './microsoft-oidc.js';
@@ -13,5 +15,5 @@ import { OperatorAccess } from './operator-access.js';
 import { OperatorAuthorization } from './operator-authorization.js';
 import { AuthMaintenanceController } from './auth-maintenance.controller.js';
 
-@Module({ controllers: [HealthController, AuthController, AuthMaintenanceController], providers: [Database, TenantTransactions, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, IdentityStore, TenantAuthorization, OperatorAccess, OperatorAuthorization] })
+@Module({ controllers: [HealthController, AuthController, AdminAuthController, AuthMaintenanceController], providers: [{ provide: APP_FILTER, useClass: AdminAuthErrors }, Database, TenantTransactions, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, IdentityStore, TenantAuthorization, OperatorAccess, OperatorAuthorization] })
 export class AppModule {}

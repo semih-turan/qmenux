@@ -1,14 +1,10 @@
 import { Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import * as oidc from 'openid-client';
 
+import { authOrigin, oidcCallback, checkOidcCallback, type AuthApp } from './oidc-callback.js';
+export { authOrigin } from './oidc-callback.js';
+
 export const googleIssuer = 'https://accounts.google.com';
-const apiOrigins = new Set(['https://api.qmenux.com', 'https://qmenux-api.vercel.app']);
-
-export function authOrigin(): string | undefined {
-  const origin = process.env.AUTH_BASE_URL;
-  return origin && apiOrigins.has(origin) ? origin : undefined;
-}
-
 export function googleEnabled(): boolean {
   return process.env.AUTH_GOOGLE_ENABLED === 'true' && !!authOrigin()
     && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0'
@@ -30,21 +26,23 @@ export class GoogleOidc {
     catch { this.configuration = undefined; throw new ServiceUnavailableException({ status: 'unavailable' }); }
   }
 
-  async start(): Promise<{ url: string; state: string; verifier: string; nonce: string }> {
+  async start(app: AuthApp = 'api'): Promise<{ url: string; state: string; verifier: string; nonce: string }> {
+    const redirect = oidcCallback('google', app);
     const config = await this.config();
     const state = oidc.randomState();
     const verifier = oidc.randomPKCECodeVerifier();
     const nonce = oidc.randomNonce();
     const url = oidc.buildAuthorizationUrl(config, {
-      response_type: 'code', scope: 'openid', redirect_uri: `${authOrigin()}/v1/auth/google/callback`,
+      response_type: 'code', scope: 'openid', redirect_uri: redirect,
       state, nonce, code_challenge: await oidc.calculatePKCECodeChallenge(verifier), code_challenge_method: 'S256',
     });
     return { url: url.href, state, verifier, nonce };
   }
 
-  async finish(url: URL, attempt: { verifier: string; nonce: string }, state: string): Promise<string> {
+  async finish(url: URL, attempt: { verifier: string; nonce: string }, state: string, app: AuthApp = 'api'): Promise<string> {
     const config = await this.config();
     try {
+      checkOidcCallback(url, 'google', app);
       const tokens = await oidc.authorizationCodeGrant(config, url, {
         expectedState: state, expectedNonce: attempt.nonce, pkceCodeVerifier: attempt.verifier, idTokenExpected: true,
       });

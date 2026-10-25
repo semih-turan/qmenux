@@ -1,7 +1,7 @@
 import { Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import * as oidc from 'openid-client';
 import { AppleClientSecret } from './apple-client-secret.js';
-import { authOrigin } from './google-oidc.js';
+import { authOrigin, oidcCallback, checkOidcCallback, type AuthApp } from './oidc-callback.js';
 
 export const appleIssuer = 'https://appleid.apple.com';
 
@@ -35,20 +35,21 @@ export class AppleOidc {
     } catch { throw new ServiceUnavailableException({ status: 'unavailable' }); }
   }
 
-  async start(): Promise<{ url: string; state: string; nonce: string }> {
+  async start(app: AuthApp = 'api'): Promise<{ url: string; state: string; nonce: string }> {
+    const redirect = oidcCallback('apple', app);
     const config = await this.config();
     const state = oidc.randomState(), nonce = oidc.randomNonce();
     const url = oidc.buildAuthorizationUrl(config, {
-      response_type: 'code', response_mode: 'query', redirect_uri: `${authOrigin()}/v1/auth/apple/callback`, state, nonce,
+      response_type: 'code', response_mode: 'query', redirect_uri: redirect, state, nonce,
     });
     return { url: url.href, state, nonce };
   }
 
-  async finish(url: URL, attempt: { nonce: string }, state: string): Promise<string> {
+  async finish(url: URL, attempt: { nonce: string }, state: string, app: AuthApp = 'api'): Promise<string> {
     const config = await this.config();
     try {
-      if (url.origin !== authOrigin() || url.pathname !== '/v1/auth/apple/callback' || url.hash || url.username || url.password
-        || !/^[A-Za-z0-9_-]{43}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(attempt.nonce)
+      checkOidcCallback(url, 'apple', app);
+      if (!/^[A-Za-z0-9_-]{43}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(attempt.nonce)
         || url.searchParams.has('id_token') || url.searchParams.has('access_token') || url.searchParams.has('user')) {
         throw new Error('Invalid Apple callback');
       }

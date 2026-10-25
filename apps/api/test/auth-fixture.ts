@@ -5,12 +5,13 @@ import { exportPKCS8, generateKeyPair, jwtVerify } from 'jose';
 import { AppleOidc, appleIssuer } from '../src/apple-oidc.js';
 import { AppleClientSecret } from '../src/apple-client-secret.js';
 import { Module } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { APP_FILTER, NestFactory } from '@nestjs/core';
 import type { Client } from 'pg';
 import { AuthController, readSecretCookie } from '../src/auth.controller.js';
 import { Database } from '../src/database.js';
 import { GoogleOidc, googleIssuer } from '../src/google-oidc.js';
 import { microsoftIssuer, microsoftTenant, MicrosoftOidc } from '../src/microsoft-oidc.js';
+import { AdminAuthController, AdminAuthErrors } from '../src/admin-auth.controller.js';
 import { IdentityStore, secretHash } from '../src/identity-store.js';
 
 // Private, signed provider simulation only; never imported by the application.
@@ -46,7 +47,7 @@ export async function exerciseAuth(database: Database, owner: Client, provider: 
   const authorizeEndpoint = isApple ? `${issuer}/auth/authorize` : `${issuer}/authorize`;
   const tokenEndpoint = isApple ? `${issuer}/auth/token` : `${issuer}/token`;
   const keysEndpoint = isApple ? `${issuer}/auth/keys` : `${issuer}/jwks`;
-  const attempts = new Map<string, { nonce: string; challenge: string | null; claims?: Record<string, unknown>; badSignature?: boolean; noToken?: boolean }>();
+  const attempts = new Map<string, { nonce: string; challenge: string | null; claims?: Record<string, unknown>; badSignature?: boolean; noToken?: boolean; redirectUri?: string }>();
   let exchanges = 0;
   globalThis.fetch = async (input, init) => {
     const url = input instanceof Request ? input.url : String(input);
@@ -63,7 +64,7 @@ export async function exerciseAuth(database: Database, owner: Client, provider: 
     const attempt = attempts.get(body.get('code')!);
     assert(attempt);
     assert.equal(body.get('grant_type'), 'authorization_code');
-    assert.equal(body.get('redirect_uri'), `${origin}/v1/auth/${provider}/callback`);
+    assert.equal(body.get('redirect_uri'), attempt.redirectUri ?? `${origin}/v1/auth/${provider}/callback`);
     assert.equal(body.get('client_id'), clientId);
     if (appleKeys) {
       assert.equal(body.has('code_verifier'), false);
@@ -81,9 +82,9 @@ export async function exerciseAuth(database: Database, owner: Client, provider: 
       ...(attempt.noToken ? {} : { id_token: idToken }) });
   };
   const store = new IdentityStore(database);
-  @Module({ controllers: [AuthController], providers: [GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, { provide: IdentityStore, useValue: store }] })
+  @Module({ controllers: [AuthController, AdminAuthController], providers: [{ provide: APP_FILTER, useClass: AdminAuthErrors }, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, { provide: IdentityStore, useValue: store }] })
   class TestAuthModule {}
-  const app = await NestFactory.create(TestAuthModule, { logger: false });
+  const app = await NestFactory.create(TestAuthModule, { logger: false, rawBody: true });
   app.setGlobalPrefix('v1');
   await app.listen(0, '127.0.0.1');
   const local = await app.getUrl();
@@ -264,6 +265,97 @@ export async function exerciseAuth(database: Database, owner: Client, provider: 
       AND NOT EXISTS (SELECT FROM aclexplode(p.proacl) WHERE grantee=0 AND privilege_type='EXECUTE')`);
     const hasAdmin = (await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0009_admin_audience') AS present")).rows[0].present;
     assert.equal(privileges.rows[0].count, hasAdmin ? '18' : isApple ? '13' : isMicrosoft ? '10' : '5');
+    if (hasAdmin) {
+      process.env.ADMIN_BFF_SECRET = 'b'.repeat(43);
+      const browser = 'c'.repeat(43);
+      type Session = { session: string; csrf: string; expiresIn: number; user: { id: string; status: string }; tenantAccess: boolean };
+      const admin = async (path: string, body: Record<string, string>) => {
+        // Use node:http: global fetch is exclusively the signed IdP simulation in this fixture.
+        return new Promise<{ status: number; body: Session; cookie?: string[]; cache?: string }>((resolve, reject) => {
+          const req = request(`${local}/v1/internal/admin-auth/${path}`, { method: 'POST', headers: {
+            authorization: `Bearer ${process.env.ADMIN_BFF_SECRET}`, 'content-type': 'application/json',
+          } }, res => {
+            let raw = ''; res.setEncoding('utf8'); res.on('data', chunk => { raw += chunk; });
+            res.on('end', () => {
+              try { resolve({ status: res.statusCode!, body: JSON.parse(raw), cookie: res.headers['set-cookie'], cache: res.headers['cache-control'] }); }
+              catch (error) { reject(error); }
+            });
+          });
+          req.on('error', reject); req.setTimeout(5000, () => req.destroy(new Error('Admin HTTP deadline')));
+          req.end(JSON.stringify(body));
+        });
+      };
+      const adminStart = async (changes: Partial<NonNullable<ReturnType<typeof attempts.get>>> = {}) => {
+        const result = await admin(`${provider}/start`, { browser });
+        assert.equal(result.status, 200); assert.equal(result.cookie, undefined); assert.equal(result.cache, 'no-store');
+        const url = new URL((result.body as unknown as { url: string }).url);
+        const redirectUri = `https://admin.qmenux.com/api/auth/${provider}/callback`;
+        assert.equal(url.searchParams.get('redirect_uri'), redirectUri);
+        assert.equal(url.searchParams.get('code_challenge_method'), isApple ? null : 'S256');
+        const state = url.searchParams.get('state')!, code = `synthetic-admin-${++count}`;
+        states.push(state);
+        attempts.set(code, { nonce: url.searchParams.get('nonce')!, challenge: url.searchParams.get('code_challenge'), redirectUri, ...changes });
+        return { browser, state, code };
+      };
+      const first = await adminStart();
+      const adapter = isApple ? app.get(AppleOidc) : isMicrosoft ? app.get(MicrosoftOidc) : app.get(GoogleOidc);
+      const adminCallback = new URL(`https://admin.qmenux.com/api/auth/${provider}/callback?state=${first.state}&code=${first.code}`);
+      const contextProof = { verifier: 'z'.repeat(43), nonce: 'z'.repeat(43) };
+      const exchangeCount = exchanges;
+      await assert.rejects(adapter.finish(adminCallback, contextProof, first.state));
+      await assert.rejects(adapter.finish(new URL(`${origin}/v1/auth/${provider}/callback?state=${first.state}&code=${first.code}`),
+        contextProof, first.state, 'admin'));
+      assert.equal(exchanges, exchangeCount, 'Wrong app callback cannot reach token exchange');
+      assert.equal((await send(`${provider}/callback?state=${first.state}&code=${first.code}`, `${loginName}=${browser}`)).status, 401);
+      assert.equal((await admin(`${provider}/finish`, { ...first, browser: 'd'.repeat(43) })).status, 401);
+      assert.equal(exchanges, exchangeCount);
+      const signedIn = await admin(`${provider}/finish`, first);
+      assert.equal(signedIn.status, 200); assert.equal(signedIn.cache, 'no-store'); assert.equal(signedIn.cookie, undefined);
+      const session = signedIn.body;
+      assert.deepEqual(Object.keys(session).sort(), ['csrf','expiresIn','session','tenantAccess','user']);
+      assert.match(session.session, /^[A-Za-z0-9_-]{43}$/); assert.match(session.csrf, /^[A-Za-z0-9_-]{43}$/);
+      assert.notEqual(session.session, session.csrf); assert.equal(session.expiresIn, 3600); assert.equal(session.tenantAccess, false);
+      const existing = await owner.query('SELECT user_id FROM qmenux_identity.external_identities WHERE issuer=$1 AND subject=$2', [issuer, subject]);
+      assert.deepEqual(session.user, { id: existing.rows[0].user_id, status: 'REGISTERED' });
+      assert.equal((await admin('me', { session: session.session })).status, 200);
+      assert.equal((await send('me', `__Host-qmenux_session=${session.session}`)).status, 401);
+      assert.equal((await admin(`${provider}/finish`, first)).status, 401);
+      const apiAttempt = await start();
+      const apiCode = new URL(`https://ignored.invalid/${apiAttempt.path}`).searchParams.get('code')!;
+      assert.equal((await admin(`${provider}/finish`, { state: apiAttempt.state, code: apiCode,
+        browser: readSecretCookie(apiAttempt.cookie, loginName)! })).status, 401);
+      const apiSession = await send(apiAttempt.path, apiAttempt.cookie);
+      assert.equal(apiSession.status, 200);
+      const apiToken = readSecretCookie(apiSession.cookies.find(c => c.startsWith('__Host-qmenux_session='))!, '__Host-qmenux_session')!;
+      assert.equal((await admin('me', { session: apiToken })).status, 401);
+      assert.equal((await admin('logout', { session: session.session, csrf: 'e'.repeat(43) })).status, 401);
+      assert.equal((await admin('me', { session: session.session })).status, 200);
+      const rotated = await admin(`${provider}/finish`, { ...await adminStart(), previousSession: session.session });
+      assert.equal(rotated.status, 200); assert.equal((await admin('me', { session: session.session })).status, 401);
+      assert.equal((await send('me', `__Host-qmenux_session=${apiToken}`)).status, 200);
+      assert.equal((await admin('logout', { session: rotated.body.session, csrf: rotated.body.csrf })).status, 200);
+      assert.equal((await admin('me', { session: rotated.body.session })).status, 401);
+      const cancelled = await adminStart(), beforeCancel = exchanges;
+      assert.equal((await admin(`${provider}/finish`, { browser, state: cancelled.state, error: 'access_denied' })).status, 401);
+      assert.equal((await admin(`${provider}/finish`, cancelled)).status, 401); assert.equal(exchanges, beforeCancel);
+      for (const changes of [{ claims: { nonce: 'wrong' } }, { claims: { iss: 'https://evil.invalid' } },
+        { claims: { aud: 'other-client' } }, { claims: { exp: 1 } }, { badSignature: true }, { noToken: true },
+        ...(isMicrosoft ? [{ claims: { tid: 'wrong' } }, { claims: { ver: '1.0' } }] : [])]) {
+        const invalid = await adminStart(changes);
+        const countBefore = (await owner.query('SELECT count(*) FROM qmenux_identity.sessions')).rows[0].count;
+        assert.equal((await admin(`${provider}/finish`, invalid)).status, 401);
+        assert.equal((await admin(`${provider}/finish`, invalid)).status, 401);
+        assert.equal((await owner.query('SELECT count(*) FROM qmenux_identity.sessions')).rows[0].count, countBefore);
+      }
+      const tampered = await adminStart();
+      await owner.query(isApple ? 'UPDATE qmenux_identity.login_attempts SET nonce=$1 WHERE state_hash=$2'
+        : 'UPDATE qmenux_identity.login_attempts SET verifier=$1 WHERE state_hash=$2', ['z'.repeat(43), secretHash(tampered.state)]);
+      assert.equal((await admin(`${provider}/finish`, tampered)).status, 401);
+      const race = await adminStart(), beforeRace = exchanges;
+      const results = await Promise.all([admin(`${provider}/finish`, race), admin(`${provider}/finish`, race)]);
+      assert.deepEqual(results.map(r => r.status).sort(), [200,401]); assert.equal(exchanges, beforeRace + 1);
+    }
+
     assert.equal((await owner.query('SELECT count(*) FROM qmenux.tenants')).rows[0].count, '3');
   } finally {
     await app.close(); globalThis.fetch = originalFetch;
@@ -274,7 +366,7 @@ export async function exerciseAuth(database: Database, owner: Client, provider: 
       await owner.query('DELETE FROM qmenux_identity.external_identities WHERE user_id=ANY($1::uuid[])', [ids]);
       await owner.query('DELETE FROM qmenux_identity.users WHERE id=ANY($1::uuid[])', [ids]);
     }
-    for (const key of ['AUTH_APPLE_ENABLED','APPLE_TEAM_ID','APPLE_KEY_ID','APPLE_CLIENT_ID','APPLE_PRIVATE_KEY','AUTH_GOOGLE_ENABLED','AUTH_MICROSOFT_ENABLED','AUTH_BASE_URL','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','MICROSOFT_CLIENT_ID','MICROSOFT_CLIENT_SECRET']) {
+    for (const key of ['ADMIN_BFF_SECRET','AUTH_APPLE_ENABLED','APPLE_TEAM_ID','APPLE_KEY_ID','APPLE_CLIENT_ID','APPLE_PRIVATE_KEY','AUTH_GOOGLE_ENABLED','AUTH_MICROSOFT_ENABLED','AUTH_BASE_URL','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','MICROSOFT_CLIENT_ID','MICROSOFT_CLIENT_SECRET']) {
       if (env[key] === undefined) delete process.env[key]; else process.env[key] = env[key];
     }
   }
