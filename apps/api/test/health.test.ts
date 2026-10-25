@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../src/app.module.js';
 
 test('health is minimal and uncached; business and checkout routes are absent', async () => {
   const app = await NestFactory.create(AppModule, { logger: false });

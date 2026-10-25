@@ -1,8 +1,8 @@
 {
   "extends": "@qmenux/config/typescript/base",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "outDir": "dist",

@@ -1,0 +1,23 @@
+# Credentials and local provider metadata
+.env*
+**/.env*
+.vercel/
+.git/
+
+# Local dependencies and generated output
+**/node_modules/
+**/.next/
+**/dist/
+**/.turbo/
+**/*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+*.log
+.DS_Store
+
+# Experiments and internal documentation are not deployment inputs
+infrastructure/
+docs/
+AGENTS.md
+**/AGENTS.md
