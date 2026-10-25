@@ -1,32 +1,12 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { PoolClient } from 'pg';
 import type { AuthApp } from './oidc-callback.js';
+import { fields, integer, invalid, text, uuid } from './catalog-input.js';
 import { TenantAuthorization, type TenantEntitlement } from './tenant-authorization.js';
 
 const columns = 'id, category_id AS "categoryId", name, description, price_minor AS "priceMinor", currency, availability, sort_order AS "sortOrder", revision';
 type Product = { id: string; categoryId: string; name: string; description: string; priceMinor: number; currency: 'TRY';
   availability: 'AVAILABLE' | 'SOLD_OUT' | 'HIDDEN'; sortOrder: number; revision: number };
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function invalid(): never { throw new BadRequestException({ status: 'invalid_request' }); }
-function uuid(value: unknown): string {
-  if (typeof value !== 'string' || !uuidPattern.test(value)) invalid();
-  return value.toLowerCase();
-}
-function integer(value: unknown, minimum = 0, maximum = 2147483647): number {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < minimum || value > maximum) invalid();
-  return value;
-}
-function text(value: unknown, maximum: number, required: boolean): string {
-  if (typeof value !== 'string' || value.length > maximum || (required && !value.trim())
-    || [...value].some(char => char.charCodeAt(0) === 127 || (char.charCodeAt(0) < 32 && (required || !['\n','\r','\t'].includes(char))))) invalid();
-  return required ? value.trim() : value;
-}
-function fields(value: unknown, allowed: string[]): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)
-    || ![Object.prototype, null].includes(Object.getPrototypeOf(value))
-    || Object.keys(value).some(key => !allowed.includes(key))) invalid();
-  return value as Record<string, unknown>;
-}
 function productInput(value: unknown, create: boolean): Partial<Omit<Product, 'id' | 'currency'>> {
   const keys = ['categoryId', 'name', 'description', 'priceMinor', 'availability', 'sortOrder', ...(create ? [] : ['revision'])];
   const body = fields(value, keys);

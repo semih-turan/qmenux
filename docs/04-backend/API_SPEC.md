@@ -132,3 +132,5 @@ Exact bodies/results,8192-byte flat JSON allowlist, duplicate key/header/input d
 ## T005 internal draft catalog use cases — 2026-10-26
 
 `DraftCatalog` implements validated create/read/list/update/history behind mandatory TenantAuthorization/entitlement, with0010 append-only product audit and optimistic revisions. The subsequent0011 lookup supports explicitly server-selected admin audience with session-bound CSRF on mutations, preserving API defaults and mandatory entitlement. It has no registered HTTP controller; the business/public routes listed above remain proposed. No browser-selected actor/tenant/role, default license, publication, deletion or verified food fields are accepted. [Exact internal contract, local tests and release prerequisites](DRAFT_CATALOG_CONTRACT.md).
+
+The later0012 `DraftStructure` provider adds internal menu/category create/read/cursor-list/edit/history with the same membership/entitlement/admin-CSRF boundary, composite parent ownership and immutable revision audit. It is not an HTTP controller or a public-menu endpoint. [Input/output and audit contract](DRAFT_CATALOG_CONTRACT.md#draft-menus-and-categories-0012--2026-10-26).
