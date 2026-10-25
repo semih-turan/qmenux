@@ -5,13 +5,18 @@ import { authOrigin } from './google-oidc.js';
 
 export const appleIssuer = 'https://appleid.apple.com';
 
+export function appleEnabled(): boolean {
+  return process.env.AUTH_APPLE_ENABLED === 'true' && !!authOrigin()
+    && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0'
+    && ['APPLE_TEAM_ID', 'APPLE_KEY_ID', 'APPLE_CLIENT_ID', 'APPLE_PRIVATE_KEY'].every(name => !!process.env[name]?.trim());
+}
+
 @Injectable()
 export class AppleOidc {
   constructor(private readonly secret: AppleClientSecret) {}
 
   private async config(): Promise<oidc.Configuration> {
-    if (process.env.AUTH_APPLE_ENABLED !== 'true' || !authOrigin()
-      || process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') throw new ServiceUnavailableException({ status: 'unavailable' });
+    if (!appleEnabled()) throw new ServiceUnavailableException({ status: 'unavailable' });
     // Mint per operation: a cached configuration must not retain an expired developer JWT.
     const clientSecret = await this.secret.create();
     try {

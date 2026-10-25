@@ -235,6 +235,7 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await exerciseAuth(database, owner, 'microsoft');
     await exerciseAuthExpiry(database, owner);
     await exerciseAppleIdentity(database, owner);
+    await exerciseAuth(database, owner, 'apple');
     await exerciseMicrosoftIdentity(database, owner);
     await exerciseAuthExpiry(database, owner);
   } finally {
