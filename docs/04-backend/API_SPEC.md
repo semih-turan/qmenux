@@ -91,3 +91,10 @@ This is a bounded API-only slice; provider configuration is currently disabled. 
 | POST /v1/auth/logout | Exact API Origin required; revoke presented session, clear cookie, 200 signed_out | 503 unavailable |
 
 Callback validation failures/cancel/replay return generic 401; storage/provider discovery failures are sanitized 503. No tokens/SQL/connection values returned. Noncanonical Host fails 401 when enabled; forwarded headers never establish host authority. No returnTo parameter/open redirect, browser bearer-token login, credentialed CORS, tenant selection or superadmin session is implemented. Proposed OpenAPI auth naming/CSRF contracts for the eventual admin BFF remain pending; this slice is not AUTH-001..006 full acceptance.
+
+## T004 implemented internal maintenance endpoint
+`GET /v1/internal/maintenance/auth-expiry` is a narrow machine-maintenance capability, separate from tenant/user/operator authentication. Require exactly one `Authorization: Bearer <CRON_SECRET>` header. Server configuration must be43 base64url characters (32 random bytes); missing/malformed configuration returns503 unavailable. Missing/wrong/duplicate authorization returns401 before DB access. Cookies, query values, forwarded authorization and cron User-Agent confer no authority. HEAD returns405; POST is not registered.
+
+Authorized response:200 `{ "status":"ok", "deleted":{ "identity":0, "operator":0 } }`. Counts refer only to the bounded0006 expired-credential contracts; requests cannot choose tenant/principal/limit or expiry. All handler responses are no-store; no cookie/session/credential/record identifier is returned. DB errors return minimal503 unavailable. The existing draft RFC9457/OpenAPI normalization remains a separate API-contract gate; this development route uses the current minimal unavailable/Nest401 envelopes and does not claim full T037 acceptance.
+
+No cron schedule is installed by this slice. The endpoint performs one bounded runtime transaction; it is not a long-running worker or a tenant/platform admin operation. Actual user access remains disabled.

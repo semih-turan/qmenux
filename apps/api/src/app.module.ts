@@ -8,6 +8,7 @@ import { IdentityStore } from './identity-store.js';
 import { TenantAuthorization } from './tenant-authorization.js';
 import { OperatorAccess } from './operator-access.js';
 import { OperatorAuthorization } from './operator-authorization.js';
+import { AuthMaintenanceController } from './auth-maintenance.controller.js';
 
-@Module({ controllers: [HealthController, AuthController], providers: [Database, TenantTransactions, GoogleOidc, IdentityStore, TenantAuthorization, OperatorAccess, OperatorAuthorization] })
+@Module({ controllers: [HealthController, AuthController, AuthMaintenanceController], providers: [Database, TenantTransactions, GoogleOidc, IdentityStore, TenantAuthorization, OperatorAccess, OperatorAuthorization] })
 export class AppModule {}
