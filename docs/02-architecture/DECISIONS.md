@@ -86,6 +86,28 @@ Evidence: user answered “evet devam et” to the explicit request to build onl
 - Migration: experiment schema is disposable only. Canonical migrations/rollback strategy still belong to T002; no historical data or application package is changed.
 - Approval: PENDING owner/reviewer name/date. No final ORM choice. Native Preview packaging, migration tradeoffs and T048 Neon pooled/direct evidence remain outstanding.
 
+### ADR-ORM-047 review proposal — 2026-10-25
+
+**Status: Proposed; reviewer/name/date pending. ORM remains OPEN.** This review recommends **Drizzle + node-postgres (`pg`)** for the next database implementation, subject to explicit ADR acceptance. It does not install an application ORM or start T002/T003/T048.
+
+| Criterion | Drizzle + pg | Prisma v7 + adapter-pg | Assessment |
+|---|---|---|---|
+| Typed queries and transaction-local RLS | Existing probe passes using `db.transaction` and its transaction handle | Same probe passes using interactive `$transaction` and its transaction handle | No isolation winner in the tested scope |
+| Schema/client workflow in this repository | TypeScript table definition consumed directly by the probe | Prisma schema plus generated client, generated before typecheck | Drizzle avoids a separate client-generation step here |
+| Reviewed migrations | Drizzle Kit can generate SQL for review | Prisma Migrate can create draft SQL for editing before application | Both need explicit role/RLS review and a rollback drill; neither workflow was executed |
+| SQL/RLS maintenance | Existing typed queries and parameterized context SQL remain close to PostgreSQL | Typed model queries plus parameterized context SQL also work | Prefer Drizzle for this project's SQL-focused approach; engineering judgment |
+| Serverless/Neon suitability | ORM-enabled Function and Neon pooled endpoint NOT TESTED | ORM-enabled Function and Neon pooled endpoint NOT TESTED | Health-only deployments do not decide this criterion |
+
+**Proposed contract:** use the tested transaction-capable `pg` driver initially; runtime uses the isolated environment's pooled URL, migration tooling uses its direct URL. Resolve and authorize tenant context server-side, set it with parameterized transaction-local SQL before tenant queries, and use only the same transaction handle for those queries. Runtime credentials must not own tables or bypass RLS. Sanitize errors before logging. An ORM change cannot substitute for these controls.
+
+**Tradeoffs:** QMenuX owns SQL policy/migration review and transaction discipline with either candidate. Prisma remains a viable alternative if the team prefers its generated model/client workflow. Do not choose from the local 11ms/84ms diagnostics or claim a bundle-size/cost advantage without an ORM-enabled artifact measurement. Keep the experiment pins unchanged; check compatibility and advisories before application installation.
+
+**Acceptance and follow-up:** record reviewer name/date and acceptance or rejection here before adopting the proposal. T002 must generate/review an isolated migration including grants, RLS and tenant constraints, apply it through a direct connection, and demonstrate rollback/data preservation. T003/T048 must prove missing/invalid context denial, cross-tenant reads/writes, commit/rollback cleanup, overlapping tenant transactions and connection reuse on Neon pooled runtime with an unprivileged role. T047 still needs ORM-enabled native Function packaging, controlled startup/plan-limit evidence and reviewer acceptance; its Preview criterion is not silently waived by Production-target evidence.
+
+**Migration/rollback for this step:** documentation only; no application package, migration or live data changed. Reverse only this proposal and its linked evidence records if rejected.
+
+Sources checked 2026-10-25: [Drizzle transactions](https://orm.drizzle.team/docs/transactions), [Drizzle SQL generation](https://orm.drizzle.team/docs/drizzle-kit-generate), [Prisma v7 interactive transactions](https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions), [Prisma v7 migration customization](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations), [Neon transaction pooling and pooled/direct connections](https://neon.com/docs/connect/connection-pooling). Prisma's unversioned transaction URL currently redirects to v8 documentation; the proposal deliberately uses v7 documentation matching the pinned probe. Official documentation supports workflow descriptions, not unexecuted acceptance claims.
+
 ## T047 dependent branch exception — 2026-10-25
 Owner explicitly answered “Evet, bağımlı T047 dalını aç” to creating `feat/T047-vercel-nestjs-spike` from clean unmerged foundation commit `d9b2df4`. This permits the task-specific branch, not merging PR #1 or changing the default branch. Local spike work is authorized; new Vercel Preview projects were separately presented for approval. T000/legal gates and production/commit/push restrictions remain in force.
 

@@ -66,3 +66,39 @@ INFRA-002 Neon pooled runtime and direct migrations work; RLS tenant isolation p
 INFRA-003 job enqueue/worker processing/retries/idempotency tested with external worker.
 INFRA-004 wildcard tenant host and reserved host routing, TLS, cookies and CORS tested.
 INFRA-005 separate environment secrets, DB branches and restore test documented.
+
+## Vercel-managed Neon development checkpoint — 2026-10-25
+
+Owner requested stepwise Vercel/Neon development and confirmed access through Vercel. Used the existing Vercel resource's Open in Neon SSO; a separate Neon plugin is not required for this workflow.
+
+| Resource | Observed state |
+|---|---|
+| Menu project | `qmenux`, Next.js, `apps/menu-pwa`, Node 24.x |
+| API project | `qmenux-api`, NestJS, `apps/api`, Node 24.x; environment variable list empty |
+| Existing integration | Neon `qmenux-db`, Vercel store `store_Chqjcpgcs8GWLQda`; connected only to `qmenux` |
+| Neon project | `icy-tooth-77695631`, Free plan, PostgreSQL 18, AWS US East 1 (N. Virginia) |
+| Default branch | `main`, `br-lingering-king-b8dx6np5`; retained as default |
+| New development branch | `qmenux-dev`, `br-crimson-sky-b8i9xve7`; created from main with **schema only**, no parent rows copied |
+| Development lifecycle | No automatic expiration; retained for continued development. No paid-plan upgrade selected |
+
+Created the child branch through the Neon Console and verified the success state, branch ID, retained default main and total branch count of two. This isolates subsequent development writes; it does not establish application tenant isolation. The project's existing region is recorded, not newly approved for real tenant data or cross-border compliance.
+
+Executed one read-only SQL Editor query on `qmenux-dev/neondb`: connected successfully, one result row, console execution diagnostic 155ms. PostgreSQL reports `18.6 (fd34222)`; console role `neondb_owner` has `rolsuper=false`, **`rolbypassrls=true`**. Nine non-system tables exist in the schema-only branch; no table contents were read. This privileged console/owner role must not become the application runtime credential. This is SQL Editor connectivity evidence, not a pooled-driver/RLS or API-to-database test.
+
+Vercel environment metadata lists `DATABASE_URL` and `DATABASE_URL_UNPOOLED` on the menu project for development/preview/production, without Git-branch scoping. Values were not decrypted/pulled; this does not prove separate endpoints per environment. No environment variable, integration attachment or deployment was changed in this step. API remains health-only and has no configured database connection.
+
+Next bounded step: verify the development database/roles and test transaction-local RLS with an unprivileged runtime role on this isolated branch. Then bind only the appropriate runtime credential to the API's intended environment; keep privileged direct migration credentials server-side and out of frontend projects. Verify exact branch/endpoint mapping before wiring any Vercel environment. Do not treat the existing menu project's shared target metadata as an isolation test or copy its owner credential blindly into the API.
+
+Sources checked 2026-10-25: [Vercel-managed Neon integration](https://neon.com/docs/guides/vercel-managed-integration), [Neon branch creation and schema-only option](https://neon.com/docs/manage/branches). No migration, RLS acceptance or production approval is claimed by branch creation. T047 and T048 acceptance gates remain open.
+
+### Development runtime role verification — 2026-10-25
+
+After explicit owner action-time confirmation, executed [the prepared SQL](../../infrastructure/spikes/orm/neon-runtime-role.sql) on qmenux-dev/neondb only. All 22 statements succeeded, including role-safety/RLS and cleanup assertion blocks; COMMIT retained qmenux_runtime with NOLOGIN, NOINHERIT, NOSUPERUSER, NOBYPASSRLS, NOCREATEDB, NOCREATEROLE and NOREPLICATION. No password created. Probe-only schema, table, synthetic rows and grants were rolled back.
+
+An independent post-commit query confirmed the role flags, no remaining probe schema/tenant context, zero parent memberships for the runtime role and zero accessible non-system ordinary/partitioned tables under the tested table privilege set. The owner remains privileged; it was not changed or used as the runtime role in assertions. SQL Editor evidence is not a pooled-driver, concurrent-session, runtime-login or API test. Next: prepare isolated pooled/reuse verification before wiring a development credential to the API. Main, Vercel bindings and application data were unchanged. [Full evidence](../01-product/PROGRESS.md#neon-runtime-role-execution--2026-10-25).
+
+### Authenticated pooled-context checkpoint — 2026-10-25
+
+After the user manually activated LOGIN and supplied a new password locally, authenticated qmenux_runtime against the verified development pooled endpoint with TLS certificate verification/channel binding enabled. [Manual pg probe](../../infrastructure/spikes/orm/neon-context.mjs) PASS: 20 alternating tenant transactions, both commit/rollback cleanup for both tenants, one reused client connection/one observed backend, two overlapping transactions occupying different backends with independent contexts. No table queries or writes. Runtime role flags remain non-superuser/non-BYPASSRLS/non-creator/non-replicating/non-inheriting.
+
+The local credential remains in an ignored mode-0600 file, excluded from CLI uploads; no Vercel project environment variable changed. Root CI only lints this manual credential-dependent probe. This supplements earlier SQL Editor RLS assertions but does not combine them into pooled row-level isolation proof: authenticated pooled RLS reads/writes and direct migration/rollback testing are still required before INFRA-002 acceptance. API remains health-only and unconnected. [Command evidence](../01-product/PROGRESS.md#authenticated-neon-pooled-context--2026-10-25).

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests infrastructure/spikes/*.mjs infrastructure/spikes/orm/probe.ts",
+    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests infrastructure/spikes/*.mjs infrastructure/spikes/orm/probe.ts infrastructure/spikes/orm/*.mjs",
     "typecheck": "turbo run typecheck && tsc --project tsconfig.json",
     "test": "turbo run test && node --test infrastructure/spikes/trace-api.test.mjs && playwright test",
     "build": "turbo run build",
