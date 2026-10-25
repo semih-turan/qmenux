@@ -9,6 +9,7 @@ const grants: Record<TenantPermission, ReadonlySet<TenantMembership['role']>> = 
   'catalog:write': new Set(['OWNER', 'EDITOR']),
   'membership:manage': new Set(['OWNER']),
 };
+export type TenantEntitlement = (tenant: TenantContext, client: PoolClient) => Promise<boolean>;
 export type AuthorizedTenant = Readonly<TenantContext & TenantMembership>;
 
 @Injectable()
@@ -16,7 +17,7 @@ export class TenantAuthorization {
   constructor(private readonly transactions: TenantTransactions, private readonly identities: IdentityStore) {}
 
   async run<T>(host: unknown, token: unknown, permission: TenantPermission,
-    entitled: (tenant: TenantContext, client: PoolClient) => Promise<boolean>,
+    entitled: TenantEntitlement,
     work: (client: PoolClient, tenant: AuthorizedTenant) => Promise<T>): Promise<T> {
     if (typeof token !== 'string' || !/^[a-zA-Z0-9_-]{43}$/.test(token)
       || typeof permission !== 'string' || !Object.hasOwn(grants, permission)

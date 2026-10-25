@@ -22,7 +22,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 | T002 | PostgreSQL schema and migration strategy | T001 | Migrations and rollback drill | IN_PROGRESS |
 | T003 | Tenant resolver and RLS integration tests | T002 | Cross-tenant denial tests | IN_PROGRESS |
 | T004 | Identity, RBAC, privileged MFA | T003 | Auth and MFA tests | IN_PROGRESS |
-| T005 | Catalog domain and APIs | T003,T004 | Contract tests, price history | TODO |
+| T005 | Catalog domain and APIs | T003,T004 | Contract tests, price history | IN_PROGRESS |
 | T006 | Mobile admin shell and product CRUD | T005 | iPhone/Android touch workflow tests | TODO |
 | T007 | Public menu PWA and cache invalidation | T005 | Fresh price tests, offline stale warning | TODO |
 | T008 | Theme registry foundation (ten themes delivered in T020) | T007 | Theme snapshot tests | TODO |
@@ -408,7 +408,7 @@ Owner: Engineering; named architecture/security/legal reviewer acceptance remain
 - [ ] T004/T036: concrete Access/IdP MFA evidence and independently reviewed privileged adapter before registering platform operations.
 - [ ] T040/LEG-003/LEG-011: real provider registrations/test accounts, exact callback fields, privacy/token lifecycle/retention and distributed abuse controls before enablement.
 - [ ] T010/T041/T042: manual approval/license entitlement and audited step-up operations; no instant activation or payment gateway.
-- [ ] T005 onward: catalog and menu features after identity/entitlement contract acceptance; ten themes and immutable draft/publication rules remain binding.
+- [ ] T005 onward: complete catalog use cases and reviewed identity/entitlement adapters before public routes; ten themes and immutable draft/publication rules remain binding.
 - [ ] T000/LEG-001–005: named legal/entity/term/price/retention decisions, reviewer evidence and approval. No legal rule is approved by this checklist.
 
 T004/T040 scope: `apps/admin-pwa` handlers/UI/styles, `.env.example`, handler/browser tests and linked docs only; existing API/SQL/dependencies stay intact. Acceptance: synthetic boundary/browser tests plus existing isolation/regression suite; actual provider/mobile/security/legal/reviewer evidence remains required before DONE. Rollback and exact transport are in [BFF contract](../04-backend/ADMIN_BFF_SESSION_CONTRACT.md#admin-browser-bff-development-delivery--2026-10-26). [Execution evidence](PROGRESS.md#autonomous-admin-bff-development--2026-10-26).
@@ -427,7 +427,17 @@ T004/T040 scope: `apps/admin-pwa` handlers/UI/styles, `.env.example`, handler/br
 - **Implemented local evidence:** core scaffolds/CI; tenant-schema/RLS transactions; provider identity, API/admin audience sessions and narrow API/BFF adapters; minimal admin sign-in; shared management UI foundation. Tasks retain review-dependent statuses.
 - **T004/T036/T040 enablement:** real IdP callback/subject continuity and token lifecycle evidence, actual Access+MFA adapter, distributed abuse controls and named architecture/security/privacy/legal acceptance are absent. Credentials alone cannot satisfy these gates.
 - **T010/T041/T042:** license scope (tenant versus branch), grace/public-menu policy, privileged step-up/audit contracts and reviewer acceptance remain unresolved. The existing subscription spec explicitly leaves scope/grace policy open. Do not invent commercial defaults or expose activation endpoints before these boundaries are resolved.
-- **T005–T012 and dependent menu features:** identity/entitlement/publication contracts and relevant legal applicability are not accepted yet. Catalog CRUD/public menu/UI are still incomplete, not silently marked blocked-complete.
+- **T005–T012 and dependent menu features:** public routes/enablement need accepted identity/entitlement/publication and relevant legal applicability. Local draft use-case work can proceed with mandatory trusted policies and no public controller; catalog/public menu/UI remain incomplete.
 - **T047–T051:** ORM/worker/Redis/regions, environment isolation and restore/release evidence remain incomplete. No production provider or destructive migration is selected by this run.
 - **T000/LEG tasks:** entity, terms/price, privacy/retention and applicable food/legal rules need named external decisions/review. Engineering cannot manufacture dated approvals.
 - **T043** remains last; payments/AI/channel adapters remain future or separately gated.
+
+## T005 draft product use cases and immutable audit — 2026-10-26
+
+- Owner: Engineering; named reviewer/date pending. Status IN_PROGRESS, no DONE. Current autonomous request authorizes local implementation and task commits; it does not authorize production deployment, cloud migration, legal approval or real-user enablement.
+- Branch: `feat/T005-draft-product-catalog` from clean dependent `d6ea221`; existing task branches/default/remote/history retained.
+- Files: internal DraftCatalog service/DI, tenant entitlement type, conflict propagation/dirty actor transaction guard,0010 additive up/down, disposable local fixture and existing tenant test entry, README/backlog/progress/database/API/ADR/contract docs. No dependency/frontend/provider/remote/schema-old-version change.
+- Objective: validated tenant-authorized draft product create/read/list/edit/history, integer TRY prices, revision conflicts and append-only old/new/actor evidence. No public controller, default license authority, deletion/publication or food-verification claim.
+- Acceptance: actual local PostgreSQL migration preservation/rollback/refusal, cross-tenant/member/entitlement denial, validation/money/pagination/concurrency/history/atomicity/RLS/grants and pool cleanup; existing signed-auth/browser regressions. Full task still needs categories/media/ingredient/legal publication rules, reviewed HTTP/admin authorization/license integration, mobile workflows and named acceptance.
+- Rollback: remove callers first;0010 down preserves original rows and refuses any history/advanced revision under locks. Never delete events to bypass rollback. Existing cloud migration/probe scope stays0009.
+- [Exact use-case, audit and remaining-gate contract](../04-backend/DRAFT_CATALOG_CONTRACT.md); [actual checks/failures/evidence](PROGRESS.md#t005-draft-product-catalog-and-audit--2026-10-26).

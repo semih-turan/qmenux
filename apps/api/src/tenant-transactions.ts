@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import type { PoolClient } from 'pg';
 import { Database } from './database.js';
 
@@ -38,7 +38,8 @@ export class TenantTransactions {
       return result;
     } catch (error) {
       try { await client.query('ROLLBACK'); clean = true; } catch { /* Destroy an unresettable connection. */ }
-      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException
+        || error instanceof ConflictException) throw error;
       throw new ServiceUnavailableException({ status: 'unavailable' });
     } finally {
       client.release(!clean);

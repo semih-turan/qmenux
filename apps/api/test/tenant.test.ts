@@ -17,6 +17,7 @@ import { exerciseOperators } from './operator-fixture.js';
 import { exerciseAuthExpiry } from './auth-expiry-fixture.js';
 import { exerciseMicrosoftIdentity } from './microsoft-identity-fixture.js';
 import { exerciseAppleIdentity } from './apple-identity-fixture.js';
+import { exerciseDraftCatalog } from './draft-catalog-fixture.js';
 import { exerciseAdminAudience } from './admin-audience-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
@@ -38,7 +39,7 @@ test('canonical tenant hostname parsing rejects spoofing, reserved and ambiguous
   }
 });
 
-test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { timeout: 60000 }, async () => {
+test('HTTP authorization, draft catalog audit, application-schema RLS and pooled tenant cleanup', { timeout: 60000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'qmenux-t003-'));
   const socket = join(dir, 'socket');
   mkdirSync(socket, { mode: 0o700 });
@@ -244,6 +245,7 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await exerciseMicrosoftIdentity(database, owner);
     for (const provider of ['google','microsoft','apple'] as const) await exerciseAuth(database, owner, provider);
     await exerciseAuthExpiry(database, owner);
+    await exerciseDraftCatalog(database, owner);
   } finally {
     await app?.close();
     await database?.onModuleDestroy();

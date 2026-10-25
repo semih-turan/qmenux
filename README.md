@@ -148,3 +148,7 @@ The admin app now contains a minimal Turkish sign-in/registered-access screen an
 ## Shared management UI development foundation
 
 `@qmenux/ui` owns the fixed admin/superadmin brand tokens, native button and management shell. Import `@qmenux/ui/admin.css` in management layouts and use its explicit component exports; public menus retain their independent styles. The package ships workspace TypeScript/CSS source for Next.js to bundle and has no new external library/version. Remaining controls are added with their actual consuming screens. [Brand specification](docs/03-frontend/BRAND_DESIGN_SYSTEM.md), [test/review evidence](docs/01-product/PROGRESS.md#t044-shared-management-foundation--2026-10-26).
+
+## Draft catalog development use cases
+
+The internal API `DraftCatalog` service now validates and authorizes product creates, reads, cursor lists, edits and immutable history. Migration0010 supplies revision conflicts and atomic old/new/actor audit; it has been exercised only in disposable local PostgreSQL. No product HTTP route, cloud migration, license grant, deletion or publication is enabled. Existing manual Neon probes remain guarded at0009. See the [draft catalog contract](docs/04-backend/DRAFT_CATALOG_CONTRACT.md) and [execution evidence](docs/01-product/PROGRESS.md#t005-draft-product-catalog-and-audit--2026-10-26).
