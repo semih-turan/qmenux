@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { PoolClient } from 'pg';
 import type { AuthApp } from './oidc-callback.js';
-import { fields, integer, invalid, text, uuid } from './catalog-input.js';
+import { fields, integer, invalid, text, uuid } from './request-input.js';
 import { TenantAuthorization, type TenantEntitlement } from './tenant-authorization.js';
 
 const columns = 'id, category_id AS "categoryId", name, description, price_minor AS "priceMinor", currency, availability, sort_order AS "sortOrder", revision';

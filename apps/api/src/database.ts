@@ -32,7 +32,8 @@ export class Database implements OnModuleDestroy {
           OR rolcreaterole OR rolreplication OR rolinherit)
         AND NOT EXISTS (SELECT FROM pg_catalog.pg_auth_members WHERE member = roles.oid)
         AND NULLIF(pg_catalog.current_setting('app.tenant_id', true), '') IS NULL
-        AND NULLIF(pg_catalog.current_setting('app.catalog_actor', true), '') IS NULL AS safe
+        AND NULLIF(pg_catalog.current_setting('app.catalog_actor', true), '') IS NULL
+        AND NULLIF(pg_catalog.current_setting('app.onboarding_actor', true), '') IS NULL AS safe
         FROM pg_catalog.pg_roles AS roles WHERE rolname = current_user`);
       if (rows.length !== 1 || rows[0]?.safe !== true) throw new Error('Unsafe runtime connection');
       return client;

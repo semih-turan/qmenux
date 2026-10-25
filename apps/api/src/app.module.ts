@@ -10,6 +10,7 @@ import { MicrosoftOidc } from './microsoft-oidc.js';
 import { AppleClientSecret } from './apple-client-secret.js';
 import { AppleOidc } from './apple-oidc.js';
 import { IdentityStore } from './identity-store.js';
+import { OnboardingApplications } from './onboarding-applications.js';
 import { DraftStructure } from './draft-structure.js';
 import { DraftCatalog } from './draft-catalog.js';
 import { TenantAuthorization } from './tenant-authorization.js';
@@ -17,5 +18,5 @@ import { OperatorAccess } from './operator-access.js';
 import { OperatorAuthorization } from './operator-authorization.js';
 import { AuthMaintenanceController } from './auth-maintenance.controller.js';
 
-@Module({ controllers: [HealthController, AuthController, AdminAuthController, AuthMaintenanceController], providers: [{ provide: APP_FILTER, useClass: AdminAuthErrors }, Database, TenantTransactions, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, IdentityStore, TenantAuthorization, DraftCatalog, DraftStructure, OperatorAccess, OperatorAuthorization] })
+@Module({ controllers: [HealthController, AuthController, AdminAuthController, AuthMaintenanceController], providers: [{ provide: APP_FILTER, useClass: AdminAuthErrors }, Database, TenantTransactions, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, IdentityStore, TenantAuthorization, DraftCatalog, DraftStructure, OnboardingApplications, OperatorAccess, OperatorAuthorization] })
 export class AppModule {}

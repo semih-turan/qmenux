@@ -101,3 +101,9 @@ Local root API tests exercise atomic up/rollback/down/reapply, duplicate/later-v
 ## T005 draft menu/category structure (0012; local development only)
 
 0012 adds positive revisions and separate forced-RLS/FK-bound menu/category audit tables. A closed-target catalog trigger records old/new/actor/UTC state, no-op edits preserve revisions, and runtime cannot mutate events or DELETE menus/categories. Existing rows are preserved with no invented older history; product history is unchanged. Local fixtures verify the full draft hierarchy, actor/CSRF/isolation/concurrency, atomic FK/transaction rollback and migration preservation/refusal. Down locks the entities/events and refuses any history/advanced revision or later schema; never delete audit to force rollback.0001–0011 and remote/manual probe scope remain unchanged. [Detailed contract](../../docs/04-backend/DRAFT_CATALOG_CONTRACT.md#draft-menus-and-categories-0012--2026-10-26).
+
+## T041 pre-tenant applications (0013; local development only)
+
+0013 adds an identity-owned bound-admin-session proof function and a separate onboarding-owned private schema with DRAFT/PENDING_APPROVAL applications/events, EXECUTE-only current-applicant contracts, default-deny forced RLS and append-only audit. No tenant/member/license or approval is created. New actor context is transaction-local and rejected if dirty on pool checkout. Original/current names bind idempotent create through later edits; submit/edit are row-locked and preserve revision/audit consistency.
+
+Disposable tests cover migration atomic rollback/down/reapply/data/version refusal, actual user/audience/proof isolation, concurrency/retries/state/audit/pool lifecycle and unchanged tenant/member state. Populated down refuses all data; never delete applications/history for rollback. No cloud migration, real applicant or prior-schema edit. [Contract and privacy/release gates](../../docs/04-backend/ONBOARDING_APPLICATION_CONTRACT.md).

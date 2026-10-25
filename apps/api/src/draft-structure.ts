@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { AuthApp } from './oidc-callback.js';
-import { fields, integer, invalid, text, uuid } from './catalog-input.js';
+import { fields, integer, invalid, text, uuid } from './request-input.js';
 import { TenantAuthorization, type TenantEntitlement } from './tenant-authorization.js';
 
 type StructureKind = 'menu' | 'category';

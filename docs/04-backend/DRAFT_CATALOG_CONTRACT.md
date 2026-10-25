@@ -48,7 +48,7 @@ The BFF's exact-Origin and cookie/header matching remain transport requirements;
 
 ## Draft menus and categories (0012) — 2026-10-26
 
-`DraftStructure` supplies create/read/list/edit/history for two concrete catalog entities. Its closed server-owned kind is exactly menu/category; static metadata chooses the corresponding table/projection. Neither a request field nor an arbitrary table name can select SQL. Existing product UUID/integer/text/closed-object validation is moved unchanged to `catalog-input.ts` and reused by both services. Both services retain mandatory current membership/entitlement and admin mutation CSRF on the same checked-out transaction.
+`DraftStructure` supplies create/read/list/edit/history for two concrete catalog entities. Its closed server-owned kind is exactly menu/category; static metadata chooses the corresponding table/projection. Neither a request field nor an arbitrary table name can select SQL. Existing product UUID/integer/text/closed-object validation is moved unchanged to `request-input.ts` and reused by both services. Both services retain mandatory current membership/entitlement and admin mutation CSRF on the same checked-out transaction.
 
 | Entity | Create input | Edit input | Projection |
 |---|---|---|---|

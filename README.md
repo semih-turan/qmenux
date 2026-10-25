@@ -156,3 +156,7 @@ The internal API `DraftCatalog` service now validates and authorizes product cre
 The subsequent local0011 contract enables explicit admin-audience tenant membership and session-bound CSRF for internal catalog mutations, preserving API defaults and mandatory entitlement. It adds no public business route or license. See [admin tenant authorization](docs/02-architecture/MULTI_TENANCY.md#t004-admin-audience-tenant-authorization--2026-10-26).
 
 `DraftStructure` and local-only0012 extend this to draft menus/categories with parent ownership, optimistic edits and immutable audit, completing the internal branch-fixture→menu→category→product path. No business/public endpoint or publication is enabled. [Structure contract](docs/04-backend/DRAFT_CATALOG_CONTRACT.md#draft-menus-and-categories-0012--2026-10-26).
+
+## Pre-tenant application development
+
+The internal0013 OnboardingApplications service supports current admin users' own draft create/edit, explicit pending submission and status listing, with idempotency, session-bound CSRF and immutable audit. It creates no tenant, membership, license or approval. No application HTTP/mobile adapter or real-user data collection is enabled. [Contract, tests and remaining privacy/approval gates](docs/04-backend/ONBOARDING_APPLICATION_CONTRACT.md).
