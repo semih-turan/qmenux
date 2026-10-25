@@ -152,3 +152,5 @@ The admin app now contains a minimal Turkish sign-in/registered-access screen an
 ## Draft catalog development use cases
 
 The internal API `DraftCatalog` service now validates and authorizes product creates, reads, cursor lists, edits and immutable history. Migration0010 supplies revision conflicts and atomic old/new/actor audit; it has been exercised only in disposable local PostgreSQL. No product HTTP route, cloud migration, license grant, deletion or publication is enabled. Existing manual Neon probes remain guarded at0009. See the [draft catalog contract](docs/04-backend/DRAFT_CATALOG_CONTRACT.md) and [execution evidence](docs/01-product/PROGRESS.md#t005-draft-product-catalog-and-audit--2026-10-26).
+
+The subsequent local0011 contract enables explicit admin-audience tenant membership and session-bound CSRF for internal catalog mutations, preserving API defaults and mandatory entitlement. It adds no public business route or license. See [admin tenant authorization](docs/02-architecture/MULTI_TENANCY.md#t004-admin-audience-tenant-authorization--2026-10-26).

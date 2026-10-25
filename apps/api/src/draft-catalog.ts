@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { PoolClient } from 'pg';
+import type { AuthApp } from './oidc-callback.js';
 import { TenantAuthorization, type TenantEntitlement } from './tenant-authorization.js';
 
 const columns = 'id, category_id AS "categoryId", name, description, price_minor AS "priceMinor", currency, availability, sort_order AS "sortOrder", revision';
@@ -55,7 +56,7 @@ export class DraftCatalog {
     }
   }
 
-  list(host: unknown, token: unknown, input: unknown, entitled: TenantEntitlement) {
+  list(host: unknown, token: unknown, input: unknown, entitled: TenantEntitlement, app: AuthApp = 'api', csrf?: unknown) {
     const body = fields(input, ['categoryId', 'after', 'limit']);
     const category = Object.hasOwn(body, 'categoryId') ? uuid(body.categoryId) : null;
     const after = Object.hasOwn(body, 'after') ? uuid(body.after) : null;
@@ -65,19 +66,19 @@ export class DraftCatalog {
       const { rows } = await client.query<Product>(`SELECT ${columns} FROM qmenux.products
         WHERE ($1::uuid IS NULL OR category_id=$1) AND ($2::uuid IS NULL OR id>$2) ORDER BY id LIMIT $3`, [category, after, limit + 1]);
       return { items: rows.slice(0, limit), nextCursor: rows.length > limit ? rows[limit - 1]!.id : null };
-    });
+    }, app, csrf);
   }
 
-  read(host: unknown, token: unknown, value: unknown, entitled: TenantEntitlement) {
+  read(host: unknown, token: unknown, value: unknown, entitled: TenantEntitlement, app: AuthApp = 'api', csrf?: unknown) {
     const id = uuid(value);
     return this.authorization.run(host, token, 'catalog:read', entitled, async client => {
       const product = (await client.query<Product>(`SELECT ${columns} FROM qmenux.products WHERE id=$1`, [id])).rows[0];
       if (!product) throw new NotFoundException({ status: 'not_found' });
       return product;
-    });
+    }, app, csrf);
   }
 
-  create(host: unknown, token: unknown, input: unknown, entitled: TenantEntitlement) {
+  create(host: unknown, token: unknown, input: unknown, entitled: TenantEntitlement, app: AuthApp = 'api', csrf?: unknown) {
     const body = productInput(input, true);
     return this.authorization.run(host, token, 'catalog:write', entitled, async (client, tenant) => {
       await this.category(client, body.categoryId!);
@@ -85,10 +86,10 @@ export class DraftCatalog {
       return (await client.query<Product>(`INSERT INTO qmenux.products(tenant_id,category_id,name,description,price_minor,availability,sort_order)
         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING ${columns}`, [tenant.id, body.categoryId, body.name, body.description ?? '',
         body.priceMinor, body.availability ?? 'AVAILABLE', body.sortOrder ?? 0])).rows[0]!;
-    });
+    }, app, csrf);
   }
 
-  update(host: unknown, token: unknown, value: unknown, input: unknown, entitled: TenantEntitlement) {
+  update(host: unknown, token: unknown, value: unknown, input: unknown, entitled: TenantEntitlement, app: AuthApp = 'api', csrf?: unknown) {
     const id = uuid(value), body = productInput(input, false);
     return this.authorization.run(host, token, 'catalog:write', entitled, async (client, tenant) => {
       if (body.categoryId) await this.category(client, body.categoryId);
@@ -101,10 +102,10 @@ export class DraftCatalog {
       if (product) return product;
       if (!(await client.query('SELECT id FROM qmenux.products WHERE id=$1', [id])).rows.length) throw new NotFoundException({ status: 'not_found' });
       throw new ConflictException({ status: 'conflict' });
-    });
+    }, app, csrf);
   }
 
-  history(host: unknown, token: unknown, value: unknown, input: unknown, entitled: TenantEntitlement) {
+  history(host: unknown, token: unknown, value: unknown, input: unknown, entitled: TenantEntitlement, app: AuthApp = 'api', csrf?: unknown) {
     const id = uuid(value), body = fields(input, ['afterRevision', 'limit']);
     const after = Object.hasOwn(body, 'afterRevision') ? integer(body.afterRevision) : 0;
     const limit = Object.hasOwn(body, 'limit') ? integer(body.limit, 1, 100) : 20;
@@ -114,6 +115,6 @@ export class DraftCatalog {
         `SELECT revision, actor_id AS "actorId", occurred_at AS "occurredAt", previous, current FROM qmenux.product_events
         WHERE product_id=$1 AND revision>$2 ORDER BY revision LIMIT $3`, [id, after, limit + 1]);
       return { items: rows.slice(0, limit), nextRevision: rows.length > limit ? rows[limit - 1]!.revision : null };
-    });
+    }, app, csrf);
   }
 }

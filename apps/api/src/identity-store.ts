@@ -109,6 +109,11 @@ export class IdentityStore {
     await this.query('SELECT qmenux_identity.revoke_session($1)', [secretHash(token)]);
   }
 
+  async adminTenantMembership(client: PoolClient, token: string, csrf?: string): Promise<TenantMembership | undefined> {
+    return (await client.query<TenantMembership>('SELECT * FROM qmenux_identity.admin_tenant_membership($1,$2)',
+      [secretHash(token), csrf === undefined ? null : secretHash(csrf)])).rows[0];
+  }
+
   async tenantMembership(client: PoolClient, token: string): Promise<TenantMembership | undefined> {
     // Use the caller's checked-out tenant transaction, never a second pooled query.
     return (await client.query<TenantMembership>('SELECT * FROM qmenux_identity.tenant_membership($1)', [secretHash(token)])).rows[0];

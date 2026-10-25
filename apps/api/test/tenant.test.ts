@@ -17,6 +17,7 @@ import { exerciseOperators } from './operator-fixture.js';
 import { exerciseAuthExpiry } from './auth-expiry-fixture.js';
 import { exerciseMicrosoftIdentity } from './microsoft-identity-fixture.js';
 import { exerciseAppleIdentity } from './apple-identity-fixture.js';
+import { exerciseAdminTenant } from './admin-tenant-fixture.js';
 import { exerciseDraftCatalog } from './draft-catalog-fixture.js';
 import { exerciseAdminAudience } from './admin-audience-fixture.js';
 
@@ -246,6 +247,7 @@ test('HTTP authorization, draft catalog audit, application-schema RLS and pooled
     for (const provider of ['google','microsoft','apple'] as const) await exerciseAuth(database, owner, provider);
     await exerciseAuthExpiry(database, owner);
     await exerciseDraftCatalog(database, owner);
+    await exerciseAdminTenant(database, owner);
   } finally {
     await app?.close();
     await database?.onModuleDestroy();
