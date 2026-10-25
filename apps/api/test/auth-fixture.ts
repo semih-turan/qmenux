@@ -92,14 +92,34 @@ export async function exerciseAuth(database: Database, owner: Client): Promise<v
     assert.equal((await send('google/start')).status, 503);
     assert.equal((await send('google/callback?code=x&state=x')).status, 503);
     assert.equal(exchanges, 0);
+    for (const path of ['google/start', 'google/callback?code=x&state=x']) {
+      const denied = await send(path, '', 'HEAD');
+      assert.equal(denied.status, 405);
+      assert.deepEqual(denied.cookies, []);
+    }
     process.env.AUTH_GOOGLE_ENABLED = 'true';
     assert.equal((await send('google/start', '', 'GET', { host: 'superman.qmenux.com', 'x-forwarded-host': new URL(origin).host })).status, 401);
     const metadata = await send('providers');
     assert.equal(metadata.status, 200);
     assert.deepEqual(metadata.body, { providers: [{ id: 'google', enabled: true }, { id: 'microsoft', enabled: false }, { id: 'apple', enabled: false }] });
 
+    const attemptsBeforeHead = (await owner.query('SELECT count(*) FROM qmenux_identity.login_attempts')).rows[0].count;
+    const headStart = await send('google/start', '', 'HEAD');
+    assert.equal(headStart.status, 405);
+    assert.deepEqual(headStart.cookies, []);
+    assert.equal(headStart.location, undefined);
+    assert.equal(headStart.cache, 'no-store');
+    assert.equal((await owner.query('SELECT count(*) FROM qmenux_identity.login_attempts')).rows[0].count, attemptsBeforeHead);
+
     const first = await start();
     const before = exchanges;
+    const headCallback = await send(first.path, first.cookie, 'HEAD');
+    assert.equal(headCallback.status, 405);
+    assert.deepEqual(headCallback.cookies, []);
+    assert.equal(headCallback.cache, 'no-store');
+    assert.equal(exchanges, before);
+    assert.equal((await owner.query('SELECT count(*) FROM qmenux_identity.login_attempts WHERE state_hash=$1', [secretHash(first.state)])).rows[0].count, '1');
+    assert.equal((await owner.query('SELECT count(*) FROM qmenux_identity.sessions')).rows[0].count, '0');
     assert.equal((await send(first.path)).status, 401);
     assert.equal((await send(first.path, first.cookie.replace(/=.+/, `=${'z'.repeat(43)}`))).status, 401);
     assert.equal((await send(`${first.path}&state=duplicate`, first.cookie)).status, 401);

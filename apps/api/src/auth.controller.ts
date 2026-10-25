@@ -1,4 +1,4 @@
-import { Controller, Get, Header, HttpCode, Post, Req, Res, ServiceUnavailableException,
+import { Controller, Get, Header, HttpCode, MethodNotAllowedException, Post, Req, Res, ServiceUnavailableException,
   UnauthorizedException } from '@nestjs/common';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomBytes } from 'node:crypto';
@@ -39,6 +39,7 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   @Header('Referrer-Policy', 'no-referrer')
   async start(@Req() req: IncomingMessage, @Res({ passthrough: true }) res: ServerResponse) {
+    if (req.method !== 'GET') throw new MethodNotAllowedException();
     this.origin(req);
     const attempt = await this.google.start();
     const browser = secret();
@@ -52,6 +53,7 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   @Header('Referrer-Policy', 'no-referrer')
   async callback(@Req() req: IncomingMessage, @Res({ passthrough: true }) res: ServerResponse) {
+    if (req.method !== 'GET') throw new MethodNotAllowedException();
     const origin = this.origin(req);
     const url = new URL(req.url!, origin);
     if (url.origin !== origin || url.pathname !== '/v1/auth/google/callback' || url.hash) throw new UnauthorizedException();
