@@ -8,7 +8,8 @@
     "generate": "prisma generate --schema prisma/schema.prisma",
     "typecheck": "tsc --noEmit",
     "test": "bash run-local.sh",
-    "test:neon-context": "node neon-context.mjs"
+    "test:neon-context": "node neon-context.mjs",
+    "test:neon-rls": "node neon-rls.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

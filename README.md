@@ -109,3 +109,15 @@ The owner authorized direct Vercel CLI Production-target development. The existi
 `.vercelignore` excludes local environment files, caches, generated ORM artifacts and internal documentation from CLI uploads. Use `vercel deploy --dry --prod --json` to inspect inputs before publishing. Production deployment direction does not authorize Git writes or bypass real-business security/legal gates. See [the T047 report](docs/08-operations/T047_SPIKE_REPORT.md) for immutable deployment IDs, verification and remaining acceptance gaps.
 
 The API uses native ESM (`type: module`, TypeScript NodeNext and explicit relative `.js` imports) for NestJS 12 on Vercel. Its HTTP smoke test disables CommonJS-to-ESM require compatibility to catch the runtime failure found during deployment. To deploy a workspace, name the project explicitly from the repository root, e.g. `vercel deploy --prod --yes --project qmenux-api --scope semihs-projects-fff996f3`; do not replace the menu project's settings with API settings. Health confirms process liveness only, not DB or tenant readiness.
+
+## Development Neon readiness and isolation evidence
+
+The existing API project now connects to **qmenux-dev**, through a restricted `qmenux_runtime` pooled credential stored only in the API project's owner-selected Vercel Production target. That provider target is used for development here; real-tenant launch is still gated. No owner/direct migration credential is attached to the API, menu build or Preview deployments by this change.
+
+- `GET /v1/health` remains uncached liveness: `{ "status": "ok" }`.
+- [`GET /v1/health/ready`](https://qmenux-api.vercel.app/v1/health/ready) returns uncached `200 { "status": "ready" }` only after a database role/context check; missing/invalid configuration, unsafe role or database failure returns minimal `503 { "status": "unavailable" }`. It exposes no URLs, role names or database errors.
+- The API uses pg 8.23.1 with verified TLS/channel binding, max=1 pool, five-second connection/query deadlines, and Vercel's pool-suspension lifecycle helper. This is an infrastructure metadata query, not a tenant-data API or approved ORM selection.
+
+The [manual Neon RLS probe](infrastructure/spikes/orm/README.md#authenticated-pooled-rls-and-direct-migration-probe) exercises synthetic tenant reads/writes with separate owner/runtime roles, pooled reuse, overlapping transactions and direct migration rollback. It removes its fixture schema/grants afterward. Cloud credentials never run in root CI. Execution/deployment evidence and remaining gates are in [PROGRESS.md](docs/01-product/PROGRESS.md#pooled-rls-direct-migrations-and-api-readiness--2026-10-25).
+
+The workspace scopes a Zod override to `@vercel/cli-config` at 4.6.7 for [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), found through the Vercel helper's transitive dependency. Remove the override once upstream includes the patch. Full dependency audit passed after this fix.
