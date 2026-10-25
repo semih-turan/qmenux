@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { Client } from 'pg';
+import { exerciseOnboardingHttp } from './onboarding-http-fixture.js';
 import { Database } from '../src/database.js';
 import { DraftCatalog } from '../src/draft-catalog.js';
 import { IdentityStore, secretHash } from '../src/identity-store.js';
@@ -153,4 +154,5 @@ export async function exerciseOnboarding(database: Database, owner: Client) {
   await assert.rejects(applications.submit(fresh, csrf, additional.id, { revision: 1 }), status(401));
   await owner.query("UPDATE qmenux_identity.users SET status='REGISTERED' WHERE id=$1", [user]);
   await assert.rejects(applications.list(fresh, {}), status(401));
+  await exerciseOnboardingHttp(database, owner);
 }

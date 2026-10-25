@@ -138,3 +138,7 @@ The later0012 `DraftStructure` provider adds internal menu/category create/read/
 ## T041 internal pre-tenant applications — 2026-10-26
 
 OnboardingApplications now provides internal own draft create/edit/explicit pending-submit/list backed by0013 and admin session-bound CSRF. No application HTTP controller/BFF endpoint or privileged approval route is registered. The proposed endpoints above remain proposed; submission grants no tenant/member/license access. [Precise input/output, idempotency/isolation and release gates](ONBOARDING_APPLICATION_CONTRACT.md).
+
+### T041 dedicated internal application HTTP adapter
+
+POST /v1/internal/admin-onboarding/list|drafts|drafts/:id/edit|drafts/:id/submit is implemented, disabled unless the explicit application flag and independent onboarding machine credential are configured. Admin sessions remain mandatory, with database-bound CSRF on mutations. No browser cookie/redirect/public approval/license route. [Bodies, limits, errors and release gates](ONBOARDING_APPLICATION_CONTRACT.md#dedicated-internal-http-adapter--2026-10-26).

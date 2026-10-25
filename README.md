@@ -160,3 +160,5 @@ The subsequent local0011 contract enables explicit admin-audience tenant members
 ## Pre-tenant application development
 
 The internal0013 OnboardingApplications service supports current admin users' own draft create/edit, explicit pending submission and status listing, with idempotency, session-bound CSRF and immutable audit. It creates no tenant, membership, license or approval. No application HTTP/mobile adapter or real-user data collection is enabled. [Contract, tests and remaining privacy/approval gates](docs/04-backend/ONBOARDING_APPLICATION_CONTRACT.md).
+
+The dedicated internal application HTTP adapter is now registered but disabled by ADMIN_ONBOARDING_ENABLED=false and its empty independent ADMIN_ONBOARDING_SECRET. The sign-in key cannot authorize it. No browser application form or real-user setup is enabled by this API step. [Transport contract](docs/04-backend/ONBOARDING_APPLICATION_CONTRACT.md#dedicated-internal-http-adapter--2026-10-26).
