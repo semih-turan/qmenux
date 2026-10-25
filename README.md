@@ -134,3 +134,6 @@ The API includes Google Authorization Code + S256 PKCE, state/nonce and signed I
 
 ## T004 tenant authorization development slice
 Internal TenantAuthorization now checks an unexpired server session, unsuspended user and ACTIVE per-tenant OWNER/EDITOR membership before a server-selected capability and mandatory entitlement policy. Memberships default PENDING; signup cannot create/promote them. Role/user-status changes revoke existing sessions. No membership mutation or private business HTTP route is exposed, and license implementation remains T010. [Role matrix and remaining gates](docs/04-backend/IDENTITY_OIDC_ONBOARDING.md#t004-tenant-membership-and-rbac-slice--2026-10-25).
+
+## Current Microsoft development callback integration
+The API now has Microsoft personal-account start/callback integration with0007 provider-bound storage and revocable normal API sessions. Both Google and Microsoft remain disabled on Vercel: GET start/callback returns503, HEAD405, metadata false. Configured synthetic tests cover both providers, including Microsoft-only session read/logout and cross-provider state isolation. No real Microsoft app registration/credential, tenant activation or mobile/admin BFF login was enabled. [Current contract and gates](docs/04-backend/IDENTITY_OIDC_ONBOARDING.md#t004-microsoft-callback-integration--2026-10-25).

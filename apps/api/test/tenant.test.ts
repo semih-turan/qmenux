@@ -231,6 +231,7 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     await owner.query('ROLLBACK');
     await exerciseAuthExpiry(database, owner);
     await exerciseMicrosoftIdentity(database, owner);
+    await exerciseAuth(database, owner, 'microsoft');
     await exerciseAuthExpiry(database, owner);
   } finally {
     await app?.close();

@@ -80,17 +80,19 @@ See `IDENTITY_OIDC_ONBOARDING.md` and `MANUAL_ACTIVATION_AND_FUTURE_PAYMENTS.md`
 - Protect API with origin allowlists, per-tenant/client rate limits and signed webhook verification. Validate serverless concurrency and Neon pooled DB usage.
 
 ## T004 implemented development auth surface
-This is a bounded API-only slice; provider configuration is currently disabled. All responses below use `Cache-Control: no-store`.
+This is a bounded API-only slice; both Google and Microsoft provider configurations are currently disabled. All responses below use `Cache-Control: no-store`.
 
 | Route | Configured behavior | Disabled behavior |
 |---|---|---|
-| GET /v1/auth/providers | Provider IDs and enabled flags only; Microsoft/Apple false | 200, all false |
+| GET /v1/auth/providers | Provider IDs and independent Google/Microsoft enabled flags only; Apple false | 200, all false |
 | GET /v1/auth/google/start | 302 to fixed Google issuer, short-lived browser-binding cookie | 503 unavailable, no cookie/redirect |
 | GET /v1/auth/google/callback | Consume browser-bound state, verify code/ID token, issue opaque API session; registered user UUID/status and tenantAccess=false | 503 unavailable, no cookie |
+| GET /v1/auth/microsoft/start | 302 to fixed Microsoft consumer issuer, separate browser-binding cookie | 503 unavailable, no cookie/redirect |
+| GET /v1/auth/microsoft/callback | Consume Microsoft-bound state, verify code/ID token, issue opaque API session; REGISTERED user and tenantAccess=false | 503 unavailable, no cookie |
 | GET /v1/auth/me | 200 registered user UUID/status and tenantAccess=false; invalid/expired/revoked/suspended session 401 | 503 unavailable |
 | POST /v1/auth/logout | Exact API Origin required; revoke presented session, clear cookie, 200 signed_out | 503 unavailable |
 
-HEAD on `/v1/auth/google/start` and `/v1/auth/google/callback` returns405/no-store before configuration, provider or database work, with no cookies or redirect. These stateful auth flows require explicit GET; POST remains unregistered404. Read-only health/providers/me HEAD handling is unchanged.
+HEAD on Google and Microsoft `/v1/auth/{provider}/start` and `/v1/auth/{provider}/callback` returns405/no-store before configuration, provider or database work, with no cookies or redirect. These stateful auth flows require explicit GET; POST remains unregistered404. Read-only health/providers/me HEAD handling is unchanged.
 
 Callback validation failures/cancel/replay return generic 401; storage/provider discovery failures are sanitized 503. No tokens/SQL/connection values returned. Noncanonical Host fails 401 when enabled; forwarded headers never establish host authority. No returnTo parameter/open redirect, browser bearer-token login, credentialed CORS, tenant selection or superadmin session is implemented. Proposed OpenAPI auth naming/CSRF contracts for the eventual admin BFF remain pending; this slice is not AUTH-001..006 full acceptance.
 
@@ -101,5 +103,10 @@ Authorized response:200 `{ "status":"ok", "deleted":{ "identity":0, "operator":0
 
 No cron schedule is installed by this slice. The endpoint performs one bounded runtime transaction; it is not a long-running worker or a tenant/platform admin operation. Actual user access remains disabled.
 
-## T004 Microsoft adapter prerequisite (internal only)
-`MicrosoftOidc` is an internal, disabled-by-default personal-account protocol adapter, with no registered controller or session persistence. `/v1/auth/providers` continues to report Microsoft false; `/v1/auth/microsoft/start` and `/v1/auth/microsoft/callback` remain404. No route, cookie, token, tenant access or active social sign-in is introduced. [Internal verification contract and remaining integration gates](IDENTITY_OIDC_ONBOARDING.md#t004-microsoft-personal-account-adapter-prerequisite--2026-10-25).
+## Historical T004 Microsoft adapter prerequisite
+The initial Microsoft adapter had no controller or persistence; Microsoft paths returned404. That prerequisite is superseded by0007 storage and the configured-but-disabled HTTP integration below. [Internal verification contract and remaining integration gates](IDENTITY_OIDC_ONBOARDING.md#t004-microsoft-personal-account-adapter-prerequisite--2026-10-25).
+
+## T004 Microsoft HTTP integration — 2026-10-25
+Microsoft start/callback are now registered and disabled503/no-store/no cookies until complete server-only Microsoft config plus exact AUTH_BASE_URL is supplied. HEAD405 precedes config/provider/storage; POST404. Successful configured start uses `__Host-qmenux_microsoft_login` (Secure/HttpOnly/Path=/, SameSite=Lax, Max-Age300, no Domain) independently of Google's temporary cookie. Callback requires exact host/origin/path, one43-character state and unambiguous provider browser cookie; issuer-bound state consumption commits before token exchange. Failure/cancel/replay is401, infrastructure failures sanitized503. Only verified Microsoft subject reaches the Microsoft-only session function; response is REGISTERED internal UUID/status and tenantAccess=false. One shared normal API-only `__Host-qmenux_session` cookie lasts3600s; rotation/revocation are server-side. This is never a privileged operator or admin-host cookie.
+
+Provider metadata reflects each server configuration independently; Apple remains false. Google routes still require Google config, Microsoft routes Microsoft config. `/auth/me` and same-origin POST `/auth/logout` work when either provider is configured, so Microsoft-only sessions do not depend on Google being enabled. Both providers off keeps session HTTP503. Flags do not select DB identity/role or selectively revoke an already-issued provider's shared normal session; actual revocation/suspension uses existing DB contracts. Credentialed CORS, browser-selected redirects, admin BFF/handoff/mobile sign-in and real provider activation are not added. No Vercel provider variables were enabled by this step.
