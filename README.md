@@ -140,3 +140,7 @@ The API now has Microsoft personal-account start/callback integration with0007 p
 
 ## Current Apple development callback integration
 Apple code/query callback now uses the owner-selected confidential nonce profile and0008 provider-bound one-use attempts/sessions. Google/Microsoft keep S256 PKCE. Server configs remain disabled on Vercel: all provider flagsfalse, GET start/callback503, HEAD405, Apple POST/form_post404. Synthetic signed HTTP/PostgreSQL tests cover Apple-only me/logout and cross-provider/replay isolation; real Apple account/Safari/mobile/BFF/provider/privacy/security acceptance remains pending. [Current contract](docs/04-backend/IDENTITY_OIDC_ONBOARDING.md#t004-apple-callback-http-integration--2026-10-25).
+
+## Admin sign-in development entry
+
+The admin app now contains a minimal Turkish sign-in/registered-access screen and a narrow server BFF at `/api/auth/*`. It remains unavailable by default: `ADMIN_AUTH_ENABLED=false`, empty independent `ADMIN_BFF_SECRET`, fixed canonical HTTPS admin/API origins, and no Preview enablement. No real provider, tenant activation or license is enabled. Never put the BFF key into public/build configuration. The screen grants no tenant or operator permissions. See the [BFF contract](docs/04-backend/ADMIN_BFF_SESSION_CONTRACT.md#admin-browser-bff-development-delivery--2026-10-26) for cookie/CSRF/timeout behavior, synthetic test scope, rollback and remaining real-provider/security/legal gates. Existing provider-URL development hosts cannot enable canonical-host browser auth.

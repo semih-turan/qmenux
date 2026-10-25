@@ -108,7 +108,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 ## v6 — Identity, gated onboarding, landing-last and deferred payments (2026-10-25)
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
-| T040 | V1 foundation | Secure federated identity (Google, Microsoft/Outlook, Apple), PKCE/OIDC, linking, minimal auth screens | T001,T004,T035,LEG-003 | AUTH-004..006, provider test-account evidence | TODO |
+| T040 | V1 foundation | Secure federated identity (Google, Microsoft/Outlook, Apple), PKCE/OIDC, linking, minimal auth screens | T001,T004,T035,LEG-003 | AUTH-004..006, provider test-account evidence | IN_PROGRESS |
 | T041 | V1 foundation | Pending applications and superadmin approval/rejection workflow; tenant access gate | T003,T010,T011,T040 | ONB-001..002, cross-tenant denial | TODO |
 | T042 | V1 | Manual license grant/extend/revoke, entitlement checks; disable all online checkout | T010,T036,T041 | PAY-001..003, audit, API denial | TODO |
 | T043 | **LAST: marketing** | Build `qmenux.com` landing, Login/Sign up entry, features, pricing, SEO and legal pages | T007,T017,T020,T041,T042,LEG-012 | LAND-001..005, mobile/SEO/legal QA | TODO |
@@ -395,3 +395,20 @@ T048 now IN_PROGRESS with real synthetic INFRA-002 evidence; T047 remains IN_PRO
 - No new DB migration/infra/dependency/UI; T004/T040 not DONE. Actual BFF browser cookies/Origin/CSRF/mobile, IdP registrations/test accounts, security/abuse/privacy/MFA/legal/reviewer gates remain. Next is separately requested Admin BFF handlers; reviewed key/provider configuration remains later.
 
 Final API adapter evidence: native Vercel dpl_FsYMu3gNMQMnu2wC3qbgKj2DzmxR READY/iad1, canonical api.qmenux.com; final29 live checks PASS including disabled POST503, malformed JSON400 and explicit unsupported-method405/Allow POST/no-store. Existing single cron schedule/scope preserved and rebound; no automatic-delivery claim. Root lint/typecheck/API build9 tests PASS; no remote key/provider/DB schema/UI/Git writes. T004/T040 remain IN_PROGRESS with named review pending; see linked progress for exact evidence/limits.
+
+## Autonomous development checklist — 2026-10-26
+
+Owner: Engineering; named architecture/security/legal reviewer acceptance remains pending. Current task branch `feat/T004-identity-foundation`, clean starting commit `a35f106`. User explicitly authorized continued local implementation and small descriptive task commits; no deployment, push or merge is authorized by this run. Existing docs distinguish development implementation from release approval.
+
+- [x] Inspect README, agent/Git rules, backlog/history, identity/tenant/API/schema/test contracts, legal gates and installed Next.js16.4.3 handler/BFF/cookie documentation.
+- [x] Inventory: foundation shells/CI, tenant transaction/RLS and identity/provider/API slices exist; catalog, public menu, business CRUD, onboarding/license operations and privileged mobile/MFA integration remain incomplete. No complete product or production readiness is inferred.
+- [x] Implement T004/T040 admin BFF handlers and minimal sign-in/registered-access UI, disabled without explicit server configuration.
+- [x] Record final lint/typecheck/tests/build/audit and scoped diff review for this delivery;9 API+1 trace+20 Playwright tests pass.
+- [ ] T044: central shared admin/superadmin brand tokens and existing shell styling; keep public menu styles independent.
+- [ ] T004/T036: concrete Access/IdP MFA evidence and independently reviewed privileged adapter before registering platform operations.
+- [ ] T040/LEG-003/LEG-011: real provider registrations/test accounts, exact callback fields, privacy/token lifecycle/retention and distributed abuse controls before enablement.
+- [ ] T010/T041/T042: manual approval/license entitlement and audited step-up operations; no instant activation or payment gateway.
+- [ ] T005 onward: catalog and menu features after identity/entitlement contract acceptance; ten themes and immutable draft/publication rules remain binding.
+- [ ] T000/LEG-001–005: named legal/entity/term/price/retention decisions, reviewer evidence and approval. No legal rule is approved by this checklist.
+
+T004/T040 scope: `apps/admin-pwa` handlers/UI/styles, `.env.example`, handler/browser tests and linked docs only; existing API/SQL/dependencies stay intact. Acceptance: synthetic boundary/browser tests plus existing isolation/regression suite; actual provider/mobile/security/legal/reviewer evidence remains required before DONE. Rollback and exact transport are in [BFF contract](../04-backend/ADMIN_BFF_SESSION_CONTRACT.md#admin-browser-bff-development-delivery--2026-10-26). [Execution evidence](PROGRESS.md#autonomous-admin-bff-development--2026-10-26).

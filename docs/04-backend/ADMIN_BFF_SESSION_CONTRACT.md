@@ -31,7 +31,8 @@ sequenceDiagram
     Browser->>BFF: Same-origin POST start(provider)
     BFF->>API: Authenticated admin begin + random browser proof
     API-->>BFF: Validated provider authorization URL
-    BFF-->>Browser: Set admin login cookie; redirect to IdP
+    BFF-->>Browser: Set admin login cookie; validated navigation URL
+    Browser->>IdP: Navigate to authorization endpoint
     IdP-->>Browser: Code + state to fixed admin callback
     Browser->>BFF: Callback GET + host-only login cookie
     BFF->>API: Authenticated finish(code, state, browser proof)
@@ -42,13 +43,13 @@ sequenceDiagram
 
 The browser proof is fresh32-byte randomness, never a user identity. BFF stores it only in a short-lived HttpOnly admin-host cookie; API stores its hash. State/nonce and Google/Microsoft PKCE verifier remain server-owned. No process-local login state is relied upon. On callback, the API atomically consumes provider+admin-audience+browser-bound state and commits before contacting the provider. Failed/cancelled/expired/mixed/replayed flows cannot retry the consumed state.
 
-## Endpoint contract (API adapter implemented; browser routes proposed)
+## Endpoint contract (development adapters implemented; enablement pending)
 All responses no-store; errors sanitized. BFF server fetch uses the fixed API origin, bounded deadlines, redirect rejection and explicit credential/body allowlists. Do not blindly forward upstream cookies, headers, error text or response fields.
 
 | Browser-facing admin route | Behavior |
 |---|---|
 | GET /api/auth/providers | Sanitized public provider/config flags via the API; no session, arbitrary upstream or credentials |
-| POST /api/auth/{provider}/start | Exact admin Origin, JSON and required same-origin custom request header; generate browser proof, call internal begin, set temporary cookie, redirect only to validated fixed provider endpoint |
+| POST /api/auth/{provider}/start | Exact admin Origin, JSON and required same-origin custom request header; generate browser proof, call internal begin, set temporary cookie, return only a validated provider navigation URL as JSON |
 | GET /api/auth/{provider}/callback | Exact configured callback/path; one state/code or allowlisted error; read temporary cookie, call internal finish; clear login cookie; on success set admin cookies and303 fixed https://admin.qmenux.com/ |
 | GET /api/auth/me | Read only admin-session cookie, call internal admin session lookup; sanitized UUID/status and tenantAccess=false until reviewed entitlement flow exists |
 | POST /api/auth/logout | Exact admin Origin + session-bound CSRF; revoke via internal API before clearing cookies/claiming signed_out |
@@ -109,3 +110,17 @@ Tests cover real HTTP with signed simulated IdPs plus local PostgreSQL0009 for a
 Rollback removes this controller registration, raw-body capture and additive app-context wiring after checking callers;0009 remains, no DB deletion/downgrade. No real provider enablement, BFF credential, admin Next handler/browser cookie/CSRF/Origin transport, operator setup or named security/legal approval. T004/T040 remain IN_PROGRESS. [Actual validation/deployment evidence](../01-product/PROGRESS.md#t004-admin-bff-api-adapter--2026-10-26).
 
 Parser/router boundary follow-up: a scoped Nest exception filter sanitizes pre-controller parse/URI/oversize/unsupported-method errors and applies no-store/no-referrer without echoing request input; other API paths retain existing error handling. Actual malformed credential-bearing JSON and outer parser-limit413 tests PASS in the final9-test run.
+
+## Admin browser BFF development delivery — 2026-10-26
+
+`apps/admin-pwa/src/lib/admin-auth.ts` and its fixed `/api/auth/[...path]` dispatcher implement the five browser routes. `ADMIN_AUTH_ENABLED=true` plus a separately bound valid `ADMIN_BFF_SECRET` are required; preview deployments and disabled TLS verification deny. No key/provider/remote environment is configured by this work. Requests must resolve to the exact HTTPS canonical admin URL and Host; forwarded headers never supply authority. Unsupported methods explicitly deny before credentials/state/session work, including HEAD/OPTIONS. No CORS allowance or generic proxy.
+
+Start uses same-origin JSON POST plus `X-QMenuX-Request: 1`, with an empty object only (256-byte/5s read bound). **Transport refinement:** start returns `{redirect: validatedAuthorizationUrl}` and the client navigates there. A fetch-followed 303 would make the browser fetch the cross-origin IdP instead of navigating; this keeps the required custom-header/JSON CSRF protection. Only the public authorization URL escapes; login proof, machine key and session/CSRF issuance JSON stay server-side. Provider endpoint, callback, code mode, state/nonce and Google/Microsoft S256 are validated before any login cookie is set. Callback success remains a fixed 303 to admin root.
+
+Callbacks accept only one state plus code XOR an allowlisted cancellation/error. Duplicate/unknown arguments, duplicate/malformed cookies and cross-provider proof fail closed. Login cookies are cleared on handled callback errors; existing sessions are preserved on a failed callback. The API still performs atomic consumption, provider signature verification and audience-bound persistence; the BFF never repeats finish after a failure. Upstream uses a fixed API URL, no-store, redirect rejection, 10s deadline including response body, 16KiB response limit and minimal output schemas. Errors contain no raw upstream input. Logout checks exact Origin, matching CSRF header/cookie and API session-bound revocation before clearing either cookie.
+
+The minimal Turkish admin screen loads provider availability and current session, offers disabled provider buttons while unavailable, distinguishes REGISTERED identity from approved/licensed business access, and reports uncertain logout without claiming revocation. No account activation, role/tenant selector, provider simulation, marketing, payment, PWA caching or operator authority is added. Client requests have 15s deadlines; mobile layout/keyboard tests cover the operational entry screen only.
+
+Tests: `tests/admin-auth.spec.ts` exercises the actual handler with synthetic fixed-origin API responses; `tests/admin-sign-in.spec.ts` exercises Chromium and real unconfigured Next routes. Existing signed-IdP/PostgreSQL API tests remain separate; there is no claimed live BFF→IdP flow. Real provider callbacks may contain additional provider-specific fields; those require reviewed allowlisting and actual provider evidence before enablement rather than permissive acceptance. Physical Safari/iOS/Android/PWA, proxy/hosting host behavior, provider setup, distributed abuse controls, token lifecycle/privacy/security/legal and named reviewer acceptance remain open.
+
+Rollback: remove browser handler/client imports and restore unavailable admin screen before disabling/revoking the dedicated BFF key. Retain API adapter and0009 persistence; no schema downgrade or record deletion. No production deployment is part of this delivery.
