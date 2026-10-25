@@ -262,7 +262,8 @@ export async function exerciseAuth(database: Database, owner: Client, provider: 
       WHERE n.nspname='qmenux_identity' AND p.prosecdef AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']
       AND has_function_privilege('qmenux_runtime',p.oid,'EXECUTE')
       AND NOT EXISTS (SELECT FROM aclexplode(p.proacl) WHERE grantee=0 AND privilege_type='EXECUTE')`);
-    assert.equal(privileges.rows[0].count, isApple ? '13' : isMicrosoft ? '10' : '5');
+    const hasAdmin = (await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0009_admin_audience') AS present")).rows[0].present;
+    assert.equal(privileges.rows[0].count, hasAdmin ? '18' : isApple ? '13' : isMicrosoft ? '10' : '5');
     assert.equal((await owner.query('SELECT count(*) FROM qmenux.tenants')).rows[0].count, '3');
   } finally {
     await app.close(); globalThis.fetch = originalFetch;

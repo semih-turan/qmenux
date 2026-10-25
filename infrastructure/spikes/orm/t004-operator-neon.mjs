@@ -30,8 +30,8 @@ try {
     assert.equal((await owner.query(`SELECT count(*) FROM qmenux_identity.${table}`)).rows[0].count, '0');
   }
   const versions = (await owner.query('SELECT version FROM qmenux.schema_migrations ORDER BY version')).rows.map(r => r.version);
-  const expected = ['0001_tenant_catalog', '0002_tenant_resolution', '0003_identity_sessions', '0004_tenant_memberships', '0005_operator_sessions','0006_auth_expiry','0007_microsoft_identity','0008_apple_identity'];
-  assert([4, 5, 6, 7, 8].includes(versions.length)); assert.deepEqual(versions, expected.slice(0, versions.length));
+  const expected = ['0001_tenant_catalog', '0002_tenant_resolution', '0003_identity_sessions', '0004_tenant_memberships', '0005_operator_sessions','0006_auth_expiry','0007_microsoft_identity','0008_apple_identity','0009_admin_audience'];
+  assert([4, 5, 6, 7, 8,9].includes(versions.length)); assert.deepEqual(versions, expected.slice(0, versions.length));
   stage = 'direct operator migration';
   const up = sql('migrations/0005_operator_sessions.up.sql'), down = sql('migrations/0005_operator_sessions.down.sql');
   if (versions.length === 4) {

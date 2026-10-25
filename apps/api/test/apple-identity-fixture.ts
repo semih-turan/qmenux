@@ -29,16 +29,19 @@ export async function exerciseAppleIdentity(database: Database, owner: Client): 
     finally { await owner.query('ROLLBACK'); }
   };
   const appleCount = async () => (await owner.query('SELECT count(*) FROM qmenux_identity.external_identities WHERE issuer=$1 AND subject=$2', [appleIssuer, subject])).rows[0].count;
+  const hasAdmin = (await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0009_admin_audience') AS present")).rows[0].present;
   try {
-    if ((await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0008_apple_identity') AS present")).rows[0].present) await migrate('down');
+    if (!hasAdmin && (await owner.query("SELECT EXISTS (SELECT FROM qmenux.schema_migrations WHERE version='0008_apple_identity') AS present")).rows[0].present) await migrate('down');
     await store.begin(googleState, browser, verifier, nonce);
     const google = await store.createSession(subject, googleToken); assert(google); ids.push(google);
     const microsoft = await store.createMicrosoftSession(subject, microsoftToken); assert(microsoft); ids.push(microsoft);
     await store.beginMicrosoft(microsoftState, browser, verifier, nonce);
-    await migrate('up', false);
-    assert.equal((await owner.query("SELECT is_nullable FROM information_schema.columns WHERE table_schema='qmenux_identity' AND table_name='login_attempts' AND column_name='verifier'")).rows[0].is_nullable, 'NO');
-    await migrate('up');
-    await assert.rejects(migrate('up'), (e: { code: string }) => e.code === 'P0001');
+    if (!hasAdmin) {
+      await migrate('up', false);
+      assert.equal((await owner.query("SELECT is_nullable FROM information_schema.columns WHERE table_schema='qmenux_identity' AND table_name='login_attempts' AND column_name='verifier'")).rows[0].is_nullable, 'NO');
+      await migrate('up');
+      await assert.rejects(migrate('up'), (e: { code: string }) => e.code === 'P0001');
+    }
     assert.equal((await owner.query('SELECT issuer FROM qmenux_identity.login_attempts WHERE state_hash=$1', [secretHash(googleState)])).rows[0].issuer, 'https://accounts.google.com');
     assert.deepEqual(await store.readSession(googleToken), { id: google, status: 'REGISTERED' });
     assert.equal(await store.consumeApple(googleState, browser), undefined);
@@ -112,11 +115,12 @@ export async function exerciseAppleIdentity(database: Database, owner: Client): 
     await owner.query('DELETE FROM qmenux_identity.sessions WHERE user_id=$1', [concurrent[0]]);
     await owner.query('DELETE FROM qmenux_identity.external_identities WHERE user_id=$1', [concurrent[0]]);
     await owner.query('DELETE FROM qmenux_identity.users WHERE id=$1', [concurrent[0]]);
-    await migrate('down');
+    if (hasAdmin) await assert.rejects(migrate('down'), (e: { code: string }) => e.code === 'P0001');
+    else await migrate('down');
     assert.deepEqual(await store.readSession(googleToken), { id: google, status: 'REGISTERED' }, 'Down preserves existing Google identity/session');
     assert.deepEqual(await store.readSession(microsoftToken), { id: microsoft, status: 'REGISTERED' }, 'Down preserves existing Microsoft identity/session');
     assert.equal(await store.createMicrosoftSession(subject, secret()), microsoft);
-    await migrate('up');
+    if (!hasAdmin) await migrate('up');
   } finally {
     const created = (await owner.query('SELECT user_id FROM qmenux_identity.external_identities WHERE subject=$1', [subject])).rows.map((r: { user_id: string }) => r.user_id);
     ids.push(...created);

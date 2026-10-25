@@ -87,7 +87,12 @@ No automatic retry of a consumed finish. A lost response after session commit ca
 
 Required before enablement: synthetic real HTTP/API/BFF tests; audience confusion/replay/nonce/CSRF/cookie fixation/sibling-origin/redirect/timeout/error tests; existing pooled RLS/license denial; actual provider callback registration/test accounts; Safari/iOS/Android/PWA/keyboard/offline cases; reviewed token lifecycle/revocation/privacy/legal/MFA/abuse/security and named acceptance. A normal REGISTERED session still grants no tenant entitlement, license or platform role. T004/T040 stay IN_PROGRESS; T005 remains gated.
 
-## Next bounded implementation
-First implement only the internal audience-bound persistence/module contracts and migration rollback/tests, with no public route, secret generation or provider registration. Then add BFF-authenticated API adapters; then admin handlers/browser tests and reviewed secret/provider setup as separately requested steps. No generic proxy, marketing page or Super Admin changes.
+## Current implementation and next boundary
+The separately requested0009_admin_audience implements internal audience-bound persistence/module contracts and migration rollback/tests. No public route, secret generation or provider registration is added. Then add BFF-authenticated API adapters; then admin handlers/browser tests and reviewed secret/provider setup as separately requested steps. No generic proxy, marketing page or Super Admin changes.
 
-Evidence for this checkpoint: installed Next16.4.3 Route Handlers/BFF guides inspected; current root/identity/trust/integration/Git docs read. Current API-host callbacks and admin unavailable screen remain unchanged. This is an architecture proposal, not deployed behavior or reviewer approval.
+Evidence for this checkpoint: installed Next16.4.3 Route Handlers/BFF guides inspected; current root/identity/trust/integration/Git docs read. Existing API-host callbacks and the admin unavailable screen remain unchanged. Persistence delivery is recorded below; browser/server BFF adapters remain a proposal, not implemented or reviewer-approved behavior.
+
+## Persistence slice evidence — 2026-10-26
+0009 defaults legacy attempts/sessions to api, requires valid CSRF hash only for admin sessions and pins legacy consume/read/revoke/rotation/membership contracts to api. Five admin-only module contracts begin/consume/create/read/revoke use fixed admin audience and an allowlisted provider issuer; read returns minimal identity, revoke requires matching unexpired session/CSRF. Shared provider lock namespace prevents API/admin first-login duplication. Existing status/membership triggers revoke both audiences, shared expiry caps remain unchanged.
+
+Down refuses any admin attempt/session (including expired rows not yet cleaned), locks both tables and preserves API rows; old0001–0008 unchanged. This schema boundary is not BFF client authentication, provider validation, browser CSRF/Origin enforcement or real admin login. Those remain later adapters/handlers with their own tests/keys/setup. [Actual local/Neon/deployment evidence](../01-product/PROGRESS.md#t004-admin-audience-persistence--2026-10-26).
