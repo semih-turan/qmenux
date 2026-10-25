@@ -151,3 +151,7 @@ Fixed GET/POST /api/onboarding/applications, PATCH /:id and POST /:id/submit are
 ## T004 internal operator passkey prerequisite —2026-10-26
 
 OperatorPasskeys now verifies enrollment/authentication and supplies the existing mandatory OperatorAuthorization MFA policy through short-lived browser-bound evidence. It is default-off and has no registered controller, public credential/recovery route or privileged operation. Access and current platform role remain separate requirements; approval/license/role mutations still deny. [Internal use cases, input bounds, proof lifecycle, tests and release gates](OPERATOR_PASSKEY_CONTRACT.md).
+
+### Operator adapter review implementation (unregistered)
+
+Six fixed internal operator ceremony/session POST operations are implemented for isolated tests, with independent machine auth and actual Access/passkey/server-bound-CSRF contracts. Production AppModule does not register them; current runtime404 is intentional under the review gate. Do not infer enabled endpoints from the controller source. [Bodies, private credential outputs, limits, fixture evidence and remaining gates](OPERATOR_PASSKEY_CONTRACT.md#dedicated-operator-api-adapter-unregistered-review-implementation).

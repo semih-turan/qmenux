@@ -10,6 +10,7 @@ import { secretHash } from '../src/identity-store.js';
 import { OperatorAccess } from '../src/operator-access.js';
 import { OperatorAuthorization } from '../src/operator-authorization.js';
 import { OperatorPasskeys } from '../src/operator-passkeys.js';
+import { exerciseOperatorHttp } from './operator-http-fixture.js';
 
 const secret = () => randomBytes(32).toString('base64url');
 const status = (value: number) => (error: { getStatus?: () => number }) => error.getStatus?.() === value;
@@ -273,7 +274,8 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     assert.equal((await owner.query('SELECT count(*) FROM qmenux_operator.sessions WHERE operator_id=$1',[id])).rows[0].count,'0');
 
     const finalOptions=await passkeys.beginAuthentication(assertion(),browserProof);
-    const finalProof=await passkeys.finishAuthentication(assertion(),browserProof,finalOptions.challenge,await authenticate(finalOptions));
+    let finalProof=await passkeys.finishAuthentication(assertion(),browserProof,finalOptions.challenge,await authenticate(finalOptions));
+    finalProof=await exerciseOperatorHttp(passkeys,authorization,assertion,browserProof,authenticate);
     await run(finalProof);
     await owner.query("UPDATE qmenux_operator.passkeys SET status='REVOKED' WHERE operator_id=$1",[id]);
     assert.equal(await passkeys.policy(finalProof,browserProof)({issuer,subject,audience}),false);
@@ -284,7 +286,7 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
       await owner.query('BEGIN');try{await assert.rejects(owner.query(sql,[id]),code('42501'));}finally{await owner.query('ROLLBACK');}
     }
     const kinds=(await owner.query('SELECT kind,count(*) FROM qmenux_operator.passkey_events WHERE operator_id=$1 GROUP BY kind ORDER BY kind',[id])).rows;
-    assert.deepEqual(kinds,[{kind:'AUTHENTICATED',count:'3'},{kind:'REGISTERED',count:'1'},{kind:'REVOKED',count:'1'}]);
+    assert.deepEqual(kinds,[{kind:'AUTHENTICATED',count:'5'},{kind:'REGISTERED',count:'1'},{kind:'REVOKED',count:'1'}]);
     for(const table of ['passkey_grants','passkeys','passkey_challenges','passkey_proofs','passkey_events']) {
       const row=(await owner.query("SELECT relrowsecurity,relforcerowsecurity,has_table_privilege('qmenux_runtime',oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AS allowed FROM pg_class WHERE oid=$1::regclass",[`qmenux_operator.${table}`])).rows[0];
       assert.deepEqual(row,{relrowsecurity:true,relforcerowsecurity:true,allowed:false});

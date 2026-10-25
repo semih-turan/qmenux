@@ -21,15 +21,16 @@ export class AdminAuthErrors extends BaseExceptionFilter {
   override catch(error: unknown, host: ArgumentsHost): void {
     const path = host.switchToHttp().getRequest<IncomingMessage>().url?.split('?')[0];
     const onboarding = path === '/v1/internal/admin-onboarding' || path?.startsWith('/v1/internal/admin-onboarding/');
-    if (!onboarding && path !== '/v1/internal/admin-auth' && !path?.startsWith('/v1/internal/admin-auth/')) return super.catch(error, host);
+    const operator = path === '/v1/internal/operator-auth' || path?.startsWith('/v1/internal/operator-auth/');
+    if (!operator && !onboarding && path !== '/v1/internal/admin-auth' && !path?.startsWith('/v1/internal/admin-auth/')) return super.catch(error, host);
     const status = error instanceof HttpException ? error.getStatus()
       : (error as { statusCode?: number } | null)?.statusCode;
-    const code = status && [400, 401, 404, 405, 409, 413, 415, 503].includes(status) ? status : 500;
+    const code = status && [400, 401, ...(operator ? [403] : []), 404, 405, 409, 413, 415, 503].includes(status) ? status : 500;
     const res = host.switchToHttp().getResponse<ServerResponse>();
     res.statusCode = code; res.setHeader('Cache-Control', 'no-store'); res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ status: code === 503 ? 'unavailable' : code === 401 ? 'unauthorized'
-      : onboarding && code === 404 ? 'not_found' : onboarding && code === 409 ? 'conflict' : 'invalid_request' }));
+      : operator && code === 403 ? 'forbidden' : onboarding && code === 404 ? 'not_found' : onboarding && code === 409 ? 'conflict' : 'invalid_request' }));
   }
 }
 
