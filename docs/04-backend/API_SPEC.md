@@ -113,3 +113,6 @@ Provider metadata reflects each server configuration independently; Apple remain
 
 ## T004 Apple client-secret prerequisite (internal only)
 AppleClientSecret is an unused internal signing helper with server-only config, no controller or database. `/v1/auth/providers` still reports Apple false; Apple start/callback routes remain404. Configuring its signing flag does not register or enable login. No developer JWT/private key, user token or authority is exposed through this API. [Protocol/PKCE/browser-binding gates](IDENTITY_OIDC_ONBOARDING.md#t004-apple-client-secret-prerequisite--2026-10-25).
+
+## T004 Apple internal protocol adapter (still unavailable)
+Owner-delegated profile selection adds only unused AppleOidc with mandatory token-endpoint nonce/signature/issuer/audience/expiry validation. No HTTP or session/persistence integration exists: Apple provider metadata staysfalse and start/callback404. The signer flag configures internal development services only; it does not enable browser login. [Selected profile and gates](../02-architecture/APPLE_OIDC_PROTOCOL_PROPOSAL.md).
