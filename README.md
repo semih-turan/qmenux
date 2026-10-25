@@ -17,7 +17,7 @@ Single-price, single-edition, multi-tenant QR menu SaaS for cafés, coffee shops
 Start with `docs/01-product/PRD.md`, then `docs/02-architecture/ARCHITECTURE.md`, `docs/02-architecture/DOMAIN_MODEL.md`, `docs/02-architecture/MULTI_TENANCY.md`, `docs/03-frontend/UI_UX.md`, and `docs/07-quality/TESTING.md`. Follow `AGENTS.md` for agent behavior and `docs/01-product/TASKS.md` for execution.
 
 ## Repository target
-Local scaffold: `apps/{menu-pwa,admin-pwa,superadmin-pwa,api}` and `packages/config`. Landing, worker, UI/contracts/themes/database packages and infrastructure remain planned; they are added only when their tasks require them. These application names describe their target roles; installable PWA/offline/auth features are not implemented yet.
+Local scaffold: `apps/{menu-pwa,admin-pwa,superadmin-pwa,api}` and `packages/{config,ui}`. Landing, worker, contracts/themes/database packages and further infrastructure remain planned; they are added only when their tasks require them. These application names describe their target roles; installable PWA/offline/auth features are not implemented yet.
 
 ## Open product decisions
 Brand/domain, exact fixed price and billing interval, payment provider, legal entity/merchant account, grace-period policy, custom-domain launch timing, number of branches covered, retention periods, official regulatory legal sign-off.
@@ -144,3 +144,7 @@ Apple code/query callback now uses the owner-selected confidential nonce profile
 ## Admin sign-in development entry
 
 The admin app now contains a minimal Turkish sign-in/registered-access screen and a narrow server BFF at `/api/auth/*`. It remains unavailable by default: `ADMIN_AUTH_ENABLED=false`, empty independent `ADMIN_BFF_SECRET`, fixed canonical HTTPS admin/API origins, and no Preview enablement. No real provider, tenant activation or license is enabled. Never put the BFF key into public/build configuration. The screen grants no tenant or operator permissions. See the [BFF contract](docs/04-backend/ADMIN_BFF_SESSION_CONTRACT.md#admin-browser-bff-development-delivery--2026-10-26) for cookie/CSRF/timeout behavior, synthetic test scope, rollback and remaining real-provider/security/legal gates. Existing provider-URL development hosts cannot enable canonical-host browser auth.
+
+## Shared management UI development foundation
+
+`@qmenux/ui` owns the fixed admin/superadmin brand tokens, native button and management shell. Import `@qmenux/ui/admin.css` in management layouts and use its explicit component exports; public menus retain their independent styles. The package ships workspace TypeScript/CSS source for Next.js to bundle and has no new external library/version. Remaining controls are added with their actual consuming screens. [Brand specification](docs/03-frontend/BRAND_DESIGN_SYSTEM.md), [test/review evidence](docs/01-product/PROGRESS.md#t044-shared-management-foundation--2026-10-26).

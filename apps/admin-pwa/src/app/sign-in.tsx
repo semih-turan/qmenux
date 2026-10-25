@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@qmenux/ui/button';
 import { useEffect, useState } from 'react';
 
 const providers = [{ id: 'google', label: 'Google' }, { id: 'microsoft', label: 'Microsoft / Outlook' }, { id: 'apple', label: 'Apple' }] as const;
@@ -62,14 +63,14 @@ export default function SignIn() {
       {state === 'registered' ? <>
         <h2>Hesabınızla giriş yaptınız</h2>
         <p>İşletme erişimi için yönetici onayı ve geçerli lisans gerekir. Giriş yapmak işletmenizi etkinleştirmez.</p>
-        <button type="button" disabled={busy} onClick={() => void submit()}>{busy ? 'Çıkış doğrulanıyor…' : 'Çıkış yap'}</button>
+        <Button disabled={busy} onClick={() => void submit()}>{busy ? 'Çıkış doğrulanıyor…' : 'Çıkış yap'}</Button>
       </> : <>
         <p>Kafe ve restoran işletme hesabınıza giriş yapın. Yeni hesaplar için işletme erişimi yönetici onayına bağlıdır.</p>
         {state === 'unavailable' && <p role="status">Giriş henüz kullanıma açılmadı veya bağlantı kurulamadı. Daha sonra tekrar deneyin.</p>}
         <div className="sign-in-actions">
-          {providers.map(provider => <button key={provider.id} type="button"
+          {providers.map(provider => <Button key={provider.id} type="button"
             disabled={state !== 'signed_out' || busy || !enabled.includes(provider.id)}
-            onClick={() => void submit(provider.id)}>{provider.label} ile devam et</button>)}
+            onClick={() => void submit(provider.id)}>{provider.label} ile devam et</Button>)}
         </div>
         {state === 'signed_out' && enabled.length === 0 && <p role="status">Giriş sağlayıcıları henüz kullanıma açılmadı.</p>}
       </>}

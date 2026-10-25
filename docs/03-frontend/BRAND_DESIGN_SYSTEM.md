@@ -35,3 +35,11 @@ BRAND-001: palette tokens consistent across admin and superadmin; accessible con
 BRAND-002: café and restaurant demo data render correctly; no forced food-type-specific admin layout.
 BRAND-003: public menu themes can differ radically from QMenuX brand without leaking into admin.
 BRAND-004: mobile 320/375/430px, iOS/Android, dynamic text, dark OS setting, reduced motion.
+
+## T044 development foundation — 2026-10-26
+
+`packages/ui` now centrally exports `admin.css` (six approved palette tokens plus explicit high-contrast control colors), `ManagementShell` (brand/title/main/safe-area layout) and `Button` (native accessible control, default type button). Both management apps consume the shared shell/styles; the actual admin sign-in/logout buttons consume the button. Public-menu styles are independent and have a regression assertion against management-token leakage. No theme chooser or business-type styling is added to management.
+
+The workspace exports source directly for existing Next.js/Turbopack bundling, with its own lint/typecheck and existing React peer. There is no parallel UI framework, CSS toolchain or new external dependency/version. CSS keeps light colors under dark OS settings and has no animation requiring a reduced-motion override. Other inputs, sheets/dialogs, navigation and data controls remain for their actual feature screens rather than unused components. This is an implemented foundation, not a completed entire component library.
+
+Automated Chromium checks: identical approved tokens on both management apps; WCAG normal-text contrast >=4.5 for body and rendered controls; 320/375/390/430px with enlarged root text;44px controls; dark OS/reduced-motion preference; existing keyboard/auth behavior and public style separation. Built-app smoke additionally checked actual production CSS and mobile widths;390px screenshots were visually reviewed. Physical iOS/Android, assistive-technology and named visual/accessibility review remain pending. See [progress](../01-product/PROGRESS.md#t044-shared-management-foundation--2026-10-26); T044 remains IN_PROGRESS, not DONE.

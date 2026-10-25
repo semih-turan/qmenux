@@ -124,7 +124,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 ## v7 — Brand design system, café/restaurant onboarding and theme inventory (2026-10-25)
 | ID | Phase | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
-| T044 | V1 early UI foundation | Implement shared QMenuX brand tokens and mobile admin/superadmin component library | T001 | BRAND-001..004, accessible 320/375/430px review | TODO |
+| T044 | V1 early UI foundation | Implement shared QMenuX brand tokens and mobile admin/superadmin component library | T001 | BRAND-001..004, accessible 320/375/430px review | IN_PROGRESS |
 | T045 | V1 | Business-type selector, optional starter categories and recommended public theme; draft-only, editable, skip | T003,T005,T041,T042,T044 | ONB-003..005, tenant isolation and no auto-publish | TODO |
 | T046 | V1 | Theme registry contracts and ten-theme content/accessibility regression matrix | T008,T020,T044 | THEME-002 for all 10 themes and café/restaurant samples | TODO |
 
@@ -404,7 +404,7 @@ Owner: Engineering; named architecture/security/legal reviewer acceptance remain
 - [x] Inventory: foundation shells/CI, tenant transaction/RLS and identity/provider/API slices exist; catalog, public menu, business CRUD, onboarding/license operations and privileged mobile/MFA integration remain incomplete. No complete product or production readiness is inferred.
 - [x] Implement T004/T040 admin BFF handlers and minimal sign-in/registered-access UI, disabled without explicit server configuration.
 - [x] Record final lint/typecheck/tests/build/audit and scoped diff review for this delivery;9 API+1 trace+20 Playwright tests pass.
-- [ ] T044: central shared admin/superadmin brand tokens and existing shell styling; keep public menu styles independent.
+- [x] T044 development foundation: central shared tokens, consumed shell/button, mobile/contrast/public-separation tests; further controls and named review remain.
 - [ ] T004/T036: concrete Access/IdP MFA evidence and independently reviewed privileged adapter before registering platform operations.
 - [ ] T040/LEG-003/LEG-011: real provider registrations/test accounts, exact callback fields, privacy/token lifecycle/retention and distributed abuse controls before enablement.
 - [ ] T010/T041/T042: manual approval/license entitlement and audited step-up operations; no instant activation or payment gateway.
@@ -412,3 +412,22 @@ Owner: Engineering; named architecture/security/legal reviewer acceptance remain
 - [ ] T000/LEG-001–005: named legal/entity/term/price/retention decisions, reviewer evidence and approval. No legal rule is approved by this checklist.
 
 T004/T040 scope: `apps/admin-pwa` handlers/UI/styles, `.env.example`, handler/browser tests and linked docs only; existing API/SQL/dependencies stay intact. Acceptance: synthetic boundary/browser tests plus existing isolation/regression suite; actual provider/mobile/security/legal/reviewer evidence remains required before DONE. Rollback and exact transport are in [BFF contract](../04-backend/ADMIN_BFF_SESSION_CONTRACT.md#admin-browser-bff-development-delivery--2026-10-26). [Execution evidence](PROGRESS.md#autonomous-admin-bff-development--2026-10-26).
+
+## T044 shared management foundation contract — 2026-10-26
+
+- Owner: Engineering; named visual/accessibility reviewer/date pending. Status IN_PROGRESS; no DONE claim.
+- Branch: `feat/T044-shared-admin-design`, clean dependent base `b459333` (authorized T004 BFF commit); no merge/default-branch/remote change.
+- Files: `packages/ui`, both management app workspace manifests/layouts/pages/styles and admin button callers, importer-only lockfile update, `tests/admin-design.spec.ts`, README/brand/backlog/progress docs.
+- Objective: one fixed shared management palette and consumed shell/button; preserve mobile/safe-area/keyboard semantics and public-menu style separation. Add further controls only when their screens need them.
+- Acceptance/evidence: pinned Node24.22.1 root lint/typecheck/test/build/audit PASS,23 Playwright entries plus9 API and1 trace entries; frozen offline install PASS; production-built app/mobile CSS smoke and390px visual review PASS. [Detailed evidence](PROGRESS.md#t044-shared-management-foundation--2026-10-26). Remaining components, physical device/assistive-tech and named reviewer acceptance stay open.
+- Rollback: restore the two management apps' previous shell/button/styles and remove their workspace links before removing the unused package; regenerate only workspace lockfile importers. No schema, business data, secrets or provider config involved.
+
+### Dependency/blocker inventory after these deliveries
+
+- **Implemented local evidence:** core scaffolds/CI; tenant-schema/RLS transactions; provider identity, API/admin audience sessions and narrow API/BFF adapters; minimal admin sign-in; shared management UI foundation. Tasks retain review-dependent statuses.
+- **T004/T036/T040 enablement:** real IdP callback/subject continuity and token lifecycle evidence, actual Access+MFA adapter, distributed abuse controls and named architecture/security/privacy/legal acceptance are absent. Credentials alone cannot satisfy these gates.
+- **T010/T041/T042:** license scope (tenant versus branch), grace/public-menu policy, privileged step-up/audit contracts and reviewer acceptance remain unresolved. The existing subscription spec explicitly leaves scope/grace policy open. Do not invent commercial defaults or expose activation endpoints before these boundaries are resolved.
+- **T005–T012 and dependent menu features:** identity/entitlement/publication contracts and relevant legal applicability are not accepted yet. Catalog CRUD/public menu/UI are still incomplete, not silently marked blocked-complete.
+- **T047–T051:** ORM/worker/Redis/regions, environment isolation and restore/release evidence remain incomplete. No production provider or destructive migration is selected by this run.
+- **T000/LEG tasks:** entity, terms/price, privacy/retention and applicable food/legal rules need named external decisions/review. Engineering cannot manufacture dated approvals.
+- **T043** remains last; payments/AI/channel adapters remain future or separately gated.

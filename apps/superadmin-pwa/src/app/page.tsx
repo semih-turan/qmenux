@@ -1,9 +1,5 @@
+import { ManagementShell } from '@qmenux/ui/management-shell';
+
 export default function Page() {
-  return (
-    <main>
-      <p className="brand">QMenuX</p>
-      <h1>Platform yönetimi</h1>
-      <p>Platform yönetimi henüz kullanıma açılmadı.</p>
-    </main>
-  );
+  return <ManagementShell title="Platform yönetimi"><p>Platform yönetimi henüz kullanıma açılmadı.</p></ManagementShell>;
 }
