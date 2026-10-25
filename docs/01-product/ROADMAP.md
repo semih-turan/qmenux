@@ -55,3 +55,6 @@ Do not treat M4 Billing as V1. Approval is a superadmin action, not payment stat
 
 ## v9 Git execution sequencing
 Before T001 implementation, complete T052: inspect the existing Git repository, safely incorporate documentation and ignore rules, and request authorization for a baseline commit. T053 follows T001 once runnable scripts exist. Each subsequent task uses a reviewed task branch; default branch remains stable. Do not delay foundational backend work solely to build marketing landing (T043 remains last).
+
+## Authorized local T001 work — 2026-10-25
+The owner explicitly allowed local monorepo scaffolding while T000/legal reviews remain open. This bounded exception covers tooling, placeholder application shells, liveness and local checks only. It does not authorize feature work, production services or legal approval. T001 CI-green acceptance remains pending T053 execution/review; T047 hosting/ORM proof follows the local foundation. Marketing T043 stays last and V1 payments remain disabled.

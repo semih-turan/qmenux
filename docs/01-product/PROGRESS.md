@@ -43,3 +43,27 @@ Confirmed Neon PostgreSQL and Vercel deployment for Next.js apps and stateless N
 
 ## 2026-10-25 v9
 Git governance policy and root `.gitignore` template documented. Added T052 (repository baseline) and T053 (CI) as TODO. No Git operations were performed on the user's actual repository; no branches, commits, remote settings or CI workflows have been created or verified.
+
+## T001 local scaffold — 2026-10-25
+- Authorization: owner explicitly answered “evet devam et” to local T001 scaffolding while T000/legal gates remain open. No legal approval, tenant activation, production service, commit/push/merge or deployment authorized.
+- Branch: `feat/T001-monorepo-setup`, created from clean local main at `111542c`. Existing documentation branch at `6521b1b` preserved; no merge/rebase. Remote configuration and Git history unchanged; remote freshness not verified. T052 review status is not changed by this task.
+- Scope/files: root pnpm/Turbo/TypeScript/ESLint/Playwright config and lockfile; `.gitignore`, `.node-version`, public-placeholder `.env.example`; `packages/config`; Next.js shells under `apps/{menu-pwa,admin-pwa,superadmin-pwa}`; NestJS under `apps/api`; `tests/scaffold.spec.ts`; README/TASKS/ROADMAP/DECISIONS and this log.
+- Next.js `next dev` generated app-local AGENTS.md files with framework-managed instructions. Inspected these files and the installed framework guides/generator; retained them for review. Root AGENTS.md unchanged. Generated next-env.d.ts is ignored per installed Next.js TypeScript guidance; `next typegen` generates types before frontend typecheck.
+- Implemented: local unavailable-state pages with Turkish document language, semantic headings, safe-area padding and no login/activation controls; API GET `/v1/health` returns only `{status: "ok"}` with `Cache-Control: no-store`. No database, RLS, auth, business API, checkout, worker, marketing landing or installable/offline PWA behavior implemented.
+- Versions: Node 24.22.1 pinned and used for final lint/typecheck/build/test; pnpm 10.29.2; Next 16.4.3; React 19.3.1; NestJS 12.2.0; TypeScript 5.9.3; Turbo 2.11.10. Initial smoke also ran under host Node 26.12.1. Local Node 24 runtime was obtained in package-manager cache without changing the global runtime.
+- Actual verification:
+  - `pnpm install --frozen-lockfile`: PASS; lockfile unchanged/up-to-date after dependency pinning.
+  - `pnpm lint`: PASS, 5 package tasks plus root tooling/tests.
+  - `pnpm typecheck`: PASS, 4 app tasks plus root browser-test configuration.
+  - `pnpm build`: PASS, all 4 applications; three Next.js roots prerender successfully.
+  - `pnpm test`: PASS, 1 real HTTP API smoke test and 3 Chromium browser tests. API test checks minimal uncached liveness and absent business/checkout routes; each browser test checks Turkish language/main/heading/no sign-in controls and no horizontal overflow at 320/375/390/430px.
+  - `pnpm audit --prod` initially FAIL: one high Multer advisory (GHSA-q7qp-rjg7-q26m) via NestJS. Targeted override to patched 2.5.0; subsequent `pnpm audit --prod` and full `pnpm audit`: PASS, no known vulnerabilities reported. Runtime/API and browser checks rerun after the fix.
+  - Initial root test typecheck FAIL: browser globals lacked DOM types; root tsconfig fixed and final typecheck passed. ESLint 10 trial produced unsupported Next plugin peers; reverted to compatible 9.39.5 without suppressing peer errors.
+  - `pnpm dev`: all four local servers started; HTTP GETs to 3000/3001/3002 roots and 3003 `/v1/health` returned 200; health body verified. Servers stopped after check (watch mode reported expected interrupt exit 130); socket checks confirmed all four ports closed.
+  - `git diff --check`: PASS; tracked diff and untracked source/config inspected. Limited credential-pattern check across 48 changed/new text files: no findings (private-key headers, selected provider tokens, credential-bearing PostgreSQL URLs). This is not a full secret/history scanner.
+  - Ignore assertions: PASS, 7 generated/secret paths ignored and 3 source/config paths allowed. Index unchanged; HEAD remains `111542c`; `.DS_Store` preserved.
+- Status: T001 IN_REVIEW, not DONE. CI-green acceptance and reviewer evidence remain pending; T053 has not been implemented or executed. T000 and legal items remain open under the bounded exception.
+- Limits: no Vercel/Neon/IdP/R2 deployment tests, tenant-isolation tests, physical iOS/Android PWA/keyboard/screen-reader QA or comprehensive security review claimed. Publisher-deprecated ESLint 9 remains a tooling compatibility follow-up because current Next lint plugins reject ESLint 10 peers. API liveness does not imply dependency readiness.
+- Rollback: reverse only T001 additions/edits after checking for later user changes; no migration, data or external-service rollback needed. Preserve existing Git history and documentation branch.
+- Commit: not committed; nothing staged. Suggested commit after separate authorization: `chore(T001): initialize local pnpm monorepo`.
+- Next: review local foundation; T053 executable CI/secret scanning after authorized remote workflow, then T047 isolated hosting/ORM spike with separate service authorization. No feature or production gate waived.

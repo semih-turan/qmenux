@@ -1,0 +1,25 @@
+{
+  "name": "qmenux",
+  "private": true,
+  "packageManager": "pnpm@10.29.2",
+  "engines": {
+    "node": ">=24 <27",
+    "pnpm": "10.29.2"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests",
+    "typecheck": "turbo run typecheck && tsc --project tsconfig.json",
+    "test": "turbo run test && playwright test",
+    "build": "turbo run build",
+    "test:smoke": "playwright test"
+  },
+  "devDependencies": {
+    "@qmenux/config": "workspace:*",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "eslint": "9.39.5",
+    "turbo": "2.11.10",
+    "typescript": "5.9.3"
+  }
+}

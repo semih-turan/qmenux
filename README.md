@@ -1,9 +1,9 @@
-# QR Menu SaaS — Documentation Index
+# QMenuX — Documentation Index
 
 > Status: Draft v0.1 | Date: 2026-10-25 | Owner: Product/Engineering | Review before production.
 
 ## Product baseline
-Single-price, single-edition, multi-tenant restaurant QR menu SaaS. Public menus at `{slug}.qmenux.com`, business admin at `admin.qmenux.com`, restricted platform control at `superman.qmenux.com`. All administration is **mobile-primary PWA**. Future AI features consume separately purchased credits; payment gateway is provider-agnostic. The canonical production domain is `qmenux.com`.
+Single-price, single-edition, multi-tenant QR menu SaaS for cafés, coffee shops, bakeries, restaurants and other foodservice businesses. Public menus at `{slug}.qmenux.com`, business admin at `admin.qmenux.com`, restricted platform control at `superman.qmenux.com`. All administration is **mobile-primary PWA**. Future AI features consume separately purchased credits; payment gateway is provider-agnostic. The canonical production domain is `qmenux.com`.
 
 ## Non-negotiables
 - Public QR menu works without account or app installation.
@@ -17,7 +17,7 @@ Single-price, single-edition, multi-tenant restaurant QR menu SaaS. Public menus
 Start with `docs/01-product/PRD.md`, then `docs/02-architecture/ARCHITECTURE.md`, `docs/02-architecture/DOMAIN_MODEL.md`, `docs/02-architecture/MULTI_TENANCY.md`, `docs/03-frontend/UI_UX.md`, and `docs/07-quality/TESTING.md`. Follow `AGENTS.md` for agent behavior and `docs/01-product/TASKS.md` for execution.
 
 ## Repository target
-`apps/{landing,menu-pwa,admin-pwa,superadmin-pwa,api,worker}`; `packages/{ui,contracts,themes,config,database}`; `infrastructure/`; `docs/`. These are planned directories, not implemented code.
+Local scaffold: `apps/{menu-pwa,admin-pwa,superadmin-pwa,api}` and `packages/config`. Landing, worker, UI/contracts/themes/database packages and infrastructure remain planned; they are added only when their tasks require them. These application names describe their target roles; installable PWA/offline/auth features are not implemented yet.
 
 ## Open product decisions
 Brand/domain, exact fixed price and billing interval, payment provider, legal entity/merchant account, grace-period policy, custom-domain launch timing, number of branches covered, retention periods, official regulatory legal sign-off.
@@ -60,3 +60,37 @@ QMenuX uses terracotta `#E86A33`, charcoal `#252420`, ivory `#F7F5F0` for a sect
 
 ## v9 Git workflow
 An existing Git repository is assumed. Read `docs/08-operations/GIT_WORKFLOW.md` before Codex implementation. Work in per-task branches, preserve user modifications, use task-scoped Conventional Commits, and require explicit authorization before commits, pushes or merges. Root `.gitignore` is a template; merge it with existing ignore rules rather than overwriting custom rules.
+
+## Local development — T001
+Use Node.js **24.22.1** (`.node-version`) and pnpm **10.29.2** (root `packageManager`). No database, OAuth, R2 or production credentials are needed. The scaffold contains only unavailable-state pages and an API liveness endpoint; it does not activate tenants or implement authentication.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+| Application | Local URL | Workspace |
+|---|---|---|
+| Customer menu shell | http://127.0.0.1:3000 | `@qmenux/menu-pwa` |
+| Tenant management shell | http://127.0.0.1:3001 | `@qmenux/admin-pwa` |
+| Platform management shell | http://127.0.0.1:3002 | `@qmenux/superadmin-pwa` |
+| API health | http://127.0.0.1:3003/v1/health | `@qmenux/api` |
+
+All development servers bind to loopback. `.env.example` contains public local configuration only; it is not needed to run these static shells. Do not place production secrets in local/preview configuration. API CORS and authenticated cross-domain sessions are intentionally not enabled by this foundation task.
+
+```sh
+pnpm lint
+pnpm typecheck
+pnpm exec playwright install chromium
+pnpm test
+pnpm build
+pnpm audit
+```
+
+`pnpm test` runs the real HTTP API smoke test and Chromium tests for all three frontend shells at 320/375/390/430px. The browser tests start and stop their own dev servers; ports 3000–3002 must be free. These checks do not replace iOS/Android PWA, keyboard, assistive-technology, auth, tenant-isolation or deployment testing. `pnpm typecheck` generates Next route types first. Build outputs, generated `next-env.d.ts`, test output and local environment files are ignored.
+
+After a build, run one application with `pnpm --filter @qmenux/menu-pwa start` (or another workspace name). API `start` serves its compiled entrypoint. A health response `{ "status": "ok" }` proves process liveness only, not database/dependency readiness. Production hosting remains subject to T047 and later release gates; no deployment configuration is asserted ready.
+
+Tooling compatibility: TypeScript 5.9.3 is pinned within typescript-eslint's supported peer range. Next's current lint dependencies require ESLint 9; the pinned 9.39.5 release is deprecated by its publisher. Upgrade the lint dependency set together when compatible ESLint 10 support is available; do not suppress peer errors. This tooling limitation remains open before production readiness.
+
+The workspace override pins NestJS's transitive Multer to 2.5.0 for [GHSA-q7qp-rjg7-q26m](https://github.com/advisories/GHSA-q7qp-rjg7-q26m); remove it when upstream includes the fix. No upload endpoint is implemented.

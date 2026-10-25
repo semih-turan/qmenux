@@ -18,7 +18,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 ## Phase 1 — Engineering foundation
 | ID | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|
-| T001 | Initialize pnpm/Turborepo, lint, typecheck, CI | T000 | CI green | TODO |
+| T001 | Initialize pnpm/Turborepo, lint, typecheck, CI | T000; local-only exception below | CI green | IN_REVIEW |
 | T002 | PostgreSQL schema and migration strategy | T001 | Migrations and rollback drill | TODO |
 | T003 | Tenant resolver and RLS integration tests | T002 | Cross-tenant denial tests | TODO |
 | T004 | Identity, RBAC, privileged MFA | T003 | Auth and MFA tests | TODO |
@@ -162,3 +162,14 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - T053 can be implemented once project scripts exist; do not mark complete based on YAML alone.
 - Every task must report Git branch, reviewed diff, test evidence and commit hash or `not committed`.
 - Commits, pushes and merges require explicit user authorization. T043 marketing landing stays LAST.
+
+## T001 execution contract — local-only exception, 2026-10-25
+- Owner: Engineering; reviewer: pending. Status: IN_REVIEW, not DONE. User explicitly approved local scaffolding while T000/legal decisions remain open; [decision evidence](../02-architecture/DECISIONS.md#t001-local-only-foundation-exception--2026-10-25).
+- Objective: runnable local pnpm/Turborepo foundation without production services, tenant data or active commercial/auth features.
+- Branch/base: `feat/T001-monorepo-setup` from clean local `main` at `111542c`; existing documentation branch preserved, no merge. No commit/push authorized.
+- Files: root workspace/lockfile/Turbo/lint/test configuration, `.gitignore`, `.node-version`, `.env.example`; `packages/config`; `apps/menu-pwa`, `apps/admin-pwa`, `apps/superadmin-pwa`, `apps/api`; browser tests; README and TASKS/ROADMAP/DECISIONS/PROGRESS evidence.
+- Steps: inspect Git/tool versions; create branch; pin compatible dependencies; create minimal shells/API; install; verify frozen install, lint, types, HTTP/browser smoke, builds and audit; inspect diff/ignore/secrets; report limits.
+- Acceptance: local commands pass; health exposes only liveness and no private configuration; no business/checkout endpoints; all shells handle 320/375/390/430px; real CI green and reviewer evidence required before DONE. T053 remains TODO, not satisfied by local scripts.
+- Tests: `apps/api/test/health.test.ts`, `tests/scaffold.spec.ts`; actual results and failures/fixes in [PROGRESS.md](PROGRESS.md#t001-local-scaffold--2026-10-25).
+- Rollback: reverse only T001 files after checking for subsequent user edits; generated outputs can be discarded independently. No data/migration/service rollback needed; no Git reset or history rewrite.
+- Open: T000/legal/feature gates, real CI, ESLint dependency compatibility follow-up and T047 deployment/ORM proof. Tenant isolation is not implemented and must not be claimed tested.

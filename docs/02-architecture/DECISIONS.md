@@ -65,3 +65,14 @@ Brand `QMenuX`; apex `qmenux.com`; owner PWA `admin.qmenux.com`; superadmin PWA 
 - Task branches and task-tagged Conventional Commits; stable default branch, PR/CI reviews.
 - Agent must request authorization for commits, pushes and merges; no autonomous remote writes.
 - T052 Git baseline precedes T001; T053 CI after runnable project scripts exist.
+
+## T001 local-only foundation exception — 2026-10-25
+Evidence: user answered “evet devam et” to the explicit request to build only the local T001 monorepo while T000/legal decisions remain open. This authorizes local scaffolding/dependency installation and checks; it does not approve legal rules, commercial defaults, tenant activation, production connections, commits, pushes, merges or deployment.
+
+- T000 and LEG tasks remain open. Unknown company, license term/price/scope and provider policies are not hardcoded.
+- Branch `feat/T001-monorepo-setup` starts from clean local `main` at `111542c`; local remote-tracking information was inspected, not refreshed. Existing documentation branch `docs/T052-repository-baseline` at `6521b1b` is preserved and was not merged. Root ignore rules were carried into this branch as required for safe installation.
+- Scope: pnpm/Turbo, shared lint/TypeScript config, three minimal Next.js application shells and a stateless NestJS `/v1/health` endpoint. This is not an architecture change: no ORM/Redis/worker/provider choice made.
+- T001's existing CI-green acceptance is retained. Local checks do not complete it; T053 real PR execution and reviewer evidence remain outstanding. Do not mark T001 DONE.
+- Package versions were checked against official framework documentation and npm metadata. Node 24 is the pinned local target; no Vercel runtime compatibility claim until T047.
+- Tooling risk: Next lint dependencies currently reject ESLint 10 peer versions; ESLint 9.39.5 is pinned for compatibility despite publisher deprecation. This is a dev-tool limitation requiring follow-up, not a production-readiness approval.
+- Security: a transitive NestJS Multer advisory was found by `pnpm audit --prod`; targeted override to 2.5.0 applies the upstream patch (GHSA-q7qp-rjg7-q26m). No upload feature added. Record final audit results in PROGRESS.md.

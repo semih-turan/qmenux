@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Only reviewed framework build hooks may execute during installation.
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+# Remove when NestJS includes the GHSA-q7qp-rjg7-q26m fix upstream.
+overrides:
+  '@nestjs/platform-express>multer': 2.5.0
