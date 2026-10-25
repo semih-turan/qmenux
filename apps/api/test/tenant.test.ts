@@ -22,6 +22,7 @@ import { exerciseDraftStructure } from './draft-structure-fixture.js';
 import { exerciseAdminTenant } from './admin-tenant-fixture.js';
 import { exerciseDraftCatalog } from './draft-catalog-fixture.js';
 import { exerciseAdminAudience } from './admin-audience-fixture.js';
+import { exerciseOperatorPasskeys } from './operator-passkey-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
 const b = 'a0000000-0000-4000-8000-000000000002';
@@ -42,7 +43,7 @@ test('canonical tenant hostname parsing rejects spoofing, reserved and ambiguous
   }
 });
 
-test('HTTP authorization, draft catalog audit, application-schema RLS and pooled tenant cleanup', { timeout: 60000 }, async () => {
+test('HTTP authorization, draft audit, applicant isolation, native operator passkeys and pooled RLS cleanup', { timeout: 60000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'qmenux-t003-'));
   const socket = join(dir, 'socket');
   mkdirSync(socket, { mode: 0o700 });
@@ -252,6 +253,7 @@ test('HTTP authorization, draft catalog audit, application-schema RLS and pooled
     await exerciseAdminTenant(database, owner);
     await exerciseDraftStructure(database, owner);
     await exerciseOnboarding(database, owner);
+    await exerciseOperatorPasskeys(database, owner);
   } finally {
     await app?.close();
     await database?.onModuleDestroy();

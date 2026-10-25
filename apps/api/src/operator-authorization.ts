@@ -6,7 +6,7 @@ import { secretHash } from './identity-store.js';
 import { OperatorAccess, type AccessIdentity } from './operator-access.js';
 
 export type AuthorizedOperator = Readonly<{ id: string; role: 'PLATFORM_ADMIN' }>;
-// Trusted server adapter only; no production MFA policy is implemented or defaulted true.
+// Trusted server adapter only; OperatorPasskeys supplies verified evidence, never browser claims.
 export type OperatorMfaPolicy = (identity: AccessIdentity) => Promise<boolean>;
 const validToken = (token: unknown): token is string => typeof token === 'string' && /^[a-zA-Z0-9_-]{43}$/.test(token);
 

@@ -146,3 +146,8 @@ POST /v1/internal/admin-onboarding/list|drafts|drafts/:id/edit|drafts/:id/submit
 ### T041 admin browser application routes
 
 Fixed GET/POST /api/onboarding/applications, PATCH /:id and POST /:id/submit are now implemented in the admin app. Both default-off gates and an independent server-only application key are required. Host-only admin cookie, exact Origin and session-bound CSRF remain mandatory; numeric revisions/closed inputs and bounded sanitized outputs apply. No approval/tenant/license access is granted. [Full BFF/mobile contract and verification limits](ONBOARDING_APPLICATION_CONTRACT.md#admin-bff-and-mobile-applicant-delivery--2026-10-26).
+
+
+## T004 internal operator passkey prerequisite —2026-10-26
+
+OperatorPasskeys now verifies enrollment/authentication and supplies the existing mandatory OperatorAuthorization MFA policy through short-lived browser-bound evidence. It is default-off and has no registered controller, public credential/recovery route or privileged operation. Access and current platform role remain separate requirements; approval/license/role mutations still deny. [Internal use cases, input bounds, proof lifecycle, tests and release gates](OPERATOR_PASSKEY_CONTRACT.md).
