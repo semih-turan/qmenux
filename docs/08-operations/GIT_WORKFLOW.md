@@ -48,3 +48,24 @@ Status: Approved workflow | 2026-10-25
 - Commit hash (or `not committed`)
 - Risks/blockers
 - Next task and review request
+
+## T053 checks and branch protection
+Implementation: `.github/workflows/ci.yml`; prepared locally, remote execution/branch protection not claimed configured.
+
+- `Quality`: Ubuntu 24.04; Node from `.node-version`; pnpm from `packageManager`; frozen install; full dependency audit at low-or-higher severity; lint/typecheck; Chromium and Linux OS dependencies; API/mobile-width browser tests; all application builds. Any failed command fails the job. Playwright `test.only` is rejected in CI.
+- `Secret scan`: separate Ubuntu job with full checkout history (`fetch-depth: 0`), pinned/checksum-verified Gitleaks 8.30.1 and `git --redact --no-banner --log-opts="--all" .`. Covers all fetched refs; local-only/unpushed refs and ignored working files are outside remote coverage. A leak or scanner/download failure fails the job; no blanket baseline/allowlist was added.
+- Events: `pull_request`, `push` and `workflow_dispatch`. No path filters, `pull_request_target`, privileged workflow chaining, deployment, production environment or explicit repository-secret references. Manual dispatch availability depends on the workflow being present on the default branch; first evidence can come from an authorized push/PR.
+- Permissions: `contents: read`; checkout credentials not persisted. No self-hosted runner, remote Turbo cache, dependency cache or artifact upload. Jobs have timeouts; superseded runs are cancelled per PR/ref. Do not add production secrets or production DB URLs to PR CI.
+- Update policy: verify new action SHAs against official tagged commits and Gitleaks archives against official release checksums; review pin updates as code changes. The binary download is intentionally restricted to the Ubuntu x64 runner; local macOS validation used the checksum-verified Darwin arm64 release separately.
+
+Recommended owner-configured default-branch protection (not changed by the agent): require a PR and successful `Quality` and `Secret scan` checks from GitHub Actions, require current base-branch validation, block force pushes/deletions and avoid routine bypass. Select actual check names/app after the first successful run; do not require guessed contexts. Establish the human reviewer policy explicitly (an independent approval requires another authorized reviewer). Keep workflow edits under review.
+
+First-run acceptance evidence required before T053 DONE:
+1. Separately authorize the task commit/push or publish the reviewed changes yourself; no automatic commit/remote mutation.
+2. Record run URL, triggering branch/PR, commit SHA, runner/runtime and results for both checks. Confirm Chromium installation and all quality steps actually ran on Ubuntu, without production credentials.
+3. Record reviewer name/date, any fork-PR approval limitations and chosen protection settings (or clearly note protection is only recommended).
+4. Update TASKS.md/PROGRESS.md with actual evidence. YAML validation and local checks alone cannot satisfy GIT-002 or T001's CI-green acceptance.
+
+Local validation commands: `actionlint .github/workflows/ci.yml`; `gitleaks git --redact --no-banner --log-opts="--all" .`; the same pnpm quality commands with `CI=true`. Install Gitleaks/actionlint from their checksum-verified official releases. A local Git scan covers committed history; a separate nonignored-source snapshot scan is needed to inspect uncommitted files before commit. Never paste discovered secrets into review output; report redacted locations and rotate exposed credentials.
+
+Rollback: reverse only the T053 workflow, Playwright CI guard and documentation edits after checking for later changes; no application data/migration involved. Never rewrite history to remove a workflow. Required-check settings, once configured, need coordinated owner changes to avoid a permanently pending merge gate.

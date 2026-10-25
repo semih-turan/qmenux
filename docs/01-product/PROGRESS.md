@@ -67,3 +67,22 @@ Git governance policy and root `.gitignore` template documented. Added T052 (rep
 - Rollback: reverse only T001 additions/edits after checking for later user changes; no migration, data or external-service rollback needed. Preserve existing Git history and documentation branch.
 - Commit: not committed; nothing staged. Suggested commit after separate authorization: `chore(T001): initialize local pnpm monorepo`.
 - Next: review local foundation; T053 executable CI/secret scanning after authorized remote workflow, then T047 isolated hosting/ORM spike with separate service authorization. No feature or production gate waived.
+
+## T053 CI preparation — 2026-10-25
+- Task/status: T053 IN_REVIEW; remote CI and reviewer acceptance pending, not DONE. User requested moving to CI preparation; no production/commit/push authorization inferred.
+- Initial state: clean `feat/T001-monorepo-setup` at `d5465d5`, tracking origin's same locally recorded commit; existing T001 work had been committed/pushed outside this agent's work. No new branch/commit/fetch/push/merge or remote setting changed. Continued the cohesive T001/T053 foundation unit to avoid copying/cherry-picking unmerged dependencies.
+- Files: `.github/workflows/ci.yml`, `playwright.config.ts`, README.md, GIT_WORKFLOW.md, TASKS.md and this log.
+- Changes: read-only GitHub jobs named Quality and Secret scan; pinned action SHAs; Node/pnpm repository pins; frozen install, full audit, lint, typecheck, Chromium/API/browser tests, four builds; full-history redacted Gitleaks 8.30.1 with pinned Linux archive checksum. No privileged PR trigger, deployment, production secrets, cache or artifacts added. Playwright forbids test.only when CI is set.
+- Source verification: official checkout v7.0.1, setup-node v7.1.0 and pnpm/action-setup v6.1.0 tags resolved to workflow's pinned commit SHAs; action manifests inspected. Gitleaks/actionlint official release checksums verified before running local Darwin binaries; workflow's Linux x64 Gitleaks archive independently downloaded and SHA-256 verified.
+- Actual validation:
+  - `actionlint .github/workflows/ci.yml` (1.7.12): PASS, no diagnostics. This validates syntax/expressions, not hosted action execution.
+  - `gitleaks git --redact --no-banner --log-opts=--all .` (8.30.1): PASS, 5 local commits scanned, no leaks found. Does not assert coverage of unseen remote refs.
+  - Gitleaks directory scan on a temporary snapshot of tracked + nonignored untracked files: PASS, no leaks found. Generated/ignored outputs excluded.
+  - Synthetic-secret detection: PASS, transient generated fake credential outside repository causes exit 1 and one redacted finding; temporary directory removed. Initial harness incorrectly expected a rule ID in console output; Gitleaks reports a summary at this level. Corrected assertion to check failure/finding, without changing scanner configuration or ignoring findings.
+  - Focused-test rejection: PASS; temporary test.only fixture rejected with forbidOnly under CI=true, then removed. No test credential/fixture retained in repository.
+  - Node 24.22.1, pnpm 10.29.2, `CI=true`, telemetry disabled, Turbo force enabled: frozen install PASS; `pnpm audit --audit-level=low` PASS (no known vulnerabilities); lint PASS (5 tasks + root); typecheck PASS (4 apps + root); `pnpm test` PASS (1 API + 3 Chromium tests at 320/375/390/430px); build PASS (4 apps). Local Chromium install completed; Ubuntu `--with-deps` installation is not validated on macOS.
+  - `git diff --check`: PASS; scoped tracked diff and new workflow reviewed, index left unchanged. No dependency/lockfile/application change.
+- GIT-002 evidence still missing: real GitHub/Ubuntu run URL, event/commit SHA/results, owner-configured protection confirmation and named/dated reviewer acceptance. T001's CI-green acceptance remains pending too. No workflow merely marked complete based on YAML/local runs.
+- Risks/limits: Linux runner/actions/download behavior and fork approval policy remain unverified until hosted run. Existing ESLint 9 compatibility limitation remains; no production/security/legal readiness claimed. No physical-device or tenant-isolation QA performed in this task.
+- Commit: not committed. Suggested commit after authorization: `ci(T053): validate pull requests and scan secrets`.
+- Next: owner authorization to commit/push (or owner publication), then inspect actual CI evidence. T047 service spike requires separate nonproduction service access; no service connected here.

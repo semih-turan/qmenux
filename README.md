@@ -94,3 +94,8 @@ After a build, run one application with `pnpm --filter @qmenux/menu-pwa start` (
 Tooling compatibility: TypeScript 5.9.3 is pinned within typescript-eslint's supported peer range. Next's current lint dependencies require ESLint 9; the pinned 9.39.5 release is deprecated by its publisher. Upgrade the lint dependency set together when compatible ESLint 10 support is available; do not suppress peer errors. This tooling limitation remains open before production readiness.
 
 The workspace override pins NestJS's transitive Multer to 2.5.0 for [GHSA-q7qp-rjg7-q26m](https://github.com/advisories/GHSA-q7qp-rjg7-q26m); remove it when upstream includes the fix. No upload endpoint is implemented.
+
+## CI preparation — T053
+[GitHub Actions workflow](.github/workflows/ci.yml) defines `Quality` (locked install, dependency audit, lint, typecheck, API/browser tests, all builds) and `Secret scan` (redacted Gitleaks scan of fetched Git history). It runs on PRs, pushes and manual dispatch, without production secrets or deployment steps. Actions are pinned to commit SHAs; the Gitleaks release archive is SHA-256 verified. Node/pnpm use the repository pins. CI rejects focused Playwright tests (`test.only`).
+
+Local validation is recorded in [PROGRESS.md](docs/01-product/PROGRESS.md#t053-ci-preparation--2026-10-25). A successful local run does not demonstrate a GitHub/Ubuntu run. T053 stays IN_REVIEW until an authorized PR/test-branch run and reviewer acceptance are recorded. See [Git workflow](docs/08-operations/GIT_WORKFLOW.md#t053-checks-and-branch-protection) for the required-check recommendations and first-run evidence checklist.

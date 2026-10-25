@@ -155,7 +155,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
 | T052 | V1 foundation | Adopt Git workflow in existing repository, preserve history, validate `.gitignore`, establish reviewed docs baseline | T000 documentation review | GIT-001: existing history intact; clean scoped baseline; no secrets; branch policy documented | TODO |
-| T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | TODO |
+| T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | IN_REVIEW |
 
 ### v9 execution constraints
 - T052 is repository governance and should be addressed before coding T001. It **does not** mean reinitialize an existing Git repository.
@@ -173,3 +173,16 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - Tests: `apps/api/test/health.test.ts`, `tests/scaffold.spec.ts`; actual results and failures/fixes in [PROGRESS.md](PROGRESS.md#t001-local-scaffold--2026-10-25).
 - Rollback: reverse only T001 files after checking for subsequent user edits; generated outputs can be discarded independently. No data/migration/service rollback needed; no Git reset or history rewrite.
 - Open: T000/legal/feature gates, real CI, ESLint dependency compatibility follow-up and T047 deployment/ORM proof. Tenant isolation is not implemented and must not be claimed tested.
+
+## T053 execution contract — 2026-10-25
+- Owner: Engineering; reviewer/name/date: pending. Status: IN_REVIEW, not DONE; remote run evidence missing.
+- Scope authorized: prepare CI locally after user requested next step; no commit, push, PR creation, branch protection or production access authorized.
+- Branch/base: continued clean `feat/T001-monorepo-setup` at user-created `d5465d5` as one cohesive T001/T053 foundation acceptance unit; no new branch or merge. T001 CI acceptance is not marked satisfied. Existing docs branch preserved.
+- Dependencies: runnable T001 scripts exist; T052 Git policy applies, formal task/reviewer closure not inferred from commits. T000/legal gates remain unchanged under local foundation scope.
+- Files: `.github/workflows/ci.yml`, `playwright.config.ts` (`forbidOnly`), README.md, GIT_WORKFLOW.md, this file and PROGRESS.md. No app, dependency version, lockfile or schema change.
+- Steps: inspect Git/docs/tool versions; verify official action SHAs/scanner checksums; prepare least-privilege quality/history-scan jobs; validate YAML and scanner positive/negative behavior; execute local CI-mode quality commands; document required checks and missing remote evidence.
+- Acceptance: workflow actually runs on an authorized PR/test branch with lint/typecheck/API+browser tests/build/audit/secret-scan evidence; no production secrets; required-check recommendations and named reviewer acceptance. Local YAML/scripts alone do not satisfy GIT-002.
+- Tests/evidence: [T053 progress record](PROGRESS.md#t053-ci-preparation--2026-10-25); workflow lint, redacted history/source scans, transient synthetic-secret rejection and focused-test rejection; frozen install and all quality scripts in CI mode.
+- Rollback: remove/reverse only T053 changes after checking for later user edits; coordinate any future required-check settings with owner; no data migration/history rewrite.
+- Commit: not committed, index unchanged. Proposed commit: `ci(T053): validate pull requests and scan secrets`.
+- Next: explicit commit/push authorization or owner-published changes; record GitHub run URL/SHA/results and reviewer acceptance before DONE. T047 isolated hosting/ORM proof follows foundation acceptance and separate service authorization.
