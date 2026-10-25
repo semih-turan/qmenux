@@ -78,3 +78,16 @@ See `IDENTITY_OIDC_ONBOARDING.md` and `MANUAL_ACTIVATION_AND_FUTURE_PAYMENTS.md`
 - `api.qmenux.com/v1` is NestJS hosted as stateless Vercel Functions. All handlers must be bounded, retry-safe and free of process-local session assumptions.
 - Long-running requests return `202 Accepted` with tenant-scoped job id; external worker processes queue and persists results in R2/Neon. Poll status endpoints require authorization.
 - Protect API with origin allowlists, per-tenant/client rate limits and signed webhook verification. Validate serverless concurrency and Neon pooled DB usage.
+
+## T004 implemented development auth surface
+This is a bounded API-only slice; provider configuration is currently disabled. All responses below use `Cache-Control: no-store`.
+
+| Route | Configured behavior | Disabled behavior |
+|---|---|---|
+| GET /v1/auth/providers | Provider IDs and enabled flags only; Microsoft/Apple false | 200, all false |
+| GET /v1/auth/google/start | 302 to fixed Google issuer, short-lived browser-binding cookie | 503 unavailable, no cookie/redirect |
+| GET /v1/auth/google/callback | Consume browser-bound state, verify code/ID token, issue opaque API session; registered user UUID/status and tenantAccess=false | 503 unavailable, no cookie |
+| GET /v1/auth/me | 200 registered user UUID/status and tenantAccess=false; invalid/expired/revoked/suspended session 401 | 503 unavailable |
+| POST /v1/auth/logout | Exact API Origin required; revoke presented session, clear cookie, 200 signed_out | 503 unavailable |
+
+Callback validation failures/cancel/replay return generic 401; storage/provider discovery failures are sanitized 503. No tokens/SQL/connection values returned. Noncanonical Host fails 401 when enabled; forwarded headers never establish host authority. No returnTo parameter/open redirect, browser bearer-token login, credentialed CORS, tenant selection or superadmin session is implemented. Proposed OpenAPI auth naming/CSRF contracts for the eventual admin BFF remain pending; this slice is not AUTH-001..006 full acceptance.

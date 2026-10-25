@@ -69,3 +69,6 @@ Later owner instructions authorized direct CLI Production-target development and
 
 ## Tenant transaction checkpoint — 2026-10-25
 T002 baseline is imported into the owner-approved dependent T003 branch. Local real-PostgreSQL and manual isolated Neon application-schema isolation tests pass; existing Vercel API remains health-only. T002/T003/T048 remain IN_PROGRESS pending review and remaining acceptance. Next implement T004 identity/RBAC/MFA before catalog routes, with secure provider protocols and explicit privileged activation/license gates. T043 stays last; no V1 payment integration. [Evidence](PROGRESS.md#t003-tenant-resolution-and-transaction-isolation--2026-10-25).
+
+## Identity development checkpoint — 2026-10-25
+T004 IN_PROGRESS: Google code/PKCE validation and durable revocable API sessions implemented and tested with signed synthetic provider responses plus private local/Neon PostgreSQL. Vercel provider configuration remains disabled; registration creates no tenant privileges/license. Next T004 slices are membership/RBAC and privileged Access/MFA, Microsoft/Apple adapters, admin mobile BFF and provider/security/privacy/abuse/retention acceptance. T005 remains dependent on reviewed identity/authorization. T043 stays last; no V1 payment gateway.

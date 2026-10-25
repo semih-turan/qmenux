@@ -21,7 +21,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 | T001 | Initialize pnpm/Turborepo, lint, typecheck, CI | T000; local-only exception below | CI green | IN_REVIEW |
 | T002 | PostgreSQL schema and migration strategy | T001 | Migrations and rollback drill | IN_PROGRESS |
 | T003 | Tenant resolver and RLS integration tests | T002 | Cross-tenant denial tests | IN_PROGRESS |
-| T004 | Identity, RBAC, privileged MFA | T003 | Auth and MFA tests | TODO |
+| T004 | Identity, RBAC, privileged MFA | T003 | Auth and MFA tests | IN_PROGRESS |
 | T005 | Catalog domain and APIs | T003,T004 | Contract tests, price history | TODO |
 | T006 | Mobile admin shell and product CRUD | T005 | iPhone/Android touch workflow tests | TODO |
 | T007 | Public menu PWA and cache invalidation | T005 | Fresh price tests, offline stale warning | TODO |
@@ -259,3 +259,11 @@ T048 now IN_PROGRESS with real synthetic INFRA-002 evidence; T047 remains IN_PRO
 - Deployment: existing API only, dpl_GzDGMgw8nk24b8Pq4FwPzjCxkj7E; health/readiness and 20 concurrent readiness requests pass. No credential/configuration changes or canonical DNS changes.
 - Rollback: remove caller dependency before applying `0002_tenant_resolution.down.sql` atomically via direct owner; drops only resolver/ledger entry. Baseline down refuses business data and later versions. Never delete production data for rollback.
 - Reviewer/name/date: pending. T002/T003/T048 remain IN_PROGRESS; identity/license and published-public-read policies, hosted CI for this diff, legal/release gates and architecture acceptance remain open. Next task T004. Proposed commit after separate authorization: `feat(T003): enforce tenant transaction isolation`.
+
+## T004 first implementation slice — 2026-10-25
+- Status IN_PROGRESS; owner Engineering, named reviewer/date pending. Current “Sonraki adıma geç” instruction continues development on `feat/T004-identity-foundation`, starting at 9638d18, the externally committed T003 predecessor observed in the final reflog. The initial inspection saw 467f1e2 with uncommitted T003 changes; these were committed outside the agent before branch creation. Main/history/remotes, sibling worktree and index preserved; no agent staging/commit/push/merge. This does not record new architecture or legal approval.
+- Objective: real Google Authorization Code OIDC adapter plus durable browser-bound one-use attempts and opaque revocable API sessions. No simulated social sign-in, business privileges or automatic activation. Provider configuration is disabled; Microsoft/Apple, role/membership policy, operator Access/MFA, admin BFF and mobile login remain later T004 slices.
+- Files: API auth controller/Google adapter/identity store, AppModule, API integration fixtures; 0003 migration/down; manual Neon probe and prior probe version compatibility; exact dependency/lockfile, env example and architecture/API/progress docs.
+- Acceptance for this slice: signed provider simulation tests signature/issuer/audience/expiry/nonce/PKCE/state, browser binding, failed/repeated/concurrent callback, cancellation, host validation, session rotation/logout/suspension/expiry and runtime table denial. Local and Neon migration rollback/down/reapply and no-data-loss rollback guard; cloud synthetic fixtures removed. Evidence in [PROGRESS](PROGRESS.md#t004-google-oidc-and-durable-sessions--2026-10-25).
+- Rollback: disable auth/remove callers, apply 0003 down atomically through direct owner only if all four identity tables are empty; otherwise reviewed forward correction/retention process. Down never deletes identities/sessions. No change to existing tenant tables/RLS.
+- Proposed later commit after separate authorization: `feat(T004): add Google OIDC and revocable sessions`. T004 is not DONE; do not advance catalog authorization until remaining auth/license gates are implemented and reviewed.

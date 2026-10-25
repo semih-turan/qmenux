@@ -11,6 +11,7 @@ import { NestFactory } from '@nestjs/core';
 import { Client, Pool } from 'pg';
 import { Database } from '../src/database.js';
 import { tenantSlug, TenantTransactions } from '../src/tenant-transactions.js';
+import { exerciseAuth } from './auth-fixture.js';
 
 const a = 'a0000000-0000-4000-8000-000000000001';
 const b = 'a0000000-0000-4000-8000-000000000002';
@@ -169,6 +170,23 @@ test('HTTP authorization, application-schema RLS and pooled tenant cleanup', { t
     assert.equal((await pool.query("SELECT NULLIF(current_setting('app.tenant_id',true),'') AS tenant")).rows[0].tenant,null);
     const batch=await Promise.all(Array.from({length:20},(_,i)=>send(i%2===0?hostA:hostB)));
     assert(batch.every((r,i)=>i%2===0?r.status===200&&JSON.stringify(r.body)===JSON.stringify([{id:productA}]):r.status===403));
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0003_identity_sessions.up.sql'));
+    await owner.query('ROLLBACK');
+    assert.equal((await owner.query("SELECT to_regnamespace('qmenux_identity') IS NULL AS absent")).rows[0].absent,true);
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0003_identity_sessions.up.sql'));
+    await owner.query('COMMIT');
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0003_identity_sessions.down.sql'));
+    await owner.query('COMMIT');
+    await owner.query('BEGIN');
+    await owner.query(sql('migrations/0003_identity_sessions.up.sql'));
+    await owner.query('COMMIT');
+    await exerciseAuth(database, owner);
+    await owner.query('BEGIN');
+    await assert.rejects(owner.query(sql('migrations/0003_identity_sessions.down.sql')), (e: {code:string})=>e.code==='P0001');
+    await owner.query('ROLLBACK');
   } finally {
     await app?.close();
     await database?.onModuleDestroy();

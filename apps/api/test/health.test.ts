@@ -16,6 +16,9 @@ test('health is minimal, readiness fails closed, business and checkout routes ar
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.deepEqual(await response.json(), { status: 'ok' });
+    const providers = await fetch(`${origin}/v1/auth/providers`);
+    assert.equal(providers.headers.get('cache-control'), 'no-store');
+    assert.equal(providers.status, 200);
     for (const databaseUrl of ['', 'invalid',
       'postgresql://neondb_owner:synthetic@ep-test-pooler.c-14.us-east-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require',
       'postgresql://qmenux_runtime:synthetic@ep-test-pooler.c-14.us-east-1.aws.neon.tech/neondb?sslmode=disable&channel_binding=require',
