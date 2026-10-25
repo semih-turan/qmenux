@@ -1,0 +1,25 @@
+{
+  "name": "qmenux-t047-orm-probe",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.29.2",
+  "scripts": {
+    "generate": "prisma generate --schema prisma/schema.prisma",
+    "typecheck": "tsc --noEmit",
+    "test": "bash run-local.sh"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "@prisma/client": "7.10.1",
+    "@prisma/adapter-pg": "7.10.1",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "prisma": "7.10.1",
+    "@types/pg": "8.23.1",
+    "@types/node": "24.19.2",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

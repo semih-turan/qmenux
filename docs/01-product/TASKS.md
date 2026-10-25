@@ -138,7 +138,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 ## v8 — Neon PostgreSQL + Vercel deployment tasks (2026-10-25)
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
-| T047 | V1 foundation | Vercel monorepo projects + Next.js/NestJS Functions spike; choose ORM after test | T001 | INFRA-001, cold-start and bundling report | TODO |
+| T047 | V1 foundation | Vercel monorepo projects + Next.js/NestJS Functions spike; choose ORM after test | T001 | INFRA-001, cold-start and bundling report | IN_PROGRESS |
 | T048 | V1 foundation | Neon project/branches, pooled runtime/direct migration URLs, RLS transaction-context tests | T002,T003,T047 | INFRA-002, parallel tenant isolation tests | TODO |
 | T049 | V1 before async features | Choose external worker host + BullMQ-compatible Redis/queue; deploy durable job consumer/outbox relay | T047,T048 | INFRA-003, retries/idempotency/queue recovery | TODO |
 | T050 | V1 | Configure Vercel hostnames, Cloudflare DNS/TLS/WAF/Access and wildcard tenant routing | T035,T047 | INFRA-004, reserved-host and mobile Access tests | TODO |
@@ -194,3 +194,19 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 - Evidence inspection: `gh run view`, `gh run watch --exit-status`, filtered job logs and read-only PR/branch API queries; detailed record in [PROGRESS.md](PROGRESS.md#t053-hosted-ci-evidence--2026-10-25).
 - Reviewer gate: GitHub PR reviews list empty at inspection; no named/dated acceptance inferred. T053 and T001 remain IN_REVIEW, not DONE. Main reports `protected: false`, applicable branch rules empty; recommendations are not enforced.
 - Publication: CI commit was already present locally/remotely when this turn began; no duplicate agent commit/push. This evidence update is uncommitted. No merge, rule change or deployment performed.
+
+## T047 execution contract — 2026-10-25
+- Owner: Engineering; reviewer/date: pending. Status: IN_PROGRESS, not DONE. User requested T047 and explicitly approved a dependent branch from unmerged `d9b2df4`; [scope/evidence report](../08-operations/T047_SPIKE_REPORT.md).
+- Branch: `feat/T047-vercel-nestjs-spike`; existing foundation/docs branches, default branch, remote configuration and history preserved. No merge, commit or push authorized/performed.
+- Objective: native Vercel monorepo/Next/Nest proof plus evidence-based ORM proposal, without feature/business flows or production services.
+- Files: root package.json/pnpm-lock.yaml (development trace tool/scripts); `infrastructure/spikes/trace-api.mjs`; isolated `infrastructure/spikes/orm` workspace/schema/probe/lifecycle script/README/lockfile; README, this backlog, PROGRESS, DECISIONS, ROADMAP and infrastructure spike report.
+- Local steps: verify docs/runtime/tools; create authorized branch; trace/copy/start API; install isolated stable ORM candidates; use disposable local socket-only PostgreSQL to verify typed-query RLS/rollback/pool-reuse behavior; run lint/typecheck/tests/build/audits; record limitations and concrete Preview project plan.
+- Local evidence: 1,093 traced files/2,865,850 bytes; copied API starts and answers 20 concurrent health requests. Both ORM candidates pass missing-context/cross-tenant denial, own-write rollback and 20 alternating-tenant transactions through one reused backend. This is not Vercel cold-start or Neon/PgBouncer proof.
+- Acceptance still required: isolated Vercel Next.js/NestJS Preview execution, recorded cloud bundling/cold-start/concurrency/limits report, reviewed ORM decision and named/dated acceptance. No task completed on local metrics alone. T048 Neon pool proof remains separate.
+- Cloud action: owner declined project creation/deployment on 2026-10-25 (“Hayır, şimdilik yalnızca yerel deneme”). Local scope only; Preview plan deferred, no pending approval question. No creation/deployment/env pull performed; future cloud execution requires new explicit authorization.
+- Rollback: remove only T047 tooling/spikes after checking for later user edits; local cluster/artifact clean themselves up. No canonical DB schema, application runtime or live data changed. Future preview resource lifecycle must be recorded separately.
+- Tests: actual results in [PROGRESS.md](PROGRESS.md#t047-local-spike--2026-10-25). Root CI only lints experiment source; local DB test has an explicit separate command.
+- Commit: not committed; index unchanged. Proposed later commit after review: `chore(T047): add isolated runtime and ORM probes`.
+
+### T047 scope clarification — 2026-10-25
+Local experiment work and checks are prepared for review. Owner explicitly limited the task to local experiments; cloud acceptance is deferred, not satisfied or waived. Keep T047 IN_PROGRESS and ORM OPEN. No additional cloud access or repeated approval request is needed during this local-only scope. Next permitted action is local review; commits/pushes remain separately authorized.

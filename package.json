@@ -8,16 +8,18 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests",
+    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests infrastructure/spikes/trace-api.mjs infrastructure/spikes/orm/probe.ts",
     "typecheck": "turbo run typecheck && tsc --project tsconfig.json",
     "test": "turbo run test && playwright test",
     "build": "turbo run build",
-    "test:smoke": "playwright test"
+    "test:smoke": "playwright test",
+    "spike:api-trace": "pnpm --filter @qmenux/api build && node infrastructure/spikes/trace-api.mjs"
   },
   "devDependencies": {
-    "@qmenux/config": "workspace:*",
     "@playwright/test": "1.64.1",
+    "@qmenux/config": "workspace:*",
     "@types/node": "24.19.2",
+    "@vercel/nft": "1.11.0",
     "eslint": "9.39.5",
     "turbo": "2.11.10",
     "typescript": "5.9.3"

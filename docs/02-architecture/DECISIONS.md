@@ -76,3 +76,18 @@ Evidence: user answered “evet devam et” to the explicit request to build onl
 - Package versions were checked against official framework documentation and npm metadata. Node 24 is the pinned local target; no Vercel runtime compatibility claim until T047.
 - Tooling risk: Next lint dependencies currently reject ESLint 10 peer versions; ESLint 9.39.5 is pinned for compatibility despite publisher deprecation. This is a dev-tool limitation requiring follow-up, not a production-readiness approval.
 - Security: a transitive NestJS Multer advisory was found by `pnpm audit --prod`; targeted override to 2.5.0 applies the upstream patch (GHSA-q7qp-rjg7-q26m). No upload feature added. Record final audit results in PROGRESS.md.
+
+## ADR-ORM-047 — Transaction driver candidate (proposed, 2026-10-25)
+- Context: Neon/Vercel are approved; ORM/driver is not. Tenant context must stay inside one explicit transaction and fail closed across pooled reuse.
+- Evidence: [T047 report](../08-operations/T047_SPIKE_REPORT.md); local Drizzle/pg and stable Prisma v7/adapter-pg typed APIs both pass the same disposable PostgreSQL RLS/rollback/reuse probe. No production schema or application ORM installed.
+- Proposal: retain Drizzle + a transaction-capable PostgreSQL driver as the leading candidate for explicit SQL/RLS control; Prisma v7 remains viable. This is engineering judgment, not a performance conclusion from one local duration sample.
+- Alternatives: Prisma adapter-pg; Neon WebSocket-capable drivers. Do not assume an HTTP single-query driver supports the interactive transaction contract used by this probe.
+- Consequences/security: one application-owned transaction boundary must set tenant context, authorize operations and sanitize ORM errors; neither ORM replaces server authorization or RLS. Error objects may contain SQL/parameters.
+- Migration: experiment schema is disposable only. Canonical migrations/rollback strategy still belong to T002; no historical data or application package is changed.
+- Approval: PENDING owner/reviewer name/date. No final ORM choice. Native Preview packaging, migration tradeoffs and T048 Neon pooled/direct evidence remain outstanding.
+
+## T047 dependent branch exception — 2026-10-25
+Owner explicitly answered “Evet, bağımlı T047 dalını aç” to creating `feat/T047-vercel-nestjs-spike` from clean unmerged foundation commit `d9b2df4`. This permits the task-specific branch, not merging PR #1 or changing the default branch. Local spike work is authorized; new Vercel Preview projects were separately presented for approval. T000/legal gates and production/commit/push restrictions remain in force.
+
+## T047 cloud scope decision — 2026-10-25
+Owner explicitly answered “Hayır, şimdilik yalnızca yerel deneme” to the four-project Vercel Preview proposal. Scope is local experiments only. Do not create/link/deploy projects or substitute other hosted resources. The Preview plan is deferred, with no pending approval request; new explicit authorization is required to resume cloud work. This decision neither approves an ORM nor satisfies INFRA-001/T048, legal or production gates.

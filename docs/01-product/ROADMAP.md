@@ -58,3 +58,8 @@ Before T001 implementation, complete T052: inspect the existing Git repository, 
 
 ## Authorized local T001 work — 2026-10-25
 The owner explicitly allowed local monorepo scaffolding while T000/legal reviews remain open. This bounded exception covers tooling, placeholder application shells, liveness and local checks only. It does not authorize feature work, production services or legal approval. T001 CI-green acceptance remains pending T053 execution/review; T047 hosting/ORM proof follows the local foundation. Marketing T043 stays last and V1 payments remain disabled.
+
+## T047 local evidence checkpoint — 2026-10-25
+Local runtime tracing and disposable PostgreSQL ORM comparison are in progress on an explicitly approved dependent branch. Both candidates pass the local transaction/RLS probe; ORM is still OPEN. Native Vercel Preview execution and reviewer acceptance remain required for T047; Neon/PgBouncer validation remains T048. No feature work, production setup or landing implementation is advanced by these experiments. See [T047 report](../08-operations/T047_SPIKE_REPORT.md).
+
+T047 scope clarification (2026-10-25): owner limited work to local experiments and declined the new Preview projects. Local results are ready for review; cloud execution is deferred. T047 remains incomplete under its unchanged acceptance criteria. No further cloud action until new explicit authorization.
