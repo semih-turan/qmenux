@@ -55,6 +55,21 @@ export class IdentityStore {
       [subject, secretHash(token), previous ? secretHash(previous) : null]))[0]!.id;
   }
 
+  async beginApple(state: string, browser: string, nonce: string): Promise<void> {
+    await this.query('SELECT qmenux_identity.begin_apple_login($1,$2,$3)',
+      [secretHash(state), secretHash(browser), nonce]);
+  }
+
+  async consumeApple(state: string, browser: string): Promise<{ nonce: string } | undefined> {
+    return (await this.query<{ nonce: string }>('SELECT * FROM qmenux_identity.consume_apple_login($1,$2)',
+      [secretHash(state), secretHash(browser)]))[0];
+  }
+
+  async createAppleSession(subject: string, token: string, previous?: string): Promise<string | null> {
+    return (await this.query<{ id: string | null }>('SELECT qmenux_identity.create_apple_session($1,$2,$3) AS id',
+      [subject, secretHash(token), previous ? secretHash(previous) : null]))[0]!.id;
+  }
+
   async readSession(token: string): Promise<RegisteredUser | undefined> {
     return (await this.query<RegisteredUser>('SELECT * FROM qmenux_identity.read_session($1)', [secretHash(token)]))[0];
   }

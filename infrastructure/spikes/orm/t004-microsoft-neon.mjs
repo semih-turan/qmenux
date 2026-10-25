@@ -27,8 +27,8 @@ try {
     'qmenux_identity.login_attempts', 'qmenux_identity.sessions', 'qmenux_operator.operators', 'qmenux_operator.sessions'];
   for (const table of tables) assert.equal((await owner.query(`SELECT count(*) FROM ${table}`)).rows[0].count, '0');
   const versions = (await owner.query('SELECT version FROM qmenux.schema_migrations ORDER BY version')).rows.map(r => r.version);
-  const expected = ['0001_tenant_catalog', '0002_tenant_resolution', '0003_identity_sessions', '0004_tenant_memberships', '0005_operator_sessions', '0006_auth_expiry','0007_microsoft_identity'];
-  assert([6, 7].includes(versions.length)); assert.deepEqual(versions, expected.slice(0, versions.length));
+  const expected = ['0001_tenant_catalog', '0002_tenant_resolution', '0003_identity_sessions', '0004_tenant_memberships', '0005_operator_sessions', '0006_auth_expiry','0007_microsoft_identity','0008_apple_identity'];
+  assert([6, 7, 8].includes(versions.length)); assert.deepEqual(versions, expected.slice(0, versions.length));
   database = new Database(new Pool({ connectionString: process.env.DATABASE_URL, max: 2, ...limits }));
   stage = 'provider binding, migration rollback, one-use state and session isolation';
   await exerciseMicrosoftIdentity(database, owner);

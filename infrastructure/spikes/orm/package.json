@@ -16,6 +16,7 @@
     "test:operator-neon": "node t004-operator-neon.mjs",
     "test:auth-expiry-neon": "node t004-expiry-neon.mjs",
     "test:microsoft-identity-neon": "node t004-microsoft-neon.mjs",
+    "test:apple-identity-neon": "node t004-apple-neon.mjs",
     "maintenance:auth-expiry": "node cleanup-auth.mjs"
   },
   "dependencies": {
