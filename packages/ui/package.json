@@ -6,6 +6,7 @@
   "exports": {
     "./admin.css": "./src/admin.css",
     "./button": "./src/button.tsx",
+    "./text-field": "./src/text-field.tsx",
     "./management-shell": "./src/management-shell.tsx"
   },
   "scripts": {

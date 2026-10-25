@@ -2,6 +2,7 @@
 
 import { Button } from '@qmenux/ui/button';
 import { useEffect, useState } from 'react';
+import Applications from './applications';
 
 const providers = [{ id: 'google', label: 'Google' }, { id: 'microsoft', label: 'Microsoft / Outlook' }, { id: 'apple', label: 'Apple' }] as const;
 type State = 'loading' | 'signed_out' | 'registered' | 'unavailable';
@@ -64,6 +65,7 @@ export default function SignIn() {
         <h2>Hesabınızla giriş yaptınız</h2>
         <p>İşletme erişimi için yönetici onayı ve geçerli lisans gerekir. Giriş yapmak işletmenizi etkinleştirmez.</p>
         <Button disabled={busy} onClick={() => void submit()}>{busy ? 'Çıkış doğrulanıyor…' : 'Çıkış yap'}</Button>
+        <Applications />
       </> : <>
         <p>Kafe ve restoran işletme hesabınıza giriş yapın. Yeni hesaplar için işletme erişimi yönetici onayına bağlıdır.</p>
         {state === 'unavailable' && <p role="status">Giriş henüz kullanıma açılmadı veya bağlantı kurulamadı. Daha sonra tekrar deneyin.</p>}

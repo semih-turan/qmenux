@@ -1,92 +1,15 @@
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
+import { origin, proofPattern, sessionName, csrfName, AuthError, fail, headers, json, cookie, setCookie, config, boundedJson, object, call, mutationHeaders, csrfProof } from './admin-server';
 
-const origin = 'https://admin.qmenux.com';
-const api = 'https://api.qmenux.com';
 const providers = ['google', 'microsoft', 'apple'] as const;
 type Provider = typeof providers[number];
-const proofPattern = /^[A-Za-z0-9_-]{43}$/;
-const sessionName = '__Host-qmenux_admin_session';
-const csrfName = '__Host-qmenux_admin_csrf';
 const loginName = (provider: Provider) => `__Host-qmenux_admin_${provider}_login`;
 const authorizationEndpoints: Record<Provider, string> = {
   google: 'https://accounts.google.com/o/oauth2/v2/auth',
   microsoft: 'https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/oauth2/v2.0/authorize',
   apple: 'https://appleid.apple.com/auth/authorize',
 };
-class AuthError extends Error {
-  constructor(readonly status: number) { super('Auth request failed'); }
-}
-function fail(status: number): never { throw new AuthError(status); }
-const headers = { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' };
-const json = (value: unknown, status = 200) => NextResponse.json(value, { status, headers });
-
-function cookie(req: Request, name: string): string | undefined {
-  const entries = (req.headers.get('cookie') ?? '').split(';').map(value => value.trim())
-    .filter(value => value.split('=')[0] === name);
-  if (!entries.length) return undefined;
-  if (entries.length !== 1) fail(400);
-  const value = entries[0]!.slice(name.length + 1);
-  if (!proofPattern.test(value)) fail(400);
-  return value;
-}
-function setCookie(res: NextResponse, name: string, value: string, maxAge: number, httpOnly = true) {
-  res.cookies.set(name, value, { secure: true, httpOnly, sameSite: 'lax', path: '/', maxAge });
-}
-function config(): string {
-  const key = process.env.ADMIN_BFF_SECRET;
-  if (process.env.ADMIN_AUTH_ENABLED !== 'true' || process.env.VERCEL_ENV === 'preview' || !key || !proofPattern.test(key)
-    || process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') fail(503);
-  return key;
-}
-
-async function boundedJson(body: ReadableStream<Uint8Array> | null, limit: number, signal: AbortSignal): Promise<unknown> {
-  if (!body) fail(400);
-  const reader = body.getReader();
-  const cancel = () => { void reader.cancel().catch(() => {}); };
-  signal.addEventListener('abort', cancel, { once: true });
-  try {
-    const chunks: Uint8Array[] = [];
-    let length = 0;
-    while (true) {
-      if (signal.aborted) fail(503);
-      const part = await reader.read();
-      if (signal.aborted) fail(503);
-      if (part.done) break;
-      length += part.value.byteLength;
-      if (length > limit) fail(413);
-      chunks.push(part.value);
-    }
-    try { return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown; }
-    catch { fail(400); }
-  } finally {
-    signal.removeEventListener('abort', cancel);
-    void reader.cancel().catch(() => {});
-  }
-}
-function object(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) fail(503);
-  return value as Record<string, unknown>;
-}
-async function call(key: string, path: string, body?: Record<string, string>): Promise<Record<string, unknown>> {
-  try {
-    const signal = AbortSignal.timeout(10_000);
-    const res = await fetch(`${api}/v1/${path}`, {
-      method: body ? 'POST' : 'GET', redirect: 'error', cache: 'no-store', signal,
-      headers: body ? { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' } : {},
-      ...(body ? { body: JSON.stringify(body) } : {}),
-    });
-    if (!res.ok) {
-      void res.body?.cancel().catch(() => {});
-      fail(res.status === 401 ? 401 : 503);
-    }
-    if (!/^application\/json(?:\s*;|$)/i.test(res.headers.get('content-type') ?? '')) fail(503);
-    return object(await boundedJson(res.body, 16_384, signal));
-  } catch (error) {
-    if (error instanceof AuthError && error.status === 401) throw error;
-    fail(503);
-  }
-}
 function identity(data: Record<string, unknown>) {
   const user = object(data.user);
   if (typeof user.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)
@@ -94,9 +17,7 @@ function identity(data: Record<string, unknown>) {
   return { user: { id: user.id, status: 'REGISTERED' }, tenantAccess: false };
 }
 async function mutation(req: Request) {
-  if (req.headers.get('origin') !== origin || req.headers.get('x-qmenux-request') !== '1'
-    || !/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers.get('content-type') ?? '')
-    || req.headers.has('content-encoding')) fail(400);
+  mutationHeaders(req);
   // Both mutations accept only an empty JSON object: no browser-selected API arguments.
   const value = await boundedJson(req.body, 256, AbortSignal.timeout(5_000));
   if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).length) fail(400);
@@ -180,9 +101,7 @@ export async function handleAuth(req: Request): Promise<NextResponse> {
     const session = cookie(req, sessionName);
     if (!session) fail(401);
     if (path === 'me') return json(identity(await call(key, 'internal/admin-auth/me', { session })));
-    const csrf = cookie(req, csrfName), supplied = req.headers.get('x-csrf-token');
-    if (!csrf || !supplied || !proofPattern.test(supplied)
-      || !timingSafeEqual(Buffer.from(csrf), Buffer.from(supplied))) fail(400);
+    const csrf = csrfProof(req);
     const data = await call(key, 'internal/admin-auth/logout', { session, csrf });
     if (data.status !== 'signed_out') fail(503);
     const res = json({ status: 'signed_out' });
