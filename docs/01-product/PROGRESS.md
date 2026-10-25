@@ -118,3 +118,13 @@ Git governance policy and root `.gitignore` template documented. Added T052 (rep
 - Updated report, TASKS, ROADMAP and DECISIONS; existing spike/code changes preserved on `feat/T047-vercel-nestjs-spike`, HEAD d9b2df4. No project/deployment, environment pull, commit/push/merge or service change performed.
 - Local evidence remains valid; T047 IN_PROGRESS, ORM OPEN, cloud/Neon acceptance deferred and unfulfilled. Next permitted work: review local artifacts, not hosted validation.
 - Verification: `git diff --check` PASS; documentation-only clarification, application tests not repeated. Index/history unchanged; all changes remain uncommitted.
+
+## T047 next local step — final review and timeout fix, 2026-10-25
+- Owner asked to perform only the next step, not all subsequent tasks. Reviewed existing committed T047 work at 16623d7 and connected callers for one-developer local use; remained on feat/T047-vercel-nestjs-spike. No branch/commit/push/merge/cloud action.
+- Confirmed one defect: a temporary listening-but-nonresponding API kept the trace waiting past seven seconds because fetch had no deadline. Added a shared five-second readiness abort signal and five-second subsequent health request signals. No application endpoint or infrastructure stage changed.
+- Added trace-api.test.mjs to root test/lint scripts. Regression requires the probe to exit by its own deadline (not the outer test kill), report the readiness timeout and remove its traced directory. It passed in approximately 5.1 seconds.
+- Other check: ORM probe with inherited PGPORT=6543 passed for both candidates (12ms/92ms diagnostics); no temporary cluster left. No environment-port defect reported.
+- Files: infrastructure/spikes/trace-api.mjs, trace-api.test.mjs, root package.json, TASKS.md, T047 report and this log. No new dependency or lockfile change.
+- Final Node 24.22.1/pnpm 10.29.2 CI-mode checks, forced execution: lint PASS (5 package tasks plus root), typecheck PASS (4 apps plus root), tests PASS (1 API + 1 timeout regression + 3 Chromium), builds PASS (4 apps), real API trace PASS (20 concurrent responses, 175ms local startup diagnostic). Initial JS lint flagged AbortSignal as undeclared; corrected access to globalThis.AbortSignal and final checks passed.
+- Verification: git diff --check PASS; scoped diff/new test reviewed; HEAD/index preserved, no commits. No Vercel/Neon or hosted CI verification performed for this fix, as cloud scope remains declined.
+- Outcome: this local review/fix step is complete; T047 overall remains IN_PROGRESS with cloud evidence deferred and ORM OPEN. No subsequent task started. Rollback only the scoped timeout/test/script/doc edits after checking for later user changes.

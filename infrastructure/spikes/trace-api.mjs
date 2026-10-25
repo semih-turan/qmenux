@@ -47,13 +47,15 @@ try {
     env: { PATH: process.env.PATH, PORT: String(port), NODE_ENV: 'production' },
     stdio: 'ignore',
   });
+  const readinessDeadline = globalThis.AbortSignal.timeout(5000);
   let response;
   for (let attempt = 0; attempt < 100; attempt++) {
     assert(child.exitCode === null, 'Traced API exited before readiness');
     try {
-      response = await globalThis.fetch(`http://127.0.0.1:${port}/v1/health`);
+      response = await globalThis.fetch(`http://127.0.0.1:${port}/v1/health`, { signal: readinessDeadline });
       break;
-    } catch {
+    } catch (error) {
+      if (readinessDeadline.aborted) throw new Error('API readiness deadline exceeded', { cause: error });
       await setTimeout(50);
     }
   }
@@ -62,7 +64,7 @@ try {
   assert.equal(response.headers.get('cache-control'), 'no-store');
   assert.deepEqual(await response.json(), { status: 'ok' });
   const startupMs = Math.round(performance.now() - started);
-  const replies = await Promise.all(Array.from({ length: 20 }, () => globalThis.fetch(`http://127.0.0.1:${port}/v1/health`)));
+  const replies = await Promise.all(Array.from({ length: 20 }, () => globalThis.fetch(`http://127.0.0.1:${port}/v1/health`, { signal: globalThis.AbortSignal.timeout(5000) })));
   for (const reply of replies) {
     assert.equal(reply.status, 200);
     assert.deepEqual(await reply.json(), { status: 'ok' });

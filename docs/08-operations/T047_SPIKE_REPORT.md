@@ -10,7 +10,7 @@ Application code, root AGENTS.md, production domains, existing Vercel projects a
 
 ## Local API packaging evidence
 
-Run `pnpm spike:api-trace` after root dependency installation. It compiles the API, uses Node File Trace to collect its runtime files, copies those files/symlinks to a disposable directory, starts the copied entrypoint with no inherited provider credentials, checks minimal uncached health and 20 concurrent health requests, then stops/removes its own output.
+Run `pnpm spike:api-trace` after root dependency installation. It compiles the API, uses Node File Trace to collect its runtime files, copies those files/symlinks to a disposable directory, starts the copied entrypoint with no inherited provider credentials, checks minimal uncached health and 20 concurrent health requests, then stops/removes its own output. Readiness and subsequent health requests have five-second abort deadlines; root `pnpm test` includes a regression test for an API that accepts connections but never responds.
 
 Initial Node 24.22.1 result: PASS; 1,093 traced files, 2,865,850 file bytes, 234ms local process startup; 20 concurrent requests passed. These are local diagnostics, not Vercel cold-start/latency or production bundle measurements. The copied artifact is a dependency trace, not a Vercel Function build. Vercel native framework packaging, architecture-specific files, billing limits and deployed concurrency are still unproven.
 
@@ -67,3 +67,6 @@ Before INFRA-001 acceptance, record preview/deployment IDs and URLs; build/runti
 Remove only task-created spike files/development tooling after checking for later user edits. Application/database schema and live data are unchanged. Do not delete existing projects or reset Git history. Any future preview projects must have their lifecycle explicitly recorded; creation does not authorize removing unrelated resources.
 
 T000/legal gates, default-branch protection, PR #1 human review, ORM/region/plan/worker decisions and T048 remain open. Local scans and tests do not satisfy hosted INFRA-001. No task is DONE.
+
+## Local final review — 2026-10-25
+Reviewed commit 16623d7 and connected callers at the expected load of one developer running local probes. Confirmed one defect: a nonresponding HTTP server bypassed the nominal readiness loop timeout because fetch had no abort signal. Reproduced waiting past seven seconds with a temporary API fixture, then added readiness/request abort deadlines and a regression test that requires self-failure around five seconds and output cleanup. No new infrastructure stage, cloud action or ORM choice was performed. Other local checks remain subject to the scope limits above.

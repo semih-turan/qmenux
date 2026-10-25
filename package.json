@@ -8,9 +8,9 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests infrastructure/spikes/trace-api.mjs infrastructure/spikes/orm/probe.ts",
+    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests infrastructure/spikes/*.mjs infrastructure/spikes/orm/probe.ts",
     "typecheck": "turbo run typecheck && tsc --project tsconfig.json",
-    "test": "turbo run test && playwright test",
+    "test": "turbo run test && node --test infrastructure/spikes/trace-api.test.mjs && playwright test",
     "build": "turbo run build",
     "test:smoke": "playwright test",
     "spike:api-trace": "pnpm --filter @qmenux/api build && node infrastructure/spikes/trace-api.mjs"

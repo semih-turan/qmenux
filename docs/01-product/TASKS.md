@@ -210,3 +210,6 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 
 ### T047 scope clarification — 2026-10-25
 Local experiment work and checks are prepared for review. Owner explicitly limited the task to local experiments; cloud acceptance is deferred, not satisfied or waived. Keep T047 IN_PROGRESS and ORM OPEN. No additional cloud access or repeated approval request is needed during this local-only scope. Next permitted action is local review; commits/pushes remain separately authorized.
+
+### T047 local review and bounded timeout fix — 2026-10-25
+Only the next local-review step was performed, per owner instruction to avoid executing all subsequent tasks. Reviewed 16623d7 and reproduced a missing fetch deadline with a listening/nonresponding API. Added abort deadlines in trace-api.mjs, one regression test in trace-api.test.mjs and wired it into existing root tests/lint. Evidence is in PROGRESS.md. T047 remains IN_PROGRESS; cloud work stays declined/deferred and ORM OPEN. No commit/push/merge or next task authorized by this fix.
