@@ -92,6 +92,8 @@ test('application BFF rejects poisoned response state, identity, cursors and ove
   for (const data of [{items:[row,row],nextCursor:null}, {items:[row],nextCursor:id}, {items:[{...row,status:'PENDING_APPROVAL'}],nextCursor:null}]) {
     upstream = () => Response.json(data); expect((await handleOnboarding(request())).status).toBe(503);
   }
+  upstream = () => new Response('{', {headers:{'content-type':'application/json'}});
+  expect((await handleOnboarding(create())).status).toBe(503);
   upstream = () => Response.json({application:row,private:'x'.repeat(33_000)});
   expect((await handleOnboarding(create())).status).toBe(503);
   for (const status of [400,401,404,409,500,302]) {

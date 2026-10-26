@@ -93,7 +93,8 @@ export async function call(key: string, path: string, body?: Record<string, stri
     if (!/^application\/json(?:\s*;|$)/i.test(res.headers.get('content-type') ?? '')) {
       void res.body?.cancel().catch(() => {}); fail(503);
     }
-    return object(await boundedJson(res.body, kind === 'auth' ? 16_384 : 32_768, signal));
+    try { return object(await boundedJson(res.body, kind === 'auth' ? 16_384 : 32_768, signal)); }
+    catch { fail(503); }
   } catch (error) {
     if (error instanceof AuthError && (kind === 'onboarding' ? [400,401,404,409] : [401]).includes(error.status)) throw error;
     fail(503);
