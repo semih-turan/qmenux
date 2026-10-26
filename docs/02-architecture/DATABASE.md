@@ -100,3 +100,7 @@ Function-only0017 replaces passkey_begin so a new authorized start retires only 
 ## Own recorded decisions (0021; local development)
 
 0021 adds an onboarding-owned EXECUTE-only list_rejections read contract and a partial reviewed_by/reviewed_at/id index. Existing operator review_session authenticates the actor; only their immutable recorded decisions are projected. Keyset cursor uses the own anchor row's exact timestamp/ID, with foreign/unknown cursor indistinguishably empty. No new data, GUC, direct runtime table privilege or write contract. Safe populated down removes function/index only, preserving all decisions/audit; earlier migrations/manual Neon guards unchanged. Local PostgreSQL only; no cloud migration. See OPERATOR_APPLICATION_REVIEW.md for five-record browser limits, private projection and remaining release/recovery gates.
+
+## Explicit application approval (0022; local development)
+
+0022 adds private approval_reason and four-state consistency, fixed operator approval_actor/current-transaction capability, onboarding replay_approval/approve_application/list_decisions plus a non-runtime digest helper and own-decision index. Current authority/step-up/audit/replay remain atomic; no tenant/member/license is created. Runtime gets fixed-path EXECUTE only. Locked down refuses approved rows/audit and restores rejection-only semantics when safe. Earlier migrations/manual cloud guards unchanged, no cloud migration. [Contract/evidence](../04-backend/OPERATOR_APPLICATION_REVIEW.md#explicit-application-approval-0022-verified-local-development).

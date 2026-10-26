@@ -622,3 +622,17 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy reviewer/dat
 - [ ] Uncommitted/in-flight/other-account reconciliation, retention/abuse, audited operator recovery and approval/provisioning/license policy/integration remain open.
 
 Absent history is never treated as failure. Actual final commands/mobile evidence in PROGRESS.md; no task DONE/APPROVED or deployment authorized.
+
+
+## T041 explicit application approval verification —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal reviewer/date pending.6c8001f already implements pre-tenant approval, approval ceremony/confirmation and own mixed decision history; this bounded next step adds adversarial regression evidence and synchronizes the previously rejection-only docs. No product/deployment/route/credential/commercial enablement.
+
+- [x] Actual native WebAuthn + PostgreSQL normal/rejection-proof substitution, forged applicant/direct SQL/historical capability, stale/draft/missing target denial.
+- [x] Audit rollback, concurrent exact replay, changed command/decision conflict, applicant terminal APPROVED projection and no business/member/license access; actual HTTP and combined BFF→HTTP→PG regressions.
+- [x] Own mixed history pagination/foreign cursor/current authority/closed actor selector;0022 fixed-search-path/EXECUTE/PUBLIC and private digest checks; existing migration rollback/data guards retained.
+- [x] Full root lint/typecheck/test/build/audit PASS, actual10 API +1 trace/deadline +63 Playwright entries; frontend root build results cached, API build executed. Exact limits and log in [PROGRESS](PROGRESS.md#t041-application-approval-verification-2026-10-26).
+- [ ] Approved-application provisioning and separately explicit license policy/grant; commercial decisions, recovery/abuse/retention and unresolved-command reconciliation.
+- [ ] Actual provider/edge/cloud/device/assistive/hosted CI and named architecture/security/privacy/legal review before privileged route registration/enablement.
+
+[Current approval contract](../04-backend/OPERATOR_APPLICATION_REVIEW.md#explicit-application-approval-0022-verified-local-development), proposed ADR025. No task/legal DONE/APPROVED, cloud migration/deployment or Git write. Application status APPROVED is a recorded pre-tenant decision, never a legal/release approval or entitlement.
