@@ -10,6 +10,7 @@ import { secretHash } from '../src/identity-store.js';
 import { OperatorAccess } from '../src/operator-access.js';
 import { OperatorAuthorization } from '../src/operator-authorization.js';
 import { OperatorPasskeys } from '../src/operator-passkeys.js';
+import { exerciseOperatorSessionAudit } from './operator-session-audit-fixture.js';
 import { exerciseOperatorBrowser } from './operator-browser-fixture.js';
 import { exerciseOperatorHttp, withOperatorHttp } from './operator-http-fixture.js';
 
@@ -336,6 +337,13 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     await restartMigration('down');
     await browserMigration('down');
     await logoutMigration('down');
+    await logoutMigration('up');await browserMigration('up');await restartMigration('up');
+    await exerciseOperatorSessionAudit(database,owner);
+    const auditedSubject='synthetic-audited-browser',auditedGrant=secret();
+    const auditedId=(await owner.query("INSERT INTO qmenux_operator.operators(issuer,subject,role,status) VALUES($1,$2,'PLATFORM_ADMIN','ACTIVE') RETURNING id",[issuer,auditedSubject])).rows[0].id as string;
+    await owner.query('INSERT INTO qmenux_operator.passkey_grants(token_hash,operator_id,audience) VALUES($1,$2,$3)',[secretHash(auditedGrant),auditedId,audience]);
+    await exerciseOperatorBrowser(passkeys,authorization,()=>assertion({sub:auditedSubject}),browser,owner,auditedId,auditedGrant,originalFetch);
+    assert.deepEqual((await owner.query('SELECT kind,count(*) FROM qmenux_operator.session_events WHERE operator_id=$1 GROUP BY kind ORDER BY kind',[auditedId])).rows,[{kind:'ISSUED',count:'2'},{kind:'RETIRED',count:'2'}]);
     assert.deepEqual((await owner.query('SELECT * FROM qmenux.tenants ORDER BY id')).rows,tenants);
     assert.deepEqual((await owner.query('SELECT * FROM qmenux_identity.memberships ORDER BY tenant_id,user_id')).rows,members);
     assert(network.length>0);assert(network.every(url=>url===`${issuer}/cdn-cgi/access/certs`));

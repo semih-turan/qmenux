@@ -120,3 +120,8 @@ Disposable tests cover migration atomic rollback/down/reapply/data/version refus
 ## Operator challenge restart (0017; local development)
 
 Function-only0017 replaces passkey_begin so a new authorized start retires only expired own challenges and the same operator/application/browser/purpose's pending challenge. Other browsers and purposes retain the total cap of five. Old nonces cannot finish; grants/credentials/audit are unchanged. Populated up/down/reapply and replacement/replay/isolation/cap regressions run against disposable PostgreSQL. Down restores future-start behavior without resurrecting nonces or deleting historical credentials. Earlier migrations and remote/manual Neon probe guards at0009 remain unchanged; no cloud migration was applied.
+
+
+## Operator session audit (0018; local development)
+
+0018 adds random session audit UUIDs and a private forced-RLS append-only session_events table. Atomic insert/delete triggers record ISSUED/RETIRED; preexisting sessions receive OBSERVED baseline only. Events contain affected operator/application/expiry/time, no tokens/hashes or guessed human revoker/reason. Runtime has no direct table/function helper privilege. History and session audit identities are immutable; no unaudited TRUNCATE. Audit failure rolls back the session transition. Down locks tables with row_security=off and refuses any sessions/history; never delete retained events to force rollback. Earlier migrations/manual Neon guard0009 are unchanged; local PostgreSQL tests only, no cloud migration. Full semantics and privacy/recovery/retention limits are in OPERATOR_PASSKEY_CONTRACT.md.

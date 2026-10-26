@@ -557,3 +557,16 @@ IN_PROGRESS; Engineering owner, named reviewer/date pending. The actual BFF hand
 - [ ] Named review, provisioning/recovery/session audit/operation-bound step-up and actual provider/device/hosted acceptance remain outstanding.
 
 Final checks/failures are recorded in PROGRESS.md. This verifies a local combined transport chain with minimal browser document, not rendered Next UI-to-cloud acceptance or approval to register routes. No task marked DONE/APPROVED.
+
+
+## T004 operator session lifecycle audit —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy reviewer/date pending.0018 adds private append-only credential-free ISSUED/RETIRED history with random session references and truthful existing-session OBSERVED baseline. All legacy/browser session table paths share atomic auditing; no new route or permission.
+
+- [x] Verify populated baseline, migration transaction rollback/empty up/down/reapply/version/populated refusal.
+- [x] Verify issuance/rotation/wrong actor/transaction rollback, audit-write failure atomicity, expiry/suspension, history/reference immutability and ACL/RLS.
+- [x] Verify actual native browser/BFF/API/PostgreSQL sessions produce two ISSUED/two RETIRED events.
+- [ ] Named actor/reason-specific provisioning/recovery and operation-bound high-impact step-up.
+- [ ] Reviewed history retention/export, provider/device/privacy/security/legal acceptance and privileged-route approval.
+
+Final actual checks and limits are recorded in PROGRESS.md; no DONE/APPROVED claim or cloud migration.
