@@ -28,7 +28,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 | T008 | Theme registry foundation (ten themes delivered in T020) | T007 | Theme snapshot tests | TODO |
 | T009 | QR generation and print foundation (A4 exports in T018) | T007,LEG-004 | Mobile print/PDF test | TODO |
 | T010 | Subscription and license states, one fixed plan | T004 | Expiry/grace/renewal tests | TODO |
-| T011 | Superadmin mobile PWA | T004,T010 | MFA and mobile operation tests | TODO |
+| T011 | Superadmin mobile PWA | T004,T010 | MFA and mobile operation tests | IN_PROGRESS |
 | T012 | Compliance rule engine and human review | T005,LEG-004 | CT-001 through CT-005 | TODO |
 | T013 | Observability, backups, deployment | T001-T012 | Restore and monitoring drills | TODO |
 | LEG-006 | Contract/notice acceptance evidence and consent UX | LEG-002,LEG-003,T006 | CT-006 through CT-008 | TODO |
@@ -92,7 +92,7 @@ Implement server-side hostname-to-tenant resolution and tenant-scoped DB transac
 | ID | Phase | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
 | T035 | V1 | Configure QMenuX canonical host routing, TLS, reserved tenant slugs, host validation and environment separation | T001,T002 | HOST-001; staging DNS/TLS validation | TODO |
-| T036 | V1 | Isolate `superman` from tenant admin; identity-aware proxy, mandatory MFA/passkey, server RBAC, step-up, secure sessions | T003,T004,T035 | AUTH-001..003, OPS-001 | TODO |
+| T036 | V1 | Isolate `superman` from tenant admin; identity-aware proxy, mandatory MFA/passkey, server RBAC, step-up, secure sessions | T003,T004,T035 | AUTH-001..003, OPS-001 | IN_PROGRESS |
 | T037 | V1 | Establish `api.qmenux.com/v1`, OpenAPI contracts, auth audience/scope model, tenant isolation and rate limits | T003,T004,T035 | API-001, API-003 | TODO |
 | T038 | Later | External client credentials, key lifecycle, scoped access, signed webhooks and audit | T037,LEG-011 | API-002, HOOK-001, external threat-model approval | TODO |
 | T039 | Future | Telegram and WhatsApp Business provider adapters with tenant binding and opt-in policies | T038,LEG-011 | CHANNEL-001 and provider sandbox approval | FUTURE |
@@ -525,3 +525,16 @@ T004/T040 scope: `apps/admin-pwa` handlers/UI/styles, `.env.example`, handler/br
 - IN_PROGRESS; dependent feat/T004-operator-browser-bff from36dafab. Read installed Next16.4.3 handler/BFF guidance and existing security/Git/operator boundaries. Prepared fixed-operation canonical superman handler with independent operator cookies, exact Origin/CSRF, header-only Access input, server-key isolation, bounded strict JSON and private response projection. No Next route file or rendered UI; actual operator path404 preserves review gate.
 - Tests cover isolation/config/authority/input/option validation, enrollment without login, private credentials→host-only cookies, minimal me and confirmed logout. Actual browser cookie fixture runs real handler with synthetic upstream; existing separate API HTTP/native WebAuthn/PostgreSQL fixture remains required. Full combined deployed chain/physical devices/named review not claimed. Full check results in PROGRESS.md.
 - Remaining: mobile ceremony screen, full registration/combined transport evidence, audited enrollment/recovery/session lifecycle, operation-bound high-impact step-up and actual provider/security/privacy/legal/device/named review. No new dependency/migration, enabled route, real operator, secret/configuration or deployment. No DONE.
+
+
+## T004/T011/T036 mobile operator access slice —2026-10-26
+
+Status IN_PROGRESS; Engineering owner, named reviewer/date pending. T011/T036 now record actual partial auth/screen work, not an operational panel or acceptance. Implemented native create/get, explicit granted enrollment without login, cancel/fresh retry, authoritative session checks, uncertain logout and unsupported/offline/expiry states. API/BFF routes remain unregistered; default screen unavailable/retry.0017 replaces only same-browser/purpose pending challenges while preserving foreign-browser cap and immutable earlier migrations.
+
+- [x] Add mobile screen and5 rendered browser regressions, shared controls/focus and unchanged scaffold protection.
+- [x] Verify actual local PostgreSQL migration rollback/reapply, replacement replay denial and five-browser cap in the native-passkey fixture.
+- [x] Record production-built mobile layout/keyboard/enlarged-text evidence and exact test scope in PROGRESS.md.
+- [ ] Complete combined successful registration transport evidence, audited provisioning/recovery and session lifecycle/operation-bound step-up.
+- [ ] Named architecture/security/privacy/legal/provider review before registering privileged routes; real iOS/Android/installed PWA/assistive technology evidence before acceptance.
+
+No DONE/APPROVED claim, tenant/license activation, deployment or commercial decision is implied. [Contract](../04-backend/OPERATOR_PASSKEY_CONTRACT.md#mobile-operator-ceremony-screen-and-restart-0017-local-review-implementation).

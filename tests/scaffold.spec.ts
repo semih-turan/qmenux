@@ -11,6 +11,9 @@ for (const [port, heading] of [[3000, 'Menü'], [3001, 'İşletme yönetimi'], [
     if (port === 3001) {
       await expect(page.getByRole('main').getByRole('button')).toHaveCount(3);
       for (const button of await page.getByRole('main').getByRole('button').all()) await expect(button).toBeDisabled();
+    } else if(port===3002) {
+      await expect(page.getByRole('main').getByRole('button')).toHaveCount(1);
+      await expect(page.getByRole('button',{name:'Yeniden kontrol et',exact:true})).toBeEnabled();
     } else await expect(page.getByRole('main').getByRole('button')).toHaveCount(0);
     await expect(page.getByRole('main').getByRole('textbox')).toHaveCount(0);
     for (const width of [320, 375, 390, 430]) {

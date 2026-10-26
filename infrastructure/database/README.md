@@ -115,3 +115,8 @@ Disposable tests cover migration atomic rollback/down/reapply/data/version refus
 
 
 0016 (local only) adds operator browser-session CSRF hash binding and three explicit EXECUTE contracts. Legacy/browser lookups and logout cannot substitute; populated bound-session down is refused. Existing session revocation/expiry applies unchanged. Earlier migrations and cloud/manual-probe scope are unchanged; see the operator passkey contract for full transport/review limitations.
+
+
+## Operator challenge restart (0017; local development)
+
+Function-only0017 replaces passkey_begin so a new authorized start retires only expired own challenges and the same operator/application/browser/purpose's pending challenge. Other browsers and purposes retain the total cap of five. Old nonces cannot finish; grants/credentials/audit are unchanged. Populated up/down/reapply and replacement/replay/isolation/cap regressions run against disposable PostgreSQL. Down restores future-start behavior without resurrecting nonces or deleting historical credentials. Earlier migrations and remote/manual Neon probe guards at0009 remain unchanged; no cloud migration was applied.

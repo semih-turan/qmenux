@@ -46,3 +46,8 @@ Automated Chromium checks: identical approved tokens on both management apps; WC
 
 
 T041's actual business-name form adds the shared TextField export: native associated label/input, inherited16px-or-larger font,44px minimum control, high-contrast border/text/focus and explicit disabled state. The mobile applicant list/form uses the fixed management palette and existing Button. No unused dialog/table/form framework or business-type fork is introduced. Browser and built-app checks are recorded with the T041 delivery evidence; physical-device and named accessibility acceptance remain pending.
+
+
+## Operator access screen implementation —2026-10-26
+
+Superadmin reuses ManagementShell, Button and TextField for native passkey authentication and separately granted enrollment. Shared Button now accepts React19's standard button props including ref for keyboard focus restoration; rendered markup is unchanged. Collapsible enrollment has44px summary/focus outline, masked16px input, explicit labels, status/error messages and cancellable native prompt. Layout uses the existing safe-area shell and brand tokens. Unregistered transport shows only unavailable/retry. Production-built320/375/390/430px, short viewport scrolling, enlarged text and keyboard checks passed locally; physical software keyboards, iOS/Android installed PWA and assistive technology acceptance remain pending.

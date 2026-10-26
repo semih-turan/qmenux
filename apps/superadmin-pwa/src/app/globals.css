@@ -1,0 +1,4 @@
+.operator-actions { display: grid; gap: .75rem; margin-block: 1rem; }
+summary { min-height: 44px; padding-block: .5rem; cursor: pointer; }
+summary:focus-visible { outline: 3px solid var(--brand-ink); outline-offset: 4px; }
+section > button { margin-block: 1rem; }
