@@ -1,0 +1,532 @@
+/* Marketing styles on top of @qmenux/ui tokens (brand palette from BRAND_DESIGN_SYSTEM.md). Mobile-first, 320px+. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.ld-wrap {
+  width: min(100% - 32px, 1080px);
+  margin-inline: auto;
+}
+
+/* Header */
+.ld-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--qx-canvas) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--qx-border);
+}
+
+.ld-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-3);
+  min-height: 60px;
+}
+
+.ld-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--qx-ink);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.ld-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--qx-primary);
+  color: var(--qx-on-primary);
+}
+
+.ld-nav {
+  display: none;
+  gap: var(--qx-space-1);
+}
+
+.ld-nav a,
+.ld-menu a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--qx-ink-2);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.ld-nav a[aria-current='page'],
+.ld-menu a[aria-current='page'] {
+  color: var(--qx-ink);
+  background: var(--qx-surface-2);
+}
+
+.ld-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+}
+
+.ld-menu-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--qx-border);
+  border-radius: 10px;
+  background: var(--qx-surface);
+  color: var(--qx-ink);
+}
+
+/* Mobile menu: a native <details> so it works without JavaScript. */
+.ld-menu {
+  display: grid;
+  gap: 2px;
+  padding-block: var(--qx-space-2) var(--qx-space-4);
+  border-top: 1px solid var(--qx-border);
+}
+
+.ld-menu summary {
+  list-style: none;
+}
+
+.ld-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (min-width: 860px) {
+  .ld-nav {
+    display: flex;
+  }
+  .ld-mobile {
+    display: none;
+  }
+}
+
+/* Hero */
+.ld-hero {
+  display: grid;
+  gap: var(--qx-space-6);
+  padding-block: clamp(40px, 8vw, 96px) clamp(32px, 6vw, 64px);
+}
+
+.ld-eyebrow {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--qx-primary-surface);
+  color: var(--qx-primary-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ld-h1 {
+  margin: 12px 0 0;
+  font-size: clamp(32px, 6.5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.ld-lead {
+  margin: 16px 0 0;
+  max-width: 60ch;
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.5;
+  color: var(--qx-ink-2);
+  text-wrap: pretty;
+}
+
+.ld-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-3);
+  margin-top: 24px;
+}
+
+.ld-cta .qx-btn {
+  min-height: 48px;
+}
+
+.ld-note {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--qx-ink-3);
+  max-width: 60ch;
+}
+
+/* Phone mock-up with demo menu (no real tenant data) */
+.ld-phone {
+  justify-self: center;
+  width: min(100%, 320px);
+  border: 10px solid var(--qx-ink);
+  border-radius: 36px;
+  background: #fffdf9;
+  box-shadow: 0 30px 60px -30px rgb(37 36 32 / 0.5);
+  overflow: hidden;
+  color: #2b2520;
+}
+
+.ld-phone__bar {
+  padding: 18px 20px 10px;
+  border-bottom: 1px solid #efe6da;
+}
+
+.ld-phone__bar strong {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+}
+
+.ld-phone__chips {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  overflow: hidden;
+}
+
+.ld-phone__chips span {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #e8dccd;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ld-phone__chips span:first-child {
+  background: #2b2520;
+  color: #fff;
+  border-color: #2b2520;
+}
+
+.ld-phone__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1eae0;
+  font-size: 14px;
+}
+
+.ld-phone__item small {
+  display: block;
+  color: #7a6f63;
+}
+
+.ld-phone__item b {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 860px) {
+  .ld-hero {
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: center;
+  }
+}
+
+/* Sections */
+.ld-section {
+  padding-block: clamp(40px, 7vw, 80px);
+}
+
+.ld-section--alt {
+  background: var(--qx-surface);
+  border-block: 1px solid var(--qx-border);
+}
+
+.ld-h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 36px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.ld-sub {
+  margin: 12px 0 0;
+  max-width: 62ch;
+  color: var(--qx-ink-2);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.ld-grid {
+  display: grid;
+  gap: var(--qx-space-4);
+  margin-top: 32px;
+}
+
+@media (min-width: 640px) {
+  .ld-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .ld-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ld-card {
+  padding: 20px;
+  border: 1px solid var(--qx-border);
+  border-radius: 16px;
+  background: var(--qx-surface);
+}
+
+.ld-section--alt .ld-card {
+  background: var(--qx-canvas);
+}
+
+.ld-card__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--qx-primary-surface);
+  color: var(--qx-primary-text);
+}
+
+.ld-card h3 {
+  margin: 14px 0 6px;
+  font-size: 18px;
+}
+
+.ld-card p {
+  margin: 0;
+  color: var(--qx-ink-2);
+  line-height: 1.5;
+}
+
+/* Steps */
+.ld-steps {
+  display: grid;
+  gap: var(--qx-space-4);
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.ld-steps li {
+  position: relative;
+  padding: 20px 20px 20px 64px;
+  border: 1px solid var(--qx-border);
+  border-radius: 16px;
+  background: var(--qx-surface);
+}
+
+.ld-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--qx-ink);
+  color: var(--qx-canvas);
+  font-weight: 800;
+}
+
+.ld-steps h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.ld-steps p {
+  margin: 0;
+  color: var(--qx-ink-2);
+  line-height: 1.5;
+}
+
+/* Themes */
+.ld-themes {
+  display: grid;
+  gap: var(--qx-space-3);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin-top: 32px;
+}
+
+.ld-theme {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--qx-border);
+  border-radius: 14px;
+  background: var(--qx-surface);
+}
+
+.ld-theme__swatch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  padding-inline: 14px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+  font-family: Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ld-theme__accent {
+  width: 30px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.ld-theme strong {
+  font-size: 15px;
+}
+
+.ld-theme span {
+  font-size: 13px;
+  color: var(--qx-ink-3);
+}
+
+/* Pricing */
+.ld-price {
+  max-width: 560px;
+  margin-top: 32px;
+  padding: 28px;
+  border: 2px solid var(--qx-ink);
+  border-radius: 20px;
+  background: var(--qx-surface);
+}
+
+.ld-price ul {
+  margin: 16px 0 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+
+/* FAQ */
+.ld-faq {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.ld-faq details {
+  border: 1px solid var(--qx-border);
+  border-radius: 14px;
+  background: var(--qx-surface);
+}
+
+.ld-faq summary {
+  cursor: pointer;
+  padding: 16px 18px;
+  font-weight: 700;
+  min-height: 44px;
+}
+
+.ld-faq summary:focus-visible {
+  outline: 2px solid var(--qx-focus);
+  outline-offset: -2px;
+  border-radius: 14px;
+}
+
+.ld-faq p {
+  margin: 0;
+  padding: 0 18px 18px;
+  color: var(--qx-ink-2);
+  line-height: 1.55;
+}
+
+/* Prose (legal + contact) */
+.ld-prose {
+  max-width: 72ch;
+  line-height: 1.65;
+}
+
+.ld-prose h2 {
+  margin-top: 32px;
+  font-size: 22px;
+}
+
+.ld-prose p,
+.ld-prose li {
+  color: var(--qx-ink-2);
+}
+
+/* Footer */
+.ld-footer {
+  margin-top: clamp(40px, 7vw, 80px);
+  padding-block: 32px calc(32px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--qx-border);
+  color: var(--qx-ink-3);
+  font-size: 14px;
+}
+
+.ld-footer__grid {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .ld-footer__grid {
+    grid-template-columns: 1.4fr 1fr 1fr;
+  }
+}
+
+.ld-footer h4 {
+  margin: 0 0 8px;
+  color: var(--qx-ink);
+  font-size: 14px;
+}
+
+.ld-footer ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.ld-footer a {
+  display: inline-block;
+  padding-block: 6px;
+  color: var(--qx-ink-2);
+}
+
+.ld-footer__legal {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--qx-border);
+}
+
+/* Narrow phones: the header keeps only "Giriş yap"; "Hesap oluştur" lives in the mobile menu and the hero. */
+@media (max-width: 479px) {
+  .ld-mobile-hide {
+    display: none;
+  }
+  .ld-brand {
+    font-size: 17px;
+  }
+}
+
+.ld-phone {
+  box-sizing: border-box;
+}

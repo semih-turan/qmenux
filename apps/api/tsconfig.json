@@ -1,0 +1,5 @@
+{
+  "extends": "@qmenux/config/tsconfig.lib.json",
+  "compilerOptions": { "experimentalDecorators": true, "emitDecoratorMetadata": true, "declaration": false, "declarationMap": false },
+  "include": ["src"]
+}

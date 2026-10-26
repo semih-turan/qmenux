@@ -1,0 +1,30 @@
+{
+  "name": "@qmenux/menu",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000 --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "next typegen && tsc --noEmit",
+    "lint": "eslint src public/sw.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@qmenux/contracts": "workspace:*",
+    "lucide-react": "^1.61.0",
+    "next": "16.4.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "server-only": "^0.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@qmenux/config": "workspace:*",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "vitest": "4.1.12"
+  }
+}

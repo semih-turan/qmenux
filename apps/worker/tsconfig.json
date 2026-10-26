@@ -1,0 +1,5 @@
+{
+  "extends": "@qmenux/config/tsconfig.lib.json",
+  "compilerOptions": { "declaration": false, "declarationMap": false },
+  "include": ["src"]
+}

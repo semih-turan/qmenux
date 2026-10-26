@@ -28,7 +28,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 | T008 | Theme registry foundation (ten themes delivered in T020) | T007 | Theme snapshot tests | TODO |
 | T009 | QR generation and print foundation (A4 exports in T018) | T007,LEG-004 | Mobile print/PDF test | TODO |
 | T010 | Subscription and license states, one fixed plan | T004 | Expiry/grace/renewal tests | TODO |
-| T011 | Superadmin mobile PWA | T004,T010 | MFA and mobile operation tests | TODO |
+| T011 | Superadmin mobile PWA | T004,T010 | MFA and mobile operation tests | TODO — implemented 2026-10-26, awaiting review (apps/ops; PROGRESS 2026-10-26) |
 | T012 | Compliance rule engine and human review | T005,LEG-004 | CT-001 through CT-005 | TODO |
 | T013 | Observability, backups, deployment | T001-T012 | Restore and monitoring drills | TODO |
 | LEG-006 | Contract/notice acceptance evidence and consent UX | LEG-002,LEG-003,T006 | CT-006 through CT-008 | TODO |
@@ -40,7 +40,7 @@ Each task must contain ID, dependencies, objective, files, implementation steps,
 |---|---|---|---|---|
 | T016 | Geofence settings, radius and province/district policies, guest access states | T003,T006,T007,LEG-003 | GEO-001..003; policy/permission ADR | TODO |
 | T017 | End-to-end phone-only owner + superadmin workflows | T006,T011 | UX-001 iOS/Android recordings, accessibility checks | TODO |
-| T018 | Published-snapshot A4 menu PDF + separate allergen PDF | T005,T009,T012,LEG-004 | PDF-001, CT-015 | TODO |
+| T018 | Published-snapshot A4 menu PDF + separate allergen PDF | T005,T009,T012,LEG-004 | PDF-001, CT-015 | TODO — implemented 2026-10-26, awaiting review (apps/worker renders A4 menu + allergen PDFs) |
 | T019 | Optional branch guest Wi-Fi block and mobile settings | T006,T007,LEG-003 | WIFI-001, CT-013 | TODO |
 | T020 | Deliver ten public themes; fixed shared admin theme | T008,T017 | THEME-001 ten-theme matrix | TODO |
 | T021 | Enforce max one active product image incl. replacement | T005 | IMG-001 DB + API tests | TODO |
@@ -59,7 +59,7 @@ T013 and LEG-007 must depend on **T016–T022 and LEG-009**, in addition to thei
 |---|---|---|---|---|---|
 | T025 | V1 | Product SOLD_OUT/HIDDEN states and mobile quick actions | T005,T006,T007 | AV-001; tenant/RLS, public badge/hide | TODO |
 | T026 | V1 | Immutable published menu revision history and restore-as-new | T005,T007,T012 | REV-001; audit, concurrency, cache tests | TODO |
-| T027 | V1 | Mobile CSV/XLSX staged import, mapping, dry run and draft commit | T005,T006,T012 | IMP-001; validation/security/error export | TODO |
+| T027 | V1 | Mobile CSV/XLSX staged import, mapping, dry run and draft commit | T005,T006,T012 | IMP-001; validation/security/error export | TODO — implemented 2026-10-26, awaiting review (apps/admin More → Menü içe aktar; IMP-001 partially evidenced in PROGRESS) |
 | T028 | V1 | Public product search and dietary/allergen filters | T005,T007,T020,T025 | SEARCH-001; Turkish locale and uncertainty tests | TODO |
 | T029 | V1 | Table QR create/print/revoke and scoped scan counts | T009,T022 | TABLEQR-001; token security, print QA | TODO |
 | T030 | V1.5 | Locale data, translations, fallback and mobile language editor | T005,T007,T012 | I18N-001; disclosure review | TODO |
@@ -92,7 +92,7 @@ Implement server-side hostname-to-tenant resolution and tenant-scoped DB transac
 | ID | Phase | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
 | T035 | V1 | Configure QMenuX canonical host routing, TLS, reserved tenant slugs, host validation and environment separation | T001,T002 | HOST-001; staging DNS/TLS validation | TODO |
-| T036 | V1 | Isolate `superman` from tenant admin; identity-aware proxy, mandatory MFA/passkey, server RBAC, step-up, secure sessions | T003,T004,T035 | AUTH-001..003, OPS-001 | TODO |
+| T036 | V1 | Isolate `superman` from tenant admin; identity-aware proxy, mandatory MFA/passkey, server RBAC, step-up, secure sessions | T003,T004,T035 | AUTH-001..003, OPS-001 | TODO — implemented 2026-10-26, awaiting review (code-level isolation done; Cloudflare Access OPEN (OD-17)) |
 | T037 | V1 | Establish `api.qmenux.com/v1`, OpenAPI contracts, auth audience/scope model, tenant isolation and rate limits | T003,T004,T035 | API-001, API-003 | TODO |
 | T038 | Later | External client credentials, key lifecycle, scoped access, signed webhooks and audit | T037,LEG-011 | API-002, HOOK-001, external threat-model approval | TODO |
 | T039 | Future | Telegram and WhatsApp Business provider adapters with tenant binding and opt-in policies | T038,LEG-011 | CHANNEL-001 and provider sandbox approval | FUTURE |
@@ -109,9 +109,9 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
 | T040 | V1 foundation | Secure federated identity (Google, Microsoft/Outlook, Apple), PKCE/OIDC, linking, minimal auth screens | T001,T004,T035,LEG-003 | AUTH-004..006, provider test-account evidence | TODO |
-| T041 | V1 foundation | Pending applications and superadmin approval/rejection workflow; tenant access gate | T003,T010,T011,T040 | ONB-001..002, cross-tenant denial | TODO |
-| T042 | V1 | Manual license grant/extend/revoke, entitlement checks; disable all online checkout | T010,T036,T041 | PAY-001..003, audit, API denial | TODO |
-| T043 | **LAST: marketing** | Build `qmenux.com` landing, Login/Sign up entry, features, pricing, SEO and legal pages | T007,T017,T020,T041,T042,LEG-012 | LAND-001..005, mobile/SEO/legal QA | TODO |
+| T041 | V1 foundation | Pending applications and superadmin approval/rejection workflow; tenant access gate | T003,T010,T011,T040 | ONB-001..002, cross-tenant denial | TODO — implemented 2026-10-26, awaiting review (approve/reject + gate tested in ops) |
+| T042 | V1 | Manual license grant/extend/revoke, entitlement checks; disable all online checkout | T010,T036,T041 | PAY-001..003, audit, API denial | TODO — implemented 2026-10-26, awaiting review (grant/extend/revoke with step-up TOTP; no checkout) |
+| T043 | **LAST: marketing** | Build `qmenux.com` landing, Login/Sign up entry, features, pricing, SEO and legal pages | T007,T017,T020,T041,T042,LEG-012 | LAND-001..005, mobile/SEO/legal QA | TODO — implemented 2026-10-26, awaiting review (apps/landing; LAND-002/003 need real provider credentials) |
 | LEG-012 | V1 auth + later landing | IdP terms/KVKK, signup terms, approval notices, marketing privacy/cookies | LEG-002,LEG-003,LEG-005 | Signed applicability/notice review | TODO |
 
 ### Mandatory execution-order correction
@@ -124,7 +124,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 ## v7 — Brand design system, café/restaurant onboarding and theme inventory (2026-10-25)
 | ID | Phase | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
-| T044 | V1 early UI foundation | Implement shared QMenuX brand tokens and mobile admin/superadmin component library | T001 | BRAND-001..004, accessible 320/375/430px review | TODO |
+| T044 | V1 early UI foundation | Implement shared QMenuX brand tokens and mobile admin/superadmin component library | T001 | BRAND-001..004, accessible 320/375/430px review | TODO — implemented 2026-10-26, awaiting review (shared helpers in @qmenux/ui; admin+ops use them) |
 | T045 | V1 | Business-type selector, optional starter categories and recommended public theme; draft-only, editable, skip | T003,T005,T041,T042,T044 | ONB-003..005, tenant isolation and no auto-publish | TODO |
 | T046 | V1 | Theme registry contracts and ten-theme content/accessibility regression matrix | T008,T020,T044 | THEME-002 for all 10 themes and café/restaurant samples | TODO |
 
@@ -140,7 +140,7 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 |---|---|---|---|---|---|
 | T047 | V1 foundation | Vercel monorepo projects + Next.js/NestJS Functions spike; choose ORM after test | T001 | INFRA-001, cold-start and bundling report | TODO |
 | T048 | V1 foundation | Neon project/branches, pooled runtime/direct migration URLs, RLS transaction-context tests | T002,T003,T047 | INFRA-002, parallel tenant isolation tests | TODO |
-| T049 | V1 before async features | Choose external worker host + BullMQ-compatible Redis/queue; deploy durable job consumer/outbox relay | T047,T048 | INFRA-003, retries/idempotency/queue recovery | TODO |
+| T049 | V1 before async features | Choose external worker host + BullMQ-compatible Redis/queue; deploy durable job consumer/outbox relay | T047,T048 | INFRA-003, retries/idempotency/queue recovery | TODO — implemented 2026-10-26, awaiting review (interim outbox worker, host/queue vendor OPEN) |
 | T050 | V1 | Configure Vercel hostnames, Cloudflare DNS/TLS/WAF/Access and wildcard tenant routing | T035,T047 | INFRA-004, reserved-host and mobile Access tests | TODO |
 | T051 | V1 release gate | Vercel preview/staging/prod secrets and Neon isolation, backup/PITR/restore drills, observability | T048,T049,T050 | INFRA-005, restore evidence | TODO |
 
@@ -155,10 +155,15 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
 | T052 | V1 foundation | Adopt Git workflow in existing repository, preserve history, validate `.gitignore`, establish reviewed docs baseline | T000 documentation review | GIT-001: existing history intact; clean scoped baseline; no secrets; branch policy documented | TODO |
-| T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | TODO |
+| T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | TODO — MVP baseline hardened 2026-10-26; local lint/typecheck/build + 272 tests and audit pass; hosted checks tracked in PR #2; reviewer/mobile release gates remain open (see PROGRESS) |
 
 ### v9 execution constraints
 - T052 is repository governance and should be addressed before coding T001. It **does not** mean reinitialize an existing Git repository.
 - T053 can be implemented once project scripts exist; do not mark complete based on YAML alone.
 - Every task must report Git branch, reviewed diff, test evidence and commit hash or `not committed`.
 - Commits, pushes and merges require explicit user authorization. T043 marketing landing stays LAST.
+
+## 2026-10-26 first MVP baseline evidence — T053 / T018
+- T053: `.github/workflows/ci.yml` provisions PostgreSQL 17 and runs frozen install, dependency audit, lint, typecheck, unit/API/RLS tests, build and full-history Gitleaks. Exact historical false positives are documented in `.gitleaksignore`. Local evidence and limitations: [PROGRESS.md](PROGRESS.md), final 2026-10-26 entry; hosted evidence: [PR #2 checks](https://github.com/semih-turan/qmenux/pull/2/checks). No browser coverage claimed by current CI.
+- T018: [PDF delivery regressions](../../apps/worker/test/pdf-job.test.ts) cover READY replay and pending-to-READY file creation; [PDF rendering tests](../../apps/worker/test/pdf.test.ts) preserved. No schema change; reverting the handler change needs no migration rollback.
+- Status remains awaiting review; no DONE or legal approval inferred from a source merge.

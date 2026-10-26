@@ -1,0 +1,1359 @@
+/* Shared management components. Every :hover lives inside a (hover: hover) and (pointer: fine) query. */
+
+/* ---------- App shell ---------- */
+.qx-app {
+  --qx-actionbar-offset: var(--qx-safe-bottom);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.qx-app[data-nav] {
+  --qx-actionbar-offset: calc(var(--qx-nav-h) + var(--qx-safe-bottom));
+}
+
+.qx-appbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: var(--qx-safe-top);
+  padding-left: var(--qx-safe-left);
+  padding-right: var(--qx-safe-right);
+  background: var(--qx-canvas);
+  border-bottom: 1px solid var(--qx-border);
+}
+
+.qx-appbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-1);
+  height: var(--qx-appbar-h);
+  max-width: var(--qx-content-max);
+  margin: 0 auto;
+  padding: 0 var(--qx-space-2);
+}
+
+.qx-appbar__title {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--qx-space-2);
+  font-size: var(--qx-text-lg);
+  font-weight: 650;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.qx-appbar__sub {
+  display: block;
+  font-size: var(--qx-text-xs);
+  font-weight: 500;
+  color: var(--qx-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qx-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--qx-content-max);
+  margin: 0 auto;
+  padding: var(--qx-space-4) calc(var(--qx-space-4) + var(--qx-safe-right)) calc(var(--qx-actionbar-offset) + var(--qx-space-8))
+    calc(var(--qx-space-4) + var(--qx-safe-left));
+  display: flex;
+  flex-direction: column;
+  gap: var(--qx-space-5);
+}
+
+.qx-bottomnav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  padding: 0 var(--qx-safe-right) var(--qx-safe-bottom) var(--qx-safe-left);
+  background: var(--qx-surface);
+  border-top: 1px solid var(--qx-border);
+}
+
+.qx-bottomnav__list {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  max-width: var(--qx-content-max);
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.qx-bottomnav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--qx-nav-h);
+  padding: 6px 2px;
+  color: var(--qx-ink-2);
+  font-size: var(--qx-text-xs);
+  font-weight: 600;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.qx-bottomnav__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 30px;
+  border-radius: 999px;
+  transition: background-color var(--qx-dur-fast) var(--qx-ease-out), transform var(--qx-dur-press) var(--qx-ease-out);
+}
+
+.qx-bottomnav__item:active .qx-bottomnav__icon {
+  transform: scale(0.92);
+}
+
+.qx-bottomnav__item[aria-current="page"] {
+  color: var(--qx-ink);
+}
+
+.qx-bottomnav__item[aria-current="page"] .qx-bottomnav__icon {
+  background: var(--qx-primary-surface);
+  color: var(--qx-primary-text);
+}
+
+.qx-bottomnav__label {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Buttons ---------- */
+.qx-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--qx-space-2);
+  min-height: var(--qx-touch);
+  padding: 0 var(--qx-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--qx-radius-md);
+  background: var(--qx-surface);
+  color: var(--qx-ink);
+  font-size: var(--qx-text-md);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform var(--qx-dur-press) var(--qx-ease-out), background-color var(--qx-dur-press) ease, border-color var(--qx-dur-press) ease;
+}
+
+.qx-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: scale(0.97);
+}
+
+.qx-btn:disabled,
+.qx-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qx-btn__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+  min-width: 0;
+}
+
+/* A long label must not squeeze the icon away at 320px. */
+.qx-btn__label > svg {
+  flex-shrink: 0;
+}
+
+.qx-btn[aria-busy="true"] {
+  cursor: progress;
+}
+
+.qx-btn[aria-busy="true"] .qx-btn__label {
+  opacity: 0;
+}
+
+.qx-btn[aria-busy="true"] .qx-spinner {
+  position: absolute;
+}
+
+.qx-btn--lg {
+  min-height: 52px;
+  font-size: var(--qx-text-lg);
+}
+
+.qx-btn--sm {
+  min-height: 36px;
+  padding: 0 var(--qx-space-3);
+  font-size: var(--qx-text-sm);
+}
+
+/* A small visual button still gets a 44px hit area. */
+.qx-btn--sm::after {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
+}
+
+.qx-btn--block {
+  display: flex;
+  width: 100%;
+  /* Full-width buttons have no neighbour to push, so a label that does not fit wraps instead of spilling out. */
+  padding-block: var(--qx-space-1);
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.qx-btn--primary {
+  background: var(--qx-primary);
+  color: var(--qx-on-primary);
+}
+
+.qx-btn--primary:active:not(:disabled) {
+  background: var(--qx-primary-press);
+}
+
+.qx-btn--secondary {
+  border-color: var(--qx-border-strong);
+}
+
+.qx-btn--secondary:active:not(:disabled),
+.qx-btn--ghost:active:not(:disabled) {
+  background: var(--qx-surface-press);
+}
+
+.qx-btn--ghost {
+  background: transparent;
+}
+
+.qx-btn--danger {
+  background: var(--qx-danger);
+  color: var(--qx-on-danger);
+}
+
+.qx-btn--danger:active:not(:disabled) {
+  background: var(--qx-danger-press);
+}
+
+.qx-btn--danger-ghost {
+  background: transparent;
+  color: var(--qx-danger-text);
+}
+
+.qx-iconbtn {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--qx-touch);
+  height: var(--qx-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--qx-radius-md);
+  background: transparent;
+  color: var(--qx-ink);
+  transition: transform var(--qx-dur-press) var(--qx-ease-out), background-color var(--qx-dur-press) ease;
+}
+
+.qx-iconbtn:active:not(:disabled) {
+  transform: scale(0.92);
+  background: var(--qx-surface-press);
+}
+
+.qx-iconbtn:disabled {
+  opacity: 0.5;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .qx-btn--primary:hover:not(:disabled) {
+    background: var(--qx-primary-press);
+  }
+  .qx-btn--secondary:hover:not(:disabled),
+  .qx-btn--ghost:hover:not(:disabled),
+  .qx-btn--danger-ghost:hover:not(:disabled),
+  .qx-iconbtn:hover:not(:disabled) {
+    background: var(--qx-surface-2);
+  }
+  .qx-btn--danger:hover:not(:disabled) {
+    background: var(--qx-danger-press);
+  }
+  .qx-row--interactive:hover {
+    background: var(--qx-surface-2);
+  }
+  .qx-bottomnav__item:hover {
+    color: var(--qx-ink);
+  }
+  .qx-chip:hover {
+    border-color: var(--qx-ink-2);
+  }
+}
+
+.qx-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: qx-spin 650ms linear infinite;
+}
+
+@keyframes qx-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* ---------- Form fields ---------- */
+.qx-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.qx-label {
+  font-size: var(--qx-text-sm);
+  font-weight: 600;
+}
+
+.qx-label__optional {
+  font-weight: 500;
+  color: var(--qx-ink-2);
+}
+
+.qx-hint {
+  font-size: var(--qx-text-sm);
+  color: var(--qx-ink-2);
+}
+
+.qx-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--qx-text-sm);
+  font-weight: 500;
+  color: var(--qx-danger-text);
+}
+
+.qx-error svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.qx-input,
+.qx-select,
+.qx-textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--qx-border-strong);
+  border-radius: var(--qx-radius-md);
+  background: var(--qx-surface);
+  color: var(--qx-ink);
+  transition: border-color var(--qx-dur-press) ease, box-shadow var(--qx-dur-press) ease;
+}
+
+.qx-textarea {
+  min-height: 104px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.qx-input::placeholder,
+.qx-textarea::placeholder {
+  color: var(--qx-ink-3);
+}
+
+.qx-input:focus,
+.qx-select:focus,
+.qx-textarea:focus {
+  outline: none;
+  border-color: var(--qx-focus);
+  box-shadow: 0 0 0 1px var(--qx-focus);
+}
+
+.qx-input[aria-invalid="true"],
+.qx-select[aria-invalid="true"],
+.qx-textarea[aria-invalid="true"] {
+  border-color: var(--qx-danger-text);
+}
+
+.qx-input:disabled,
+.qx-select:disabled,
+.qx-textarea:disabled {
+  background: var(--qx-surface-2);
+  color: var(--qx-ink-2);
+}
+
+.qx-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.qx-input-group__affix {
+  position: absolute;
+  inset-inline-end: 14px;
+  color: var(--qx-ink-2);
+  pointer-events: none;
+}
+
+.qx-input-group .qx-input {
+  padding-inline-end: 44px;
+}
+
+.qx-select-wrap {
+  position: relative;
+}
+
+.qx-select {
+  appearance: none;
+  padding-inline-end: 44px;
+}
+
+.qx-select-wrap > svg {
+  position: absolute;
+  inset-inline-end: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--qx-ink-2);
+  pointer-events: none;
+}
+
+.qx-counter {
+  justify-self: end;
+  font-size: var(--qx-text-xs);
+  color: var(--qx-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Whole row is the switch: label, description and track share one 44px+ target. */
+.qx-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--qx-space-3) 0;
+  border: 0;
+  background: transparent;
+  text-align: start;
+}
+
+.qx-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qx-switch__text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.qx-switch__label {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.qx-switch__desc {
+  font-size: var(--qx-text-sm);
+  color: var(--qx-ink-2);
+}
+
+.qx-switch__track {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--qx-border-strong);
+  transition: background-color var(--qx-dur-fast) var(--qx-ease-out);
+}
+
+.qx-switch__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: var(--qx-shadow-1);
+  transition: transform var(--qx-dur-fast) var(--qx-ease-out);
+}
+
+.qx-switch[aria-checked="true"] .qx-switch__track {
+  background: var(--qx-ink);
+}
+
+.qx-switch[aria-checked="true"] .qx-switch__thumb {
+  transform: translateX(20px);
+  background: var(--qx-canvas);
+}
+
+.qx-switch:focus-visible {
+  outline: none;
+}
+
+.qx-switch:focus-visible .qx-switch__track {
+  outline: 2px solid var(--qx-focus);
+  outline-offset: 2px;
+}
+
+/* Segmented control (radio group) */
+.qx-seg {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--qx-radius-md);
+  background: var(--qx-surface-2);
+}
+
+.qx-seg__opt {
+  min-height: 40px;
+  padding: 0 var(--qx-space-2);
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--qx-ink-2);
+  font-size: var(--qx-text-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color var(--qx-dur-fast) ease, color var(--qx-dur-fast) ease;
+}
+
+.qx-seg__opt[aria-checked="true"] {
+  background: var(--qx-surface);
+  color: var(--qx-ink);
+  box-shadow: var(--qx-shadow-1);
+}
+
+/* Horizontal chip filter rail — native scroll, snaps, no custom gesture. */
+.qx-chips {
+  display: flex;
+  gap: var(--qx-space-2);
+  margin: 0 calc(-1 * var(--qx-space-4));
+  padding: 2px var(--qx-space-4);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.qx-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.qx-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--qx-touch);
+  max-width: 220px;
+  padding: 0 var(--qx-space-4);
+  border: 1px solid var(--qx-border);
+  border-radius: 999px;
+  background: var(--qx-surface);
+  color: var(--qx-ink);
+  font-size: var(--qx-text-sm);
+  font-weight: 600;
+  scroll-snap-align: start;
+  transition: transform var(--qx-dur-press) var(--qx-ease-out);
+}
+
+.qx-chip > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qx-chip:active {
+  transform: scale(0.97);
+}
+
+.qx-chip[aria-pressed="true"],
+.qx-chip[aria-current="true"] {
+  border-color: var(--qx-ink);
+  background: var(--qx-ink);
+  color: var(--qx-canvas);
+}
+
+/* ---------- Surfaces ---------- */
+.qx-card {
+  border: 1px solid var(--qx-border);
+  border-radius: var(--qx-radius-lg);
+  background: var(--qx-surface);
+  padding: var(--qx-space-4);
+  min-width: 0;
+}
+
+.qx-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.qx-section {
+  display: grid;
+  gap: var(--qx-space-3);
+  min-width: 0;
+}
+
+.qx-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--qx-space-3);
+}
+
+.qx-section__title {
+  font-size: var(--qx-text-md);
+  font-weight: 650;
+}
+
+.qx-stack {
+  display: grid;
+  gap: var(--qx-space-4);
+  min-width: 0;
+}
+
+.qx-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-2);
+}
+
+.qx-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--qx-space-3);
+}
+
+/* Side-by-side fields: an error under one must not push its neighbour's input down. */
+.qx-grid-2--fields {
+  align-items: start;
+}
+
+/* List rows */
+.qx-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qx-list > li + li {
+  border-top: 1px solid var(--qx-border);
+}
+
+.qx-row {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-3);
+  width: 100%;
+  min-height: 60px;
+  padding: var(--qx-space-3) var(--qx-space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  text-decoration: none;
+}
+
+.qx-row--interactive {
+  transition: background-color var(--qx-dur-press) ease;
+}
+
+.qx-row--interactive:active {
+  background: var(--qx-surface-press);
+}
+
+.qx-row__lead {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--qx-ink-2);
+}
+
+.qx-row__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.qx-row__title {
+  font-weight: 600;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
+
+.qx-row__sub {
+  font-size: var(--qx-text-sm);
+  color: var(--qx-ink-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.qx-row__trail {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+  color: var(--qx-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.qx-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--qx-radius-sm);
+  background: var(--qx-surface-2);
+  object-fit: cover;
+  flex: none;
+}
+
+/* Badges */
+.qx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  max-width: 100%;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--qx-surface-2);
+  color: var(--qx-ink-2);
+  font-size: var(--qx-text-xs);
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.qx-badge--primary {
+  background: var(--qx-primary-surface);
+  color: var(--qx-primary-text);
+}
+.qx-badge--success {
+  background: var(--qx-success-surface);
+  color: var(--qx-success-text);
+}
+.qx-badge--warning {
+  background: var(--qx-warning-surface);
+  color: var(--qx-warning-text);
+}
+.qx-badge--danger {
+  background: var(--qx-danger-surface);
+  color: var(--qx-danger-text);
+}
+.qx-badge--info {
+  background: var(--qx-info-surface);
+  color: var(--qx-info-text);
+}
+
+/* Banners: icon + text so meaning never depends on color alone. */
+.qx-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-3);
+  padding: var(--qx-space-3) var(--qx-space-4);
+  border-radius: var(--qx-radius-md);
+  background: var(--qx-info-surface);
+  color: var(--qx-info-text);
+  font-size: var(--qx-text-sm);
+}
+
+.qx-banner > svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.qx-banner__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+.qx-banner__title {
+  font-weight: 650;
+}
+
+.qx-banner__action {
+  margin-top: var(--qx-space-2);
+}
+
+.qx-banner--success {
+  background: var(--qx-success-surface);
+  color: var(--qx-success-text);
+}
+.qx-banner--warning {
+  background: var(--qx-warning-surface);
+  color: var(--qx-warning-text);
+}
+.qx-banner--danger {
+  background: var(--qx-danger-surface);
+  color: var(--qx-danger-text);
+}
+.qx-banner--primary {
+  background: var(--qx-primary-surface);
+  color: var(--qx-primary-text);
+}
+
+/* Stats */
+.qx-stat {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.qx-stat__label {
+  font-size: var(--qx-text-sm);
+  color: var(--qx-ink-2);
+  font-weight: 500;
+}
+
+.qx-stat__value {
+  font-size: var(--qx-text-3xl);
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.qx-stat__meta {
+  font-size: var(--qx-text-xs);
+  color: var(--qx-ink-2);
+}
+
+.qx-muted {
+  color: var(--qx-ink-2);
+}
+
+.qx-small {
+  font-size: var(--qx-text-sm);
+}
+
+.qx-mono {
+  font-family: var(--qx-font-mono);
+  font-size: 0.95em;
+  overflow-wrap: anywhere;
+}
+
+/* Skeleton */
+.qx-skel {
+  display: block;
+  border-radius: var(--qx-radius-sm);
+  background: var(--qx-surface-2);
+  animation: qx-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes qx-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qx-skel {
+    animation: none;
+  }
+}
+
+/* Empty / error / blocking states */
+.qx-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-8) var(--qx-space-4);
+  text-align: center;
+}
+
+.qx-state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--qx-space-2);
+  border-radius: 50%;
+  background: var(--qx-surface-2);
+  color: var(--qx-ink-2);
+}
+
+.qx-state--danger .qx-state__icon {
+  background: var(--qx-danger-surface);
+  color: var(--qx-danger-text);
+}
+
+.qx-state__title {
+  font-size: var(--qx-text-lg);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.qx-state__body {
+  max-width: 36ch;
+  color: var(--qx-ink-2);
+  overflow-wrap: anywhere;
+}
+
+.qx-state__action {
+  margin-top: var(--qx-space-3);
+}
+
+/* Sticky primary action, kept in the thumb zone above the bottom nav and the home indicator. */
+.qx-actionbar {
+  position: sticky;
+  bottom: var(--qx-actionbar-offset);
+  z-index: 10;
+  margin: 0 calc(-1 * var(--qx-space-4));
+  padding: var(--qx-space-3) var(--qx-space-4);
+  background: linear-gradient(to top, var(--qx-canvas) 70%, transparent);
+  display: flex;
+  gap: var(--qx-space-2);
+}
+
+.qx-actionbar > * {
+  flex: 1;
+}
+
+/* Sticky save bar inside long forms: sits above the bottom nav and the home indicator. */
+.qx-savebar {
+  position: sticky;
+  bottom: calc(var(--qx-actionbar-offset) + var(--qx-space-2));
+  z-index: 5;
+  display: flex;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-3);
+  border: 1px solid var(--qx-border);
+  border-radius: var(--qx-radius-lg, 16px);
+  background: var(--qx-surface);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.08);
+}
+
+.qx-savebar > * {
+  flex: 1;
+}
+
+/* Keyboard focus must never land under the app bar, the bottom nav or a sticky save bar (WCAG 2.4.11).
+   Only content gets the margin: on the sticky bars' own controls it would scroll the page for nothing. */
+.qx-app {
+  --qx-obscured-bottom: var(--qx-actionbar-offset);
+}
+
+.qx-app:has(.qx-actionbar, .qx-savebar) {
+  --qx-obscured-bottom: calc(var(--qx-actionbar-offset) + 80px);
+}
+
+.qx-main :is(a, button, input, select, textarea, summary, [tabindex]):not(.qx-actionbar *, .qx-savebar *, dialog *) {
+  scroll-margin: calc(var(--qx-appbar-h) + var(--qx-safe-top) + var(--qx-space-2)) 0
+    calc(var(--qx-obscured-bottom) + var(--qx-space-2));
+}
+
+/* ---------- Sheet / dialog (native <dialog>: focus trap, Esc and inert background for free) ---------- */
+.qx-sheet {
+  position: fixed;
+  inset: auto 0 var(--qx-kb, 0px) 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(92dvh, calc(100dvh - var(--qx-safe-top) - 16px - var(--qx-kb, 0px)));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--qx-radius-sheet) var(--qx-radius-sheet) 0 0;
+  background: var(--qx-surface);
+  color: var(--qx-ink);
+  box-shadow: var(--qx-shadow-2);
+  overflow: hidden;
+  flex-direction: column;
+  transform: translateY(0);
+  transition: transform var(--qx-dur-sheet) var(--qx-ease-drawer), overlay var(--qx-dur-sheet) allow-discrete, display var(--qx-dur-sheet) allow-discrete;
+}
+
+.qx-sheet[open] {
+  display: flex;
+}
+
+.qx-sheet:not([open]) {
+  transform: translateY(100%);
+  transition-duration: 200ms;
+}
+
+@starting-style {
+  .qx-sheet[open] {
+    transform: translateY(100%);
+  }
+}
+
+.qx-sheet::backdrop {
+  background: var(--qx-overlay);
+  opacity: 1;
+  transition: opacity var(--qx-dur-sheet) ease, overlay var(--qx-dur-sheet) allow-discrete, display var(--qx-dur-sheet) allow-discrete;
+}
+
+.qx-sheet:not([open])::backdrop {
+  opacity: 0;
+}
+
+@starting-style {
+  .qx-sheet[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.qx-sheet__grip {
+  width: 36px;
+  height: 5px;
+  margin: 8px auto 0;
+  border-radius: 999px;
+  background: var(--qx-border-strong);
+  opacity: 0.6;
+  flex: none;
+}
+
+.qx-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-2) var(--qx-space-2) var(--qx-space-2) var(--qx-space-5);
+  flex: none;
+}
+
+.qx-sheet__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--qx-text-lg);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.qx-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--qx-space-1) var(--qx-space-5) var(--qx-space-4);
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-4);
+}
+
+.qx-sheet__foot {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-3) var(--qx-space-5) calc(var(--qx-space-3) + var(--qx-safe-bottom));
+  border-top: 1px solid var(--qx-border);
+}
+
+.qx-sheet__foot > * {
+  flex: 1 1 140px;
+}
+
+@media (min-width: 640px) {
+  .qx-sheet {
+    inset: 0;
+    margin: auto;
+    width: calc(100% - 48px);
+    max-width: 480px;
+    height: fit-content;
+    max-height: min(85dvh, 720px);
+    border-radius: var(--qx-radius-lg);
+    opacity: 1;
+    transform: none;
+    transition: opacity var(--qx-dur-fast) var(--qx-ease-out), transform var(--qx-dur-fast) var(--qx-ease-out),
+      overlay var(--qx-dur-fast) allow-discrete, display var(--qx-dur-fast) allow-discrete;
+  }
+  .qx-sheet:not([open]) {
+    opacity: 0;
+    transform: scale(0.97);
+    transition-duration: 150ms;
+  }
+  @starting-style {
+    .qx-sheet[open] {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+  .qx-sheet__grip {
+    display: none;
+  }
+  .qx-sheet__foot {
+    padding-bottom: var(--qx-space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qx-sheet,
+  .qx-sheet:not([open]) {
+    transform: none;
+    transition: opacity 150ms ease, overlay 150ms allow-discrete, display 150ms allow-discrete;
+  }
+  .qx-sheet:not([open]) {
+    opacity: 0;
+  }
+  @starting-style {
+    .qx-sheet[open] {
+      transform: none;
+      opacity: 0;
+    }
+  }
+}
+
+/* ---------- Toasts ---------- */
+.qx-toaster {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--qx-actionbar-offset, var(--qx-safe-bottom)) + var(--qx-space-3));
+  z-index: 60;
+  display: grid;
+  justify-items: center;
+  gap: var(--qx-space-2);
+  padding: 0 calc(var(--qx-space-3) + var(--qx-safe-right)) 0 calc(var(--qx-space-3) + var(--qx-safe-left));
+  pointer-events: none;
+}
+
+/* The toaster renders outside .qx-app, so it can't inherit the offset: without this it covers the bottom nav. */
+:root:has(.qx-app[data-nav]) .qx-toaster {
+  bottom: calc(var(--qx-nav-h) + var(--qx-safe-bottom) + var(--qx-space-3));
+}
+
+.qx-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-3);
+  width: 100%;
+  max-width: 480px;
+  min-height: 48px;
+  padding: 6px 6px 6px var(--qx-space-4);
+  border-radius: var(--qx-radius-md);
+  background: var(--qx-toast-bg);
+  color: var(--qx-toast-ink);
+  box-shadow: var(--qx-shadow-2);
+  font-size: var(--qx-text-sm);
+  font-weight: 500;
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms var(--qx-ease-out), transform 200ms var(--qx-ease-out);
+}
+
+@starting-style {
+  .qx-toast {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.qx-toast[data-leaving] {
+  opacity: 0;
+  transform: translateY(4px);
+  transition-duration: 150ms;
+}
+
+.qx-toast__msg {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 0;
+  overflow-wrap: anywhere;
+}
+
+.qx-toast__action {
+  flex: none;
+  min-height: var(--qx-touch);
+  padding: 0 var(--qx-space-3);
+  border: 0;
+  border-radius: var(--qx-radius-sm);
+  background: transparent;
+  color: var(--qx-toast-action);
+  font-weight: 700;
+}
+
+.qx-toast__action:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qx-toast,
+  .qx-toast[data-leaving] {
+    transform: none;
+  }
+  @starting-style {
+    .qx-toast {
+      transform: none;
+    }
+  }
+}
+
+/* Centered auth / status pages (no app chrome). */
+.qx-center {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--qx-space-6) + var(--qx-safe-top)) calc(var(--qx-space-4) + var(--qx-safe-right)) calc(var(--qx-space-6) + var(--qx-safe-bottom))
+    calc(var(--qx-space-4) + var(--qx-safe-left));
+}
+
+.qx-center__panel {
+  width: 100%;
+  max-width: 400px;
+  display: grid;
+  gap: var(--qx-space-5);
+}
+
+.qx-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+  font-size: var(--qx-text-xl);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--qx-ink);
+}
+
+.qx-wordmark__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--qx-primary);
+  color: var(--qx-on-primary);
+}
+
+.qx-divider {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--qx-border);
+}
+
+/* Layout helpers shared by the tenant admin and the platform (ops) panel. */
+
+.qx-h1 {
+  font-size: var(--qx-text-2xl);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 var(--qx-space-1);
+  text-wrap: balance;
+}
+
+.qx-stack--tight {
+  gap: var(--qx-space-2);
+}
+
+.qx-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-3);
+  min-width: 0;
+}
+
+.qx-pad {
+  padding: var(--qx-space-4);
+}
+
+.qx-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.qx-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.qx-break {
+  overflow-wrap: anywhere;
+}
+
+/* Label/value pairs: one row each, value right-aligned so dates line up. */
+.qx-dl {
+  display: grid;
+  gap: var(--qx-space-2);
+  margin: 0;
+}
+
+.qx-dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--qx-space-3);
+  font-size: var(--qx-text-sm);
+}
+
+.qx-dl dt {
+  color: var(--qx-ink-2);
+}
+
+.qx-dl dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: end;
+}
+
+.qx-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-3);
+  min-height: 44px;
+  padding-block: var(--qx-space-2);
+}
+
+.qx-check input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--qx-ink);
+}
+
+.qx-row__sub svg {
+  vertical-align: -1px;
+}
+
+/* Static list item with trailing tools (QR tables, team members): same rhythm as .qx-row. */
+.qx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-3);
+  min-height: 60px;
+  padding: var(--qx-space-2) var(--qx-space-2) var(--qx-space-2) var(--qx-space-4);
+}
+
+.qx-item__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-block: var(--qx-space-1);
+}
+
+.qx-item > :first-child {
+  min-width: 0;
+}

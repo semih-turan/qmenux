@@ -1,0 +1,140 @@
+/* Mobile-primary baseline for the installed admin/superadmin PWAs. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* App shell with its own scroll regions: no pull-to-refresh hijacking. */
+  overscroll-behavior: none;
+  background: var(--qx-canvas);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--qx-canvas);
+  color: var(--qx-ink);
+  font-family: var(--qx-font);
+  font-size: var(--qx-text-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* iOS zooms on focus under 16px; fix the cause instead of disabling zoom. */
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
+}
+
+button,
+a,
+[role="button"],
+[role="switch"],
+[role="tab"],
+label {
+  touch-action: manipulation;
+}
+
+button,
+[role="button"],
+[role="switch"],
+[role="tab"] {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: pointer;
+}
+
+a {
+  color: var(--qx-primary-text);
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--qx-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--qx-primary-surface);
+}
+
+.qx-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.qx-skip-link {
+  position: fixed;
+  top: calc(var(--qx-safe-top) + 8px);
+  left: 8px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: var(--qx-radius-sm);
+  background: var(--qx-ink);
+  color: var(--qx-canvas);
+  transform: translateY(-200%);
+}
+
+.qx-skip-link:focus-visible {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

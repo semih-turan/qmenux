@@ -60,3 +60,16 @@ QMenuX uses terracotta `#E86A33`, charcoal `#252420`, ivory `#F7F5F0` for a sect
 
 ## v9 Git workflow
 An existing Git repository is assumed. Read `docs/08-operations/GIT_WORKFLOW.md` before Codex implementation. Work in per-task branches, preserve user modifications, use task-scoped Conventional Commits, and require explicit authorization before commits, pushes or merges. Root `.gitignore` is a template; merge it with existing ignore rules rather than overwriting custom rules.
+
+## 2026-10-26 implementation status (agent-recorded)
+Implemented locally and manually tested, pending reviewer approval: NestJS API, guest menu (`apps/menu`), business admin PWA (`apps/admin`), platform superadmin PWA (`apps/ops`, `superman.<root>`, TOTP-mandatory), PDF worker (`apps/worker`), CI workflow. CSV/XLSX import (T027) and the marketing landing (`apps/landing`, T043) were added later the same day. Not implemented: real OIDC provider keys, R2/Vercel/Neon/Cloudflare Access configuration, legal sign-offs. See `docs/01-product/PROGRESS.md` (2026-10-26) and `docs/02-architecture/DECISIONS.md` (OD-17..25).
+
+### Local run (all apps)
+`pnpm db:start`, `pnpm db:migrate`, `pnpm db:seed`; then API `pnpm --filter @qmenux/api build && pnpm --filter @qmenux/api start` (127.0.0.1:4000), menu `next start -p 3000`, admin `next dev -p 3001`, ops `next dev -p 3002` (`http://superman.qmenux.localhost:3002`), landing `next dev -p 3003` (`http://qmenux.localhost:3003`), worker `pnpm --filter @qmenux/worker build && pnpm --filter @qmenux/worker start`. Operator TOTP enrolment: `pnpm --filter @qmenux/api ops:totp <operator-user-id>`.
+
+## First MVP source baseline (2026-10-26)
+This is a development MVP, not a production launch approval. Use Node from `.node-version` and the pnpm version in `package.json`; run `pnpm install --frozen-lockfile`. Copy `.env.example` to `.env`, fill the three independent random keys, and set `QX_DEV_IDP=1` only for local testing. Export the local values in each app terminal (`set -a; source .env; set +a` from the repository root) so Next.js servers receive them. Set `QX_MEDIA_DIR` to the same absolute local directory for API and worker. Run `pnpm db:start`, `pnpm build`, `pnpm db:migrate`, then `pnpm db:seed` on the disposable local database only. Start apps using their package scripts; the ports are listed above.
+
+Quality checks: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm audit --audit-level=low`. Tests reset **only disposable** `qmenux_test` and `qmenux_api_test` databases; never supply production URLs. CI provisions PostgreSQL 17 and runs these suites sequentially because database roles are cluster-wide. Browser/mobile acceptance remains a separate pre-release gate; the current CI runs unit and API/database integration tests.
+
+Gitleaks scans fetched history; `.gitleaksignore` contains only 25 reviewed historical false-positive fingerprints (SQL migration names and public deployment IDs). Production remains gated on R2, real OIDC provider verification, protected superadmin access, infrastructure/restore evidence and legal approvals. The previous schema under `infrastructure/database` has been replaced; an existing database requires a reviewed data migration before adopting the new `qx` schema. No production database migration or deployment is authorised by these local setup instructions.
