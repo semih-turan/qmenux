@@ -30,7 +30,7 @@ export class OnboardingController {
     await this.limiter.hit('onboarding.slug', s.userId, 60, 300);
     const slug = normalizeSlug(String(raw ?? ''));
     const check = checkSlug(slug);
-    if (!check.ok) return { slug, available: false, reason: check.reason };
+    if (check.ok === false) return { slug, available: false, reason: check.reason };
     const taken = await this.db.withAuth(s.userId, (tx) => identity.slugTaken(tx, slug));
     return { slug, available: !taken, reason: taken ? 'TAKEN' : null };
   }
@@ -47,7 +47,7 @@ export class OnboardingController {
     await this.limiter.hit('onboarding.submit', s.userId, 5, 3600);
     const input = parse(applicationSchema, body);
     const check = checkSlug(input.slug);
-    if (!check.ok) throw new ApiError(422, 'SLUG_INVALID', 'Bu adres kullanılamaz', { reason: check.reason });
+    if (check.ok === false) throw new ApiError(422, 'SLUG_INVALID', 'Bu adres kullanılamaz', { reason: check.reason });
     const r = await this.db.withAuth(s.userId, (tx) => identity.submitApplication(tx, s.userId, input));
     if (r === 'SLUG_TAKEN') throw new ApiError(409, 'SLUG_TAKEN', 'Bu adres alınmış');
     if (r === 'ALREADY_PENDING') throw new ApiError(409, 'ALREADY_PENDING', 'Bekleyen bir başvurunuz zaten var');
