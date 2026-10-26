@@ -135,3 +135,8 @@ Function-only0017 replaces passkey_begin so a new authorized start retires only 
 ## Pending application rejection (0020; local development)
 
 0020 adds REJECTED/reviewer/reason/request/timestamp consistency and APPLICANT/OPERATOR audit kinds to onboarding. Three explicit onboarding EXECUTE contracts list pending/replay/reject using operator-owned session/current-transaction rejection capability functions. A private canonical digest helper binds revision/reason. Future step-up audit rows receive transaction IDs; historical rows remain NULL. No cross-module direct table query or new runtime table grants. Down locks and refuses any review history or new transaction metadata rather than losing evidence. Earlier migrations/manual Neon guards remain unchanged; local tests only, no cloud migration. See OPERATOR_APPLICATION_REVIEW.md for authority, idempotency and remaining release gates.
+
+
+## Own recorded decisions (0021; local development)
+
+0021 adds an onboarding-owned EXECUTE-only list_rejections read contract and a partial reviewed_by/reviewed_at/id index. Existing operator review_session authenticates the actor; only their immutable recorded decisions are projected. Keyset cursor uses the own anchor row's exact timestamp/ID, with foreign/unknown cursor indistinguishably empty. No new data, GUC, direct runtime table privilege or write contract. Safe populated down removes function/index only, preserving all decisions/audit; earlier migrations/manual Neon guards unchanged. Local PostgreSQL only; no cloud migration. See OPERATOR_APPLICATION_REVIEW.md for five-record browser limits, private projection and remaining release/recovery gates.

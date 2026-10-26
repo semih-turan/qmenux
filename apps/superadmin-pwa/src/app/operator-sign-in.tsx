@@ -16,11 +16,11 @@ async function request(action:string,body?:object,signal?:AbortSignal) {
   if(!response.ok)throw new RequestError(response.status);
   return response.json();
 }
-async function readSession(signal:AbortSignal):Promise<{state:State;mayHaveSession:boolean}> {
+async function readSession(signal:AbortSignal):Promise<{state:State;mayHaveSession:boolean;operatorId?:string}> {
   try {
     const data=await request('me',undefined,signal);
     if(data.operator?.role!=='PLATFORM_ADMIN'||typeof data.operator.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.operator.id))throw new Error();
-    return {state:'authenticated',mayHaveSession:true};
+    return {state:'authenticated',mayHaveSession:true,operatorId:data.operator.id.toLowerCase()};
   }catch(error){
     if(error instanceof RequestError && [401,403].includes(error.status))return {state:'ready',mayHaveSession:error.status===403};
     throw error;
@@ -29,6 +29,7 @@ async function readSession(signal:AbortSignal):Promise<{state:State;mayHaveSessi
 
 export default function OperatorSignIn() {
   const [state,setState]=useState<State>('loading'),[phase,setPhase]=useState<Phase>('idle');
+  const [operatorId,setOperatorId]=useState<string|null>(null);
   const [hadSession,setHadSession]=useState(false),[reviewBusy,setReviewBusy]=useState(false);
   const [capable,setCapable]=useState(false),[mayHaveSession,setMayHaveSession]=useState(false);
   const [grant,setGrant]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState(false);
@@ -36,7 +37,7 @@ export default function OperatorSignIn() {
   const busy=phase!=='idle';
   useEffect(()=>{
     const controller=new AbortController();
-    void readSession(controller.signal).then(result=>{if(!controller.signal.aborted){setState(result.state);setHadSession(result.state==='authenticated');setMayHaveSession(result.mayHaveSession);setCapable(supported());}})
+    void readSession(controller.signal).then(result=>{if(!controller.signal.aborted){setState(result.state);setHadSession(result.state==='authenticated');setOperatorId(result.operatorId??null);setMayHaveSession(result.mayHaveSession);setCapable(supported());}})
       .catch(()=>{if(!controller.signal.aborted){setState('unavailable');setCapable(supported());}});
     return ()=>{controller.abort();current.current?.abort();};
   },[]);
@@ -45,7 +46,7 @@ export default function OperatorSignIn() {
     const controller=new AbortController();let checking=false;
     const verify=()=>{
       if(checking||document.visibilityState==='hidden')return;checking=true;
-      void readSession(controller.signal).then(result=>{if(!controller.signal.aborted){setState(result.state);setMayHaveSession(result.mayHaveSession);if(result.state!=='authenticated')setMessage('Oturum veya ek doğrulama yenilenmeli.');}})
+      void readSession(controller.signal).then(result=>{if(!controller.signal.aborted){setState(result.state);if(result.operatorId)setOperatorId(result.operatorId);setMayHaveSession(result.mayHaveSession);if(result.state!=='authenticated')setMessage('Oturum veya ek doğrulama yenilenmeli.');}})
         .catch(()=>{if(!controller.signal.aborted){setState('unavailable');setMessage('Oturum doğrulanamadı; bağlantınızı kontrol edin.');}}).finally(()=>{checking=false;});
     };
     const timer=window.setInterval(verify,60000);window.addEventListener('focus',verify);document.addEventListener('visibilitychange',verify);
@@ -63,7 +64,7 @@ export default function OperatorSignIn() {
       setPhase('finishing');const response=JSON.stringify(serialize(credential));if(response.length>16384)throw new Error();
       const finished=await request(`${kind}/finish`,{response},controller.signal);
       if(registration){if(finished.status!=='registered')throw new Error();setState('ready');setMessage('Geçiş anahtarı kaydedildi. Giriş için ayrıca doğrulayın.');}
-      else{if(finished.status!=='signed_in')throw new Error();const confirmed=await readSession(controller.signal);if(confirmed.state!=='authenticated')throw new Error();setState('authenticated');setHadSession(true);setMayHaveSession(true);setMessage('Platform oturumu doğrulandı.');}
+      else{if(finished.status!=='signed_in')throw new Error();const confirmed=await readSession(controller.signal);if(confirmed.state!=='authenticated')throw new Error();setState('authenticated');setOperatorId(confirmed.operatorId??null);setHadSession(true);setMayHaveSession(true);setMessage('Platform oturumu doğrulandı.');}
     }catch(cause){
       setState('ready');setError(true);
       setMessage(cause instanceof DOMException&&['AbortError','NotAllowedError'].includes(cause.name)?'İşlem iptal edildi veya süre doldu. Yeni bir işlem başlatabilirsiniz.'
@@ -73,7 +74,7 @@ export default function OperatorSignIn() {
   }
   async function logout() {
     setPhase('logout');setMessage('');setError(false);
-    try{const data=await request('logout',{});if(data.status!=='signed_out')throw new Error();setMayHaveSession(false);setHadSession(false);setState('ready');setMessage('Çıkış doğrulandı.');}
+    try{const data=await request('logout',{});if(data.status!=='signed_out')throw new Error();setMayHaveSession(false);setHadSession(false);setOperatorId(null);setState('ready');setMessage('Çıkış doğrulandı.');}
     catch{setState('ready');setError(true);setMessage('Çıkış doğrulanamadı. Oturumunuz açık olabilir; bağlantınızı kontrol edip tekrar deneyin.');}
     finally{setPhase('idle');}
   }
@@ -94,5 +95,5 @@ export default function OperatorSignIn() {
         </form></details>}
     </>}
     {mayHaveSession&&<Button disabled={busy||reviewBusy} onClick={()=>void logout()}>{phase==='logout'?'Çıkış doğrulanıyor…':'Çıkış yap'}</Button>}
-  </section>{hadSession&&<ApplicationReview capable={capable} available={state==='authenticated'&&phase==='idle'} onBusyChange={setReviewBusy}/>}</>;
+  </section>{hadSession&&<ApplicationReview key={operatorId??'pending'} capable={capable} available={state==='authenticated'&&phase==='idle'} onBusyChange={setReviewBusy}/>}</>;
 }

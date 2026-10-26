@@ -61,3 +61,8 @@ Existing shared applicant cards now show terminal REJECTED with explicit no-acce
 ## Operator mobile review confirmation —2026-10-26
 
 Superadmin uses existing Button/TextField/safe-area shell for pending list, explicit reason/verification and separate final rejection confirmation. Full frozen reason wraps even long words; native cancel and result/retry focus are explicit. Uncertain payload survives in-memory reauthentication and conflict preserves editable reason while requiring current-row reselection. Auth controls pause during active review. No theme/palette fork, raw credentials or request IDs in product flow; approval/license controls remain unavailable. Rendered four-width keyboard/confirmation/retry evidence and production visual QA are recorded in PROGRESS.md; physical iOS/Android/assistive validation remains pending.
+
+
+## Own decision recovery view —2026-10-26
+
+Ret kararlarım reuses shared Button/list/type styles for explicit read-only loading, five-record pagination, full wrapped private reason/reference and localized decision time. Exact recorded-result confirmation is separate from mutation; absent history is not labeled failure. Reads announce completion and restore keyboard focus. Verified account changes discard private UI state while same-account reauthentication preserves an uncertain command. Browser mobile checks and production visual evidence are recorded in PROGRESS.md; physical-device/assistive validation remains pending.

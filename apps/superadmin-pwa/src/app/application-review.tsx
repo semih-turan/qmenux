@@ -4,7 +4,8 @@ import { Button } from '@qmenux/ui/button';
 import { TextField } from '@qmenux/ui/text-field';
 import { useEffect,useRef,useState } from 'react';
 import { ceremony,serialize } from '../lib/operator-credentials';
-import { reviewApplication,uuidPattern,type ReviewApplication } from '../lib/review-model';
+import DecisionHistory from './decision-history';
+import { reviewApplication,uuidPattern,type ReviewApplication,type ReviewDecision } from '../lib/review-model';
 
 type Command={id:string;revision:number;reason:string;requestId:string};
 type Phase='idle'|'starting'|'key'|'verifying'|'confirm'|'committing'|'uncertain'|'fresh';
@@ -50,7 +51,7 @@ export default function ApplicationReview({available,capable,onBusyChange}:{avai
   }
   async function verify(existing?:Command) {
     if(!selected)return;
-    // shortcut: uncertain commands survive only this mounted screen; add reviewed server recovery before cross-device continuation.
+    // shortcut: uncommitted commands remain in memory; use recorded decisions after reload and review recovery before reissuing an unresolved command.
     const next=existing??{id:selected.id,revision:selected.revision,reason:reason.trim(),requestId:crypto.randomUUID()};
     const controller=new AbortController();current.current=controller;setCommand(next);setPhase('starting');setMessage('');
     try{
@@ -64,12 +65,20 @@ export default function ApplicationReview({available,capable,onBusyChange}:{avai
       else{setPhase('fresh');window.requestAnimationFrame(()=>actionButton.current?.focus());setMessage('Doğrulama tamamlanamadı. Oturumunuzu ve bağlantınızı kontrol edip yeniden doğrulayın.');}
     }finally{current.current=null;}
   }
+  function confirmed(application:ReviewApplication,recorded=false) {
+    setItems(old=>old.filter(item=>item.id!==application.id));setSelected(null);setCommand(null);setReason('');setMayHaveCommitted(false);setPhase('idle');
+    setMessage(recorded?'Başvurunun reddedildiği kaydedilen karardan doğrulandı. İşletme erişimi veya lisans verilmedi.':'Başvurunun reddedildiği doğrulandı. İşletme erişimi veya lisans verilmedi.');window.requestAnimationFrame(()=>refreshButton.current?.focus());
+  }
+  function recorded(decision:ReviewDecision) {
+    if(!command||decision.id!==command.id||decision.requestId!==command.requestId||decision.revision!==command.revision+1||decision.reason!==command.reason)return;
+    confirmed(decision,true);
+  }
   async function commit() {
     if(!command)return;setMayHaveCommitted(true);setPhase('committing');setMessage('');
     try{
       const data=await request('reject',command),application=reviewApplication(data.application);
       if(application.id!==command.id||application.status!=='REJECTED'||application.revision!==command.revision+1)throw new Error();
-      setItems(old=>old.filter(item=>item.id!==application.id));setSelected(null);setCommand(null);setReason('');setMayHaveCommitted(false);setPhase('idle');setMessage('Başvurunun reddedildiği doğrulandı. İşletme erişimi veya lisans verilmedi.');window.requestAnimationFrame(()=>refreshButton.current?.focus());
+      confirmed(application);
     }catch(error){
       if(error instanceof RequestError&&[404,409].includes(error.status)){setCommand(null);setMayHaveCommitted(false);setConflict(true);setPhase('idle');setMessage('Başvuru değişmiş veya artık incelemede olmayabilir. Listeyi yenileyip güncel başvuruyu tekrar seçin; gerekçeniz korunuyor.');}
       else if(error instanceof RequestError&&[401,403].includes(error.status)){setPhase('fresh');setMessage('Sonuç doğrulanamadı. Platform oturumunu yenileyip aynı işlemi yeniden doğrulayın.');}
@@ -79,7 +88,7 @@ export default function ApplicationReview({available,capable,onBusyChange}:{avai
   }
   return <section aria-labelledby="review-title" aria-busy={busy}>
     <h2 id="review-title">Bekleyen başvurular</h2><p>Başvuruyu inceleyip gerekçeyle reddedebilirsiniz. Onay ve lisans verme henüz kullanıma açılmadı.</p>
-    <p role="status" aria-live="polite">{!available?'Platform oturumunu yenilemeniz gerekiyor. Devam eden işlem bilgileri bu ekranda korunuyor.':message||(!ready?'Başvurular yükleniyor…':'')}</p>
+    <p role="status" aria-label="Başvuru inceleme durumu" aria-live="polite">{!available?'Platform oturumunu yenilemeniz gerekiyor. Devam eden işlem bilgileri bu ekranda korunuyor.':message||(!ready?'Başvurular yükleniyor…':'')}</p>
     <Button ref={refreshButton} disabled={!available||busy} onClick={()=>void refresh()}>Başvuruları yenile</Button>
     {available&&ready&&<>{items.length===0&&<p>İnceleme bekleyen başvuru yok.</p>}
       <ul className="review-list">{items.map(item=><li key={item.id}><h3>{item.requestedName}</h3><Button disabled={busy||!!command} onClick={()=>choose(item)} aria-label={`${item.requestedName} başvurusunu incele`}>İncele</Button></li>)}</ul>
@@ -95,5 +104,7 @@ export default function ApplicationReview({available,capable,onBusyChange}:{avai
       {phase==='fresh'&&command&&<Button ref={actionButton} disabled={!available||!capable||busy} onClick={()=>void verify(command)}>Aynı ret işlemini yeniden doğrula</Button>}
       {!busy&&phase!=='uncertain'&&!(phase==='fresh'&&mayHaveCommitted)&&<Button onClick={()=>{setSelected(null);setCommand(null);setReason('');setMayHaveCommitted(false);setPhase('idle');}}>İncelemeyi kapat</Button>}
     </form>}
+    {command&&mayHaveCommitted&&<p className="review-reason">Belirsiz işlemin referansı: {command.requestId}</p>}
+    <DecisionHistory available={available} command={mayHaveCommitted&&!busy?command:null} onRecorded={recorded}/>
   </section>;
 }

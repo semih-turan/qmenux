@@ -10,3 +10,11 @@ export function reviewApplication(value:unknown):ReviewApplication {
     ||/[\x00-\x1f\x7f]/.test(row.requestedName)||!['PENDING_APPROVAL','REJECTED'].includes(String(row.status))||!Number.isInteger(row.revision)||(row.revision as number)<1||(row.revision as number)>2147483647)throw new Error('Invalid review');
   return {id:row.id.toLowerCase(),requestedName:row.requestedName,status:row.status as ReviewApplication['status'],revision:row.revision as number,createdAt:timestamp(row.createdAt),submittedAt:timestamp(row.submittedAt)};
 }
+
+export type ReviewDecision=ReviewApplication & {reviewedAt:string;reason:string;requestId:string};
+export function reviewDecision(value:unknown):ReviewDecision {
+  const application=reviewApplication(value),row=value as Record<string,unknown>;
+  if(application.status!=='REJECTED'||typeof row.reason!=='string'||!row.reason.trim()||row.reason.length>1000||/[\x00-\x1f\x7f]/.test(row.reason)
+    ||typeof row.requestId!=='string'||!uuidPattern.test(row.requestId))throw new Error('Invalid decision');
+  return {...application,reason:row.reason,requestId:row.requestId.toLowerCase(),reviewedAt:timestamp(row.reviewedAt)};
+}

@@ -55,6 +55,7 @@ test('review BFF rejects poisoned options/results and preserves safe domain erro
 
 test('actual superadmin app keeps review routes unregistered',async({request})=>{
  expect((await request.get('http://127.0.0.1:3002/api/operator-review/applications')).status()).toBe(404);
+ expect((await request.get('http://127.0.0.1:3002/api/operator-review/decisions')).status()).toBe(404);
  expect((await request.post('http://127.0.0.1:3002/api/operator-review/reject',{data:command})).status()).toBe(404);
 });
 
@@ -78,4 +79,19 @@ test('browser keeps review proof HttpOnly and host-only, clears it on confirmati
  await post('/api/operator-review/reject',command);expect((await context.cookies()).some(cookie=>cookie.name===names.reviewProof)).toBe(false);expect((await context.cookies()).some(cookie=>cookie.name===names.session)).toBe(true);
  await post('/api/operator-review/rejection/start',command);await post('/api/operator-review/rejection/finish',{...command,response:'{}'});
  expect(await post('/api/operator/logout',{})).toEqual({status:'signed_out'});expect(await context.cookies()).toHaveLength(0);
+});
+
+
+test('decision recovery projects only validated own decision fields and rejects selectors or incomplete records',async()=>{
+ const decision={...application,status:'REJECTED',revision:3,reviewedAt:'2026-10-26T00:02:00.000Z',reason:'Private own reason',requestId:command.requestId};
+ upstream=()=>Response.json({items:[{...decision,reviewed_by:id,applicant_id:id,token:key}],nextCursor:null});
+ expect(await (await handleOperatorReview(request('decisions'))).json()).toEqual({items:[decision],nextCursor:null});
+ expect(calls[0]!.url).toBe('https://api.qmenux.com/v1/internal/operator-review/decisions');
+ expect(calls[0]!.body.limit).toBe(5);
+ upstream=()=>Response.json({items:Array.from({length:5},(_,n)=>({...decision,id:`00000000-0000-4000-8000-${String(n+1).padStart(12,'0')}`,reason:'界'.repeat(1000),requestedName:'店'.repeat(200)})),nextCursor:'00000000-0000-4000-8000-000000000005'});
+ expect((await handleOperatorReview(request('decisions'))).status).toBe(200);
+ expect((await handleOperatorReview(request('decisions?operatorId='+id))).status).toBe(400);
+ for(const bad of [{...decision,status:'PENDING_APPROVAL'},{...decision,reason:''},{...decision,reviewedAt:'yesterday'},{...decision,requestId:'bad'}]){
+  upstream=()=>Response.json({items:[bad],nextCursor:null});expect((await handleOperatorReview(request('decisions'))).status).toBe(503);
+ }
 });

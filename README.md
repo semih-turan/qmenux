@@ -188,3 +188,6 @@ Pending application review now has an internal list/reject provider. Rejection r
 
 
 The local-review superadmin panel now provides pending listing, reason-bound native verification and a separate explicit rejection confirmation, with honest immutable retries/cancel/conflict/reauth states. Dedicated default-off OPERATOR_REVIEW_ENABLED/empty OPERATOR_REVIEW_SECRET protect a prepared API/BFF; production routes remain unregistered404. Local native/HTTP/PG/BFF and rendered/browser-cookie checks are recorded in `docs/04-backend/OPERATOR_APPLICATION_REVIEW.md`. Real provider/device/security/legal review, durable recovery and approval/license rollout remain pending.
+
+
+Recorded rejection decisions can now be inspected after reload through an authenticated own-operator history view, with reasons, decision time, operation reference and bounded pagination. An exact recorded match can resolve an in-memory uncertain result without another write. No browser persistence is added; verified account changes reset private state. Absent history never proves nonexecution. Routes remain unregistered and review/provider/device/recovery/approval/license gates remain open; see `docs/04-backend/OPERATOR_APPLICATION_REVIEW.md`.

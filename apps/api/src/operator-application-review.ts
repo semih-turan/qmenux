@@ -44,6 +44,13 @@ export class OperatorApplicationReview {
     const rows=await this.query<Application>('SELECT * FROM qmenux_onboarding.list_pending($1,$2,$3,$4,$5,$6,$7,$8,$9)',[...bindings,after,limit+1]);
     return {items:rows.slice(0,limit),nextCursor:rows.length>limit?rows[limit-1]!.id:null};
   }
+  async decisions(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,input:unknown) {
+    const body=fields(input,['after','limit']),after=Object.hasOwn(body,'after')?uuid(body.after):null;
+    const limit=Object.hasOwn(body,'limit')?integer(body.limit,1,100):20;
+    const bindings=await this.bindings(assertion,browser,session,csrf,proof);
+    const rows=await this.query<Application & {reviewedAt:Date;reason:string;requestId:string}>('SELECT * FROM qmenux_onboarding.list_rejections($1,$2,$3,$4,$5,$6,$7,$8,$9)',[...bindings,after,limit+1]);
+    return {items:rows.slice(0,limit),nextCursor:rows.length>limit?rows[limit-1]!.id:null};
+  }
   async beginReject(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,id:unknown,input:unknown) {
     return this.passkeys.beginStepUp(assertion,browser,session,csrf,proof,this.command(id,input).operation);
   }

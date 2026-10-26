@@ -1,29 +1,31 @@
 import type { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { AuthError,boundedJson,call,cookie,fail,json,names,object,options,origin,proofPattern,setCookie,settings } from './operator-auth';
-import { reviewApplication,uuidPattern } from './review-model';
+import { reviewApplication,reviewDecision,uuidPattern } from './review-model';
 
 // Deliberately unregistered pending named privileged-route review.
 export async function handleOperatorReview(req:Request):Promise<NextResponse> {
   let finishing=false,committing=false;
   try{
     const url=new URL(req.url),action=url.pathname.slice('/api/operator-review/'.length);
-    if(!url.pathname.startsWith('/api/operator-review/')||!['applications','rejection/start','rejection/finish','reject'].includes(action))return json({status:'invalid_request'},404);
-    const method=action==='applications'?'GET':'POST';if(req.method!==method){const res=json({status:'invalid_request'},405);res.headers.set('Allow',method);return res;}
+    if(!url.pathname.startsWith('/api/operator-review/')||!['applications','decisions','rejection/start','rejection/finish','reject'].includes(action))return json({status:'invalid_request'},404);
+    const reading=action==='applications'||action==='decisions';
+    const method=reading?'GET':'POST';if(req.method!==method){const res=json({status:'invalid_request'},405);res.headers.set('Allow',method);return res;}
     const key=settings(true);
     if(url.origin!==origin||req.headers.get('host')!=='superman.qmenux.com'||url.hash)fail(400);
     const assertion=req.headers.get('cf-access-jwt-assertion');if(!assertion||assertion.length>8192||!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(assertion))fail(401);
     const browser=cookie(req,names.browser),csrf=cookie(req,names.csrf),session=cookie(req,names.session),proof=cookie(req,names.proof);
     if(!browser||!csrf||!session||!proof)fail(401);
     const authority={assertion,browser,session,csrf,proof},forbidden=[key,process.env.OPERATOR_BFF_SECRET!,browser,csrf,session,proof];
-    if(action==='applications'){
+    if(reading){
+      const limit=action==='decisions'?5:20;
       const after=url.searchParams.get('after');
       if([...url.searchParams.keys()].some(name=>name!=='after')||url.searchParams.getAll('after').length>1||(after!==null&&!uuidPattern.test(after)))fail(400);
-      const data=await call(key,'list',{...authority,limit:20,...(after?{after:after.toLowerCase()}:{})},true);
-      if(!Array.isArray(data.items)||data.items.length>20)fail(503);
-      const items=data.items.map(reviewApplication);
-      if(items.some(item=>item.status!=='PENDING_APPROVAL')||new Set(items.map(item=>item.id)).size!==items.length
-        ||(data.nextCursor!==null&&(typeof data.nextCursor!=='string'||!uuidPattern.test(data.nextCursor)||items.length!==20||data.nextCursor!==items.at(-1)?.id)))fail(503);
+      const data=await call(key,action==='applications'?'list':'decisions',{...authority,limit,...(after?{after:after.toLowerCase()}:{})},true);
+      if(!Array.isArray(data.items)||data.items.length>limit)fail(503);
+      const items=data.items.map(action==='decisions'?reviewDecision:reviewApplication);
+      if(items.some(item=>item.status!==(action==='decisions'?'REJECTED':'PENDING_APPROVAL'))||new Set(items.map(item=>item.id)).size!==items.length
+        ||(data.nextCursor!==null&&(typeof data.nextCursor!=='string'||!uuidPattern.test(data.nextCursor)||items.length!==limit||data.nextCursor!==items.at(-1)?.id)))fail(503);
       const result={items,nextCursor:data.nextCursor};if(forbidden.some(value=>JSON.stringify(result).includes(value)))fail(503);return json(result);
     }
     if(url.search||req.headers.get('origin')!==origin||req.headers.get('x-qmenux-request')!=='1'||req.headers.has('content-encoding')

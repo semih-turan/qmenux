@@ -609,3 +609,16 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal review
 - [ ] Durable uncertain-decision recovery, abuse/retention and audited operator recovery; approval/provisioning/license policy/integration remain open.
 
 No DONE/APPROVED, cloud migration, provider setup, production deployment or actual business activation. [Contract](../04-backend/OPERATOR_APPLICATION_REVIEW.md).
+
+
+## T041 recorded-decision recovery —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy reviewer/date pending. Added current-operator-only recorded rejection reads to the existing unregistered API/BFF and mobile screen. No browser persistence or mutation; positive exact recorded command can explicitly resolve an uncertain result without another rejection.
+
+- [x] Data-preserving migration up/rollback/populated down/reapply/version and ACL/RLS; ordered own pagination/current authority/foreign cursor isolation.
+- [x] Real HTTP own-decision projection; BFF max Unicode/closed selector/schema/projection and five-record bound.
+- [x] Rendered reload/offline/pagination, verified operator state reset, same-actor reauth retention, mismatched versus exact positive recovery with no extra write.
+- [ ] Real provider/device/hosted/named security/privacy/legal review before route enablement.
+- [ ] Uncommitted/in-flight/other-account reconciliation, retention/abuse, audited operator recovery and approval/provisioning/license policy/integration remain open.
+
+Absent history is never treated as failure. Actual final commands/mobile evidence in PROGRESS.md; no task DONE/APPROVED or deployment authorized.
