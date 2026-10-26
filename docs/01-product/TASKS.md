@@ -155,10 +155,15 @@ T013 and LEG-007 must additionally include **T035–T037** as V1 release gates. 
 | ID | Release | Task | Dependencies | Acceptance evidence | Status |
 |---|---|---|---|---|---|
 | T052 | V1 foundation | Adopt Git workflow in existing repository, preserve history, validate `.gitignore`, establish reviewed docs baseline | T000 documentation review | GIT-001: existing history intact; clean scoped baseline; no secrets; branch policy documented | TODO |
-| T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | TODO — implemented 2026-10-26, awaiting review (.github/workflows/ci.yml; not yet run on GitHub) |
+| T053 | V1 early engineering | Implement GitHub Actions lint/typecheck/test/build and secret scan with PR protection recommendations | T001,T052 | GIT-002: CI workflow actually runs; required checks documented; no production secrets in PR CI | TODO — MVP baseline hardened 2026-10-26; local lint/typecheck/build + 272 tests and audit pass; hosted checks tracked in PR #2; reviewer/mobile release gates remain open (see PROGRESS) |
 
 ### v9 execution constraints
 - T052 is repository governance and should be addressed before coding T001. It **does not** mean reinitialize an existing Git repository.
 - T053 can be implemented once project scripts exist; do not mark complete based on YAML alone.
 - Every task must report Git branch, reviewed diff, test evidence and commit hash or `not committed`.
 - Commits, pushes and merges require explicit user authorization. T043 marketing landing stays LAST.
+
+## 2026-10-26 first MVP baseline evidence — T053 / T018
+- T053: `.github/workflows/ci.yml` provisions PostgreSQL 17 and runs frozen install, dependency audit, lint, typecheck, unit/API/RLS tests, build and full-history Gitleaks. Exact historical false positives are documented in `.gitleaksignore`. Local evidence and limitations: [PROGRESS.md](PROGRESS.md), final 2026-10-26 entry; hosted evidence: [PR #2 checks](https://github.com/semih-turan/qmenux/pull/2/checks). No browser coverage claimed by current CI.
+- T018: [PDF delivery regressions](../../apps/worker/test/pdf-job.test.ts) cover READY replay and pending-to-READY file creation; [PDF rendering tests](../../apps/worker/test/pdf.test.ts) preserved. No schema change; reverting the handler change needs no migration rollback.
+- Status remains awaiting review; no DONE or legal approval inferred from a source merge.

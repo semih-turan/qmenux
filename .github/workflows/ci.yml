@@ -17,6 +17,20 @@ jobs:
     name: Quality
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: qmenux_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       CI: 'true'
       NEXT_TELEMETRY_DISABLED: '1'
@@ -49,10 +63,13 @@ jobs:
         run: |
           command -v pg_config
           pg_config --bindir >> "$GITHUB_PATH"
-      - name: Install test browser and OS dependencies
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Run API and mobile-width browser tests
-        run: pnpm test
+      - name: Create isolated API test database
+        run: createdb -h 127.0.0.1 -p 54329 -U postgres qmenux_api_test
+      - name: Check local database script
+        run: bash -n scripts/dev-db.sh
+      - name: Run unit, API and tenant isolation tests
+        # Fresh databases share cluster-wide roles; initialise suites sequentially.
+        run: pnpm exec turbo run test --concurrency=1
       - name: Build all applications
         run: pnpm build
 

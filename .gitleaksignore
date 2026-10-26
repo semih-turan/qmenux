@@ -1,0 +1,28 @@
+# Reviewed 2026-10-26: exact historical false positives only.
+# SQL migration-name arrays (17) and public Vercel deployment IDs in evidence (8).
+# New commits, lines and credentials remain scanned. No history was rewritten.
+ca98280f0df3ca69cd4f48aa40db4d62ec6b4289:infrastructure/database/migrations/0023_inactive_tenant_provisioning.down.sql:generic-api-key:5
+6c8001f910ac73def529d3bab96b82353764bbf5:infrastructure/database/migrations/0022_application_approval.down.sql:generic-api-key:5
+fd943f1e26674e343c4873609d04b4d62218d218:infrastructure/database/migrations/0021_decision_recovery.down.sql:generic-api-key:5
+fd943f1e26674e343c4873609d04b4d62218d218:infrastructure/database/migrations/0021_decision_recovery.up.sql:generic-api-key:6
+6c8001f910ac73def529d3bab96b82353764bbf5:infrastructure/database/migrations/0022_application_approval.up.sql:generic-api-key:6
+bccae1eb4c380aa3fe31e31fc5481a2091c3a45c:infrastructure/database/migrations/0018_operator_session_audit.down.sql:generic-api-key:5
+4083e7d43516b9e4f56fd317e7f37d610dd4293a:infrastructure/database/migrations/0020_application_rejection.down.sql:generic-api-key:5
+ca98280f0df3ca69cd4f48aa40db4d62ec6b4289:infrastructure/database/migrations/0023_inactive_tenant_provisioning.up.sql:generic-api-key:5
+4083e7d43516b9e4f56fd317e7f37d610dd4293a:infrastructure/database/migrations/0020_application_rejection.up.sql:generic-api-key:6
+05c6645cc9b527828b902b6f6cd3a0c731467765:infrastructure/database/migrations/0019_operator_step_up.down.sql:generic-api-key:5
+9ef70e0cbb5dcde5edd7b50e68a00c2a2c1a3a71:infrastructure/database/migrations/0017_operator_challenge_restart.down.sql:generic-api-key:6
+bccae1eb4c380aa3fe31e31fc5481a2091c3a45c:infrastructure/database/migrations/0018_operator_session_audit.up.sql:generic-api-key:6
+9ef70e0cbb5dcde5edd7b50e68a00c2a2c1a3a71:infrastructure/database/migrations/0017_operator_challenge_restart.up.sql:generic-api-key:6
+05c6645cc9b527828b902b6f6cd3a0c731467765:infrastructure/database/migrations/0019_operator_step_up.up.sql:generic-api-key:6
+e344cd9466e342b2cb29d821961c395e8b426878:infrastructure/database/migrations/0016_operator_browser_sessions.down.sql:generic-api-key:5
+fe5124ba2f6bc402a5481418c05e87eff71a8191:infrastructure/database/migrations/0015_operator_logout.down.sql:generic-api-key:6
+e344cd9466e342b2cb29d821961c395e8b426878:infrastructure/database/migrations/0016_operator_browser_sessions.up.sql:generic-api-key:5
+e0a215831def1ce4827fabad648f263c1a37a676:docs/01-product/PROGRESS.md:generic-api-key:516
+06691f70b812c72b26fddc1b99d6bd59c980fe45:docs/01-product/PROGRESS.md:generic-api-key:530
+c0ad3efbb22af44aaf213e5c56aa41b6f7bd15d8:docs/01-product/PROGRESS.md:generic-api-key:448
+7306ce9d7c522c5c2a6fffd937bdc7b7a517d1f5:docs/01-product/PROGRESS.md:generic-api-key:473
+add5f05e47f45118abb021079d4b2b7782bb5dee:docs/01-product/PROGRESS.md:generic-api-key:432
+84bb8d53d78ebbb64b11d65e982971344317710e:docs/01-product/PROGRESS.md:generic-api-key:459
+75bf2892a9f4b793f3f62e1ff919a54f43a950b1:docs/01-product/PROGRESS.md:generic-api-key:496
+9638d180639dabcfe7118db301cb81d40ff4111e:docs/01-product/TASKS.md:generic-api-key:259

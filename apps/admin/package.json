@@ -27,6 +27,6 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "vitest": "^3.2.4"
+    "vitest": "4.1.12"
   }
 }
