@@ -75,3 +75,13 @@ T004 IN_PROGRESS: Google code/PKCE validation and durable revocable API sessions
 
 ## Membership authorization checkpoint — 2026-10-25
 T004 now includes an internal OWNER/EDITOR membership/permission boundary with mandatory entitlement and session revocation after authorization changes. No private business endpoint, membership mutation or license entitlement implementation is enabled. Continue separate operator audience/Access/MFA and remaining identity/mobile/provider gates before T005; T004 remains IN_PROGRESS pending review. T043 landing remains last; no V1 payments.
+
+## T041 → T010/T042 handoff proposal —2026-10-26
+
+Current0022 approval is a pre-tenant decision. The next dependency-aware slices are [defined in the provisioning/license contract](../04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md):
+1. Review the docs-only proposed ADR026 and security/rollback/test boundaries.
+2. Separately requested local inactive provisioning: new purpose-specific operator capability, approved-application mapping, inactive tenant/one initial branch and OWNER-PENDING via module-owned contracts. Actual native/PG isolation/atomicity evidence; no license/access or production route.
+3. Resolve coverage/branch count, amount/term and grace/public-read/future-start policy; implement T010/T042 separate manual grant/current entitlement and atomic effective activation.
+4. Reviewed mobile transport/confirmation/recovery, actual provider/device/hosted and named security/privacy/legal/restore evidence before privileged enablement. T043 marketing remains last; V1 payments stay absent.
+
+Approval/provisioning/grant are separate explicit actions; existing ordinary membership creation revokes old sessions. This proposal introduces no new infrastructure or commercial default, and marks no task DONE. Inactive provisioning can be independently tested without selecting license coverage; real licensed activation cannot.

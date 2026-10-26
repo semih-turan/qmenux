@@ -32,3 +32,7 @@ Earlier gateway design describes **future** capability, not launch behavior. **N
 - PayTR/iyzico/other gateway is optional future work; implement only after legal review, sandbox verification and signed release decision.
 - One SaaS edition/price; billing term and amount remain T000 open decisions.
 See `MANUAL_ACTIVATION_AND_FUTURE_PAYMENTS.md`.
+
+## Provisioning handoff proposal —2026-10-26
+
+The [proposed provisioning/license boundary](TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md) separates existing application approval, future inactive business preparation and a separately proved manual grant. Tenant-shaped schema sketches do not approve tenant-versus-branch coverage. Final license schema/current entitlement and effective activation await explicit coverage/policy decisions; no default term, grace, future-start scheduler or online billing is selected. T010/T042 implementation/acceptance remains outstanding.

@@ -636,3 +636,16 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal review
 - [ ] Actual provider/edge/cloud/device/assistive/hosted CI and named architecture/security/privacy/legal review before privileged route registration/enablement.
 
 [Current approval contract](../04-backend/OPERATOR_APPLICATION_REVIEW.md#explicit-application-approval-0022-verified-local-development), proposed ADR025. No task/legal DONE/APPROVED, cloud migration/deployment or Git write. Application status APPROVED is a recorded pre-tenant decision, never a legal/release approval or entitlement.
+
+## T041/T010/T042 provisioning and license contract —2026-10-26
+
+Docs-only preparation on existing feat/T041-explicit-application-approval at645d8e2; Engineering owner, named architecture/security/privacy/legal reviewer/date pending. T041 remains IN_PROGRESS; this proposal does not start or complete T010/T042 implementation. [Concrete handoff](../04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md), proposed ADR026 and ROADMAP synchronized.
+
+- [x] Inspect current0022 approval, ACTIVE-only resolver, ordinary tenant authorization, membership revocation and supported operator actions; explicitly document missing tenant:provision and unresolved tenant-shaped license sketches versus open coverage policy.
+- [x] Specify separate inactive provisioning/initial branch/OWNER-PENDING, same-transaction module permits/audit/result replay, no license/access, explicit session reauthentication and safe populated rollback.
+- [x] Specify subsequent separately proved manual grant/current entitlement/effective activation boundary and acceptance-test plan; every planned case remains unexecuted, not PASS evidence.
+- [ ] Implement and verify local inactive provisioning (proposed future task branch feat/T041-inactive-tenant-provisioning; normal explicit Git authorization applies).
+- [ ] Record commercial coverage/branch count/amount/term/grace/public-menu/future-start decisions before final license implementation; implement T010/T042 lifecycle/current entitlement and mobile delivery.
+- [ ] Actual provider/cloud/device/security/privacy/legal/restore and named review before registration/enablement.
+
+Existing migrations/app code/credentials/routes/history unchanged. No branch/stage/commit/push/merge/deployment or task/legal DONE/APPROVED. [Actual docs-only checks](PROGRESS.md#t041-provisioning-and-license-contract-2026-10-26).

@@ -194,3 +194,6 @@ Recorded rejection decisions can now be inspected after reload through an authen
 
 
 Current local approval work extends the review panel and own history to explicit application APPROVED/REJECTED decisions. Both require exact-operation native step-up and separate confirmation; recorded recovery also matches the chosen decision type. Application approval creates no tenant, membership or license and grants no business access. Privileged routes stay unregistered; provisioning/commercial/provider/security/legal acceptance remains pending. [Current0022 contract and verification](docs/04-backend/OPERATOR_APPLICATION_REVIEW.md#explicit-application-approval-0022-verified-local-development) supersedes earlier rejection-only scope notes.
+
+
+The next [provisioning/manual-license contract](docs/04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md) is a docs-only proposal: approved application → separately verified inactive tenant/initial branch/OWNER-PENDING → separately verified effective license grant. It documents the missing provisioning action/module capability, current session-revocation behavior, test/rollback gates and unresolved commercial choices. No provisioning/license runtime, route or commercial approval is added.
