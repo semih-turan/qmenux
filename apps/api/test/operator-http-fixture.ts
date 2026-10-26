@@ -8,8 +8,11 @@ import { OperatorAuthController } from '../src/operator-auth.controller.js';
 import { OperatorAuthorization } from '../src/operator-authorization.js';
 import { OperatorPasskeys } from '../src/operator-passkeys.js';
 
-export async function exerciseOperatorHttp(passkeys: OperatorPasskeys, authorization: OperatorAuthorization, assertion: () => string,
-  browser: string, authenticate: (options: Awaited<ReturnType<OperatorPasskeys['beginAuthentication']>>) => Promise<unknown>) {
+type HttpResult={status:number;data:Record<string,unknown>;cache?:string;cookie?:string[]};
+type Send=(action:string,body?:object|string,method?:string,headers?:Record<string,string|string[]>)=>Promise<HttpResult>;
+
+export async function withOperatorHttp<T>(passkeys: OperatorPasskeys, authorization: OperatorAuthorization, assertion: () => string,
+  browser: string, exercise:(send:Send)=>Promise<T>) {
   const env={...process.env}, key=randomBytes(32).toString('base64url');
   process.env.OPERATOR_BFF_ENABLED='true';process.env.OPERATOR_BFF_SECRET=key;
   @Module({ controllers:[OperatorAuthController],providers:[{provide:APP_FILTER,useClass:AdminAuthErrors},
@@ -17,14 +20,22 @@ export async function exerciseOperatorHttp(passkeys: OperatorPasskeys, authoriza
   class FixtureModule {}
   const app=await NestFactory.create(FixtureModule,{logger:false,rawBody:true});app.setGlobalPrefix('v1');await app.listen(0,'127.0.0.1');
   const origin=await app.getUrl();
-  const send=(action:string,body:object|string={assertion:assertion(),browser},method='POST',headers:Record<string,string|string[]>={})=>
-    new Promise<{status:number;data:Record<string,unknown>;cache?:string;cookie?:string[]}>( (resolve,reject)=>{
+  const send:Send=(action,body={assertion:assertion(),browser},method='POST',headers={})=>
+    new Promise<HttpResult>( (resolve,reject)=>{
       const payload=['GET','HEAD'].includes(method)?'':typeof body==='string'?body:JSON.stringify(body);
       const req=request(`${origin}/v1/internal/operator-auth/${action}`,{method,headers:{authorization:`Bearer ${key}`,'content-type':'application/json','content-length':String(Buffer.byteLength(payload)),...headers}},res=>{
         let raw='';res.setEncoding('utf8');res.on('data',part=>{raw+=part;});res.on('end',()=>resolve({status:res.statusCode!,data:raw?JSON.parse(raw):{},cache:res.headers['cache-control'],cookie:res.headers['set-cookie']}));
       });req.on('error',reject);req.setTimeout(5000,()=>req.destroy(new Error('Operator HTTP test timeout')));req.end(payload);
     });
-  try {
+  try { return await exercise(send); } finally {
+    await app.close();for(const name of Object.keys(process.env))if(!(name in env))delete process.env[name];Object.assign(process.env,env);
+  }
+}
+
+export async function exerciseOperatorHttp(passkeys: OperatorPasskeys, authorization: OperatorAuthorization, assertion: () => string,
+  browser: string, authenticate: (options: Awaited<ReturnType<OperatorPasskeys['beginAuthentication']>>) => Promise<unknown>) {
+  return withOperatorHttp(passkeys,authorization,assertion,browser,async send=>{
+    const key=process.env.OPERATOR_BFF_SECRET!;
     for(const value of [undefined,'false','TRUE']) {
       if(value===undefined)delete process.env.OPERATOR_BFF_ENABLED;else process.env.OPERATOR_BFF_ENABLED=value;
       assert.equal((await send('authentication/start')).status,503);
@@ -68,7 +79,5 @@ export async function exerciseOperatorHttp(passkeys: OperatorPasskeys, authoriza
     assert.equal((await send('logout',body)).status,200);assert.equal((await send('logout',body)).status,200);
     assert.equal((await send('me',body)).status,403);
     return (await credentials()).proof as string;
-  } finally {
-    await app.close();for(const name of Object.keys(process.env))if(!(name in env))delete process.env[name];Object.assign(process.env,env);
-  }
+  });
 }

@@ -538,3 +538,8 @@ Status IN_PROGRESS; Engineering owner, named reviewer/date pending. T011/T036 no
 - [ ] Named architecture/security/privacy/legal/provider review before registering privileged routes; real iOS/Android/installed PWA/assistive technology evidence before acceptance.
 
 No DONE/APPROVED claim, tenant/license activation, deployment or commercial decision is implied. [Contract](../04-backend/OPERATOR_PASSKEY_CONTRACT.md#mobile-operator-ceremony-screen-and-restart-0017-local-review-implementation).
+
+
+## T004 registration HTTP evidence —2026-10-26
+
+IN_PROGRESS; Engineering owner, named reviewer/date pending. Added actual registration start/finish HTTP + native Chromium + PostgreSQL evidence, wrong grant/browser/replay denial, no-cookie/registered-only response and explicit no-session/no-MFA-proof assertions. Subsequent authentication uses the admitted credential. Shared test-only server fixture reused; no production routing/source/configuration/schema change. Combined BFF/API evidence and enrollment/recovery/session audit/step-up remain open; no DONE/APPROVED claim. Final verification is recorded in PROGRESS.md.

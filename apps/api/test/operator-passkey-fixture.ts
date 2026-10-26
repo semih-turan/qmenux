@@ -10,7 +10,7 @@ import { secretHash } from '../src/identity-store.js';
 import { OperatorAccess } from '../src/operator-access.js';
 import { OperatorAuthorization } from '../src/operator-authorization.js';
 import { OperatorPasskeys } from '../src/operator-passkeys.js';
-import { exerciseOperatorHttp } from './operator-http-fixture.js';
+import { exerciseOperatorHttp, withOperatorHttp } from './operator-http-fixture.js';
 
 const secret = () => randomBytes(32).toString('base64url');
 const status = (value: number) => (error: { getStatus?: () => number }) => error.getStatus?.() === value;
@@ -110,7 +110,7 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     const options=await passkeys.beginRegistration(assertion(),browserProof,grant);
     assert.equal(options.rp.id,'superman.qmenux.com'); assert.equal(options.authenticatorSelection?.userVerification,'required');
     assert.match(options.challenge,/^[A-Za-z0-9_-]{43}$/); assert(!JSON.stringify(options).includes(subject));
-    const registration=await register(options);
+    let registration=await register(options);
     const originalData=(registration as {response:{clientDataJSON:string}}).response.clientDataJSON;
     const crossOrigin={...registration,response:{...(registration as {response:object}).response,
       clientDataJSON:encode({...JSON.parse(Buffer.from(originalData,'base64url').toString('utf8')),crossOrigin:true,topOrigin:'https://other.invalid'})}};
@@ -131,7 +131,26 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     try { await owner.query('SELECT qmenux_operator.passkey_register($1,$2,$3,$4,$5,$6,$7)',[issuer,subject,audience,secretHash(grant),registration.id,Buffer.alloc(32),0]); } finally { await owner.query('ROLLBACK'); }
     assert.equal((await owner.query('SELECT count(*) FROM qmenux_operator.passkeys WHERE operator_id=$1',[id])).rows[0].count,'0');
     assert.equal((await owner.query('SELECT consumed_at IS NULL AS unused FROM qmenux_operator.passkey_grants WHERE token_hash=$1',[secretHash(grant)])).rows[0].unused,true);
-    await passkeys.finishRegistration(assertion(),browserProof,options.challenge,registration);
+    await withOperatorHttp(passkeys,authorization,assertion,browserProof,async send=>{
+      assert.equal((await send('registration/start',{assertion:assertion(),browser:browserProof,grant:secret()})).status,403);
+      const start=await send('registration/start',{assertion:assertion(),browser:browserProof,grant});
+      assert.equal(start.status,200);assert.equal(start.cache,'no-store');assert.equal(start.cookie,undefined);
+      const fresh=start.data.options as Awaited<ReturnType<OperatorPasskeys['beginRegistration']>>;
+      assert.equal(fresh.rp.id,'superman.qmenux.com');
+      const signed=await register(fresh);
+      const finish={assertion:assertion(),browser:browserProof,challenge:fresh.challenge,response:JSON.stringify(signed)};
+      assert.equal((await send('registration/finish',{...finish,browser:secret()})).status,403);
+      const result=await send('registration/finish',finish);
+      assert.equal(result.status,200);assert.equal(result.cache,'no-store');assert.equal(result.cookie,undefined);
+      assert.deepEqual(result.data,{status:'registered'});
+      assert.equal((await send('registration/finish',finish)).status,403);
+      assert.equal((await send('registration/start',{assertion:assertion(),browser:browserProof,grant})).status,403);
+      assert.equal((await owner.query('SELECT count(*) FROM qmenux_operator.sessions WHERE operator_id=$1',[id])).rows[0].count,'0');
+      assert.equal((await owner.query('SELECT count(*) FROM qmenux_operator.passkey_proofs WHERE operator_id=$1',[id])).rows[0].count,'0');
+      assert.equal((await owner.query('SELECT id FROM qmenux_operator.passkeys WHERE operator_id=$1',[id])).rows[0].id,signed.id);
+      // Remaining service-level checks use the credential admitted through the real HTTP adapter.
+      registration=signed;
+    });
     await assert.rejects(passkeys.finishRegistration(assertion(),browserProof,options.challenge,registration),status(403));
     await assert.rejects(passkeys.beginRegistration(assertion(),browserProof,grant),status(403));
     assert.equal((await owner.query('SELECT consumed_at IS NOT NULL AS consumed FROM qmenux_operator.passkey_grants WHERE token_hash=$1',[secretHash(grant)])).rows[0].consumed,true);
