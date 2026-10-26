@@ -1,14 +1,8 @@
-import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js';
+import { createApp } from './app.js';
+import { loadConfig } from './config.js';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
-  app.setGlobalPrefix('v1');
-  await app.listen(process.env.PORT ?? 3003, '127.0.0.1');
-}
-
-void bootstrap().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+const cfg = loadConfig();
+const app = await createApp(cfg);
+const port = Number(process.env.PORT || 4000);
+await app.listen(port, '127.0.0.1');
+console.log(`QMenuX API → http://127.0.0.1:${port} (origin ${cfg.origins.api})`);

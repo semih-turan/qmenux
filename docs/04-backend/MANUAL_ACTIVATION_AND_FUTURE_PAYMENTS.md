@@ -21,7 +21,3 @@ PAY-001: V1 has no checkout or card capture routes; payment cannot activate tena
 PAY-002: only superadmin can grant/extend/revoke license; every change audited.
 PAY-003: pending/expired/suspended tenant API and menu policies tested.
 PAY-004 (future): signed provider callback, duplicate replay and wrong amount rejected.
-
-## Proposed implementation boundary —2026-10-26
-
-[Approved application → inactive provisioning → separate manual grant contract](TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md) details the next implementation slices. It preserves this binding V1 policy: approval alone gives no business access; preparing a tenant/initial branch/OWNER-PENDING gives no license; separately authorized, effective licensed activation remains mandatory. Its new provisioning command/permit and license contracts are proposed, not implemented or approved commercial policy. Coverage/branch count, actual amount/term and grace/public-menu behavior remain open; no payment gateway or automatic activation is introduced.

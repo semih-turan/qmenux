@@ -1,7 +1,0 @@
-# Deliberately isolated from the application's unchosen ORM dependencies.
-packages:
-  - .
-onlyBuiltDependencies:
-  - '@prisma/engines'
-  - esbuild
-  - prisma

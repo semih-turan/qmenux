@@ -1,0 +1,104 @@
+/* Operator-panel layout helpers on top of @qmenux/ui tokens. Same fixed design system as the admin PWA. */
+
+/* Operator badge in the app bar: role is a server fact, shown so support staff know they are read-only. */
+.qx-opbar {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+  min-width: 0;
+}
+
+/* Compact key/value table (tenant facts, audit metadata). */
+.qx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--qx-text-sm);
+}
+
+.qx-table th,
+.qx-table td {
+  padding: var(--qx-space-2) var(--qx-space-3);
+  text-align: start;
+  border-bottom: 1px solid var(--qx-border);
+  vertical-align: top;
+}
+
+.qx-table td.qx-num,
+.qx-table th.qx-num {
+  text-align: end;
+}
+
+.qx-table thead th {
+  white-space: nowrap;
+}
+
+.qx-table :is(th, td) + :is(th, td) {
+  padding-inline-start: var(--qx-space-2);
+}
+
+/* Trailing tools on a static list item (badges + icon buttons), 44px targets. */
+.qx-item__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-2);
+  flex: none;
+}
+
+/* Search box above the tenant list: sticky under the app bar so the result list scrolls beneath it. */
+.qx-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-inline: calc(-1 * var(--qx-space-4));
+  padding: var(--qx-space-2) var(--qx-space-4);
+  background: var(--qx-canvas);
+}
+
+/* Six-digit code: large, tabular, centred, 16px+ so iOS never zooms. */
+.qx-otp {
+  font-size: 28px;
+  letter-spacing: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Preset chips for licence end dates wrap instead of scrolling (four short labels on a 320px phone). */
+.qx-chips--wrap {
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+/* Audit metadata: one "key: value" per line, wraps anywhere, never horizontal scroll on a 320px phone. */
+.qx-meta {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--qx-space-2) var(--qx-space-3);
+  border-radius: var(--qx-radius-sm, 8px);
+  background: var(--qx-surface-2);
+  font-family: var(--qx-font-mono);
+  font-size: var(--qx-text-xs, 12px);
+  overflow-wrap: anywhere;
+}
+
+/* Monthly scan bars (CSS only; values are also listed as text). */
+.qx-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 96px;
+  padding-top: var(--qx-space-2);
+}
+
+.qx-bars__bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--qx-primary);
+}
+
+.qx-bars__bar[data-zero='true'] {
+  background: var(--qx-border);
+}

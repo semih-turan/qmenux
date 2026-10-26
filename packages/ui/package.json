@@ -3,23 +3,30 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "sideEffects": ["**/*.css"],
   "exports": {
-    "./admin.css": "./src/admin.css",
-    "./button": "./src/button.tsx",
-    "./text-field": "./src/text-field.tsx",
-    "./management-shell": "./src/management-shell.tsx"
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/index.css"
   },
   "scripts": {
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "lucide-react": "^1.61.0"
   },
   "peerDependencies": {
-    "react": "19.3.1"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@qmenux/config": "workspace:*",
-    "@types/react": "19.3.0",
-    "eslint": "9.39.5",
-    "typescript": "5.9.3"
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vitest": "^3.2.4"
   }
 }

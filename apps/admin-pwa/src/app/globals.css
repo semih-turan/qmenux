@@ -1,7 +1,0 @@
-.sign-in-actions { display: grid; gap: .75rem; margin-block: 1.5rem; }
-.applications { margin-block: 2rem; border-top: 1px solid var(--brand-ink); }
-.applications form { margin-block: 2rem; }
-.applications form button + button { margin-top: .75rem; }
-.application-list { list-style: none; padding: 0; }
-.application-list li { border-top: 1px solid var(--control-disabled-border); padding-block: 1rem; }
-.application-actions { display: grid; gap: .75rem; }

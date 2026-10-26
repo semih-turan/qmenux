@@ -1,0 +1,280 @@
+/* Admin-only layout helpers on top of @qmenux/ui tokens. Hover rules stay behind (hover: hover). */
+
+/* Bar chart (CSS only; values are also in the table below it). */
+.qx-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 120px;
+  padding-top: var(--qx-space-2);
+}
+
+.qx-bars__bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--qx-primary);
+  transform-origin: bottom;
+}
+
+.qx-bars__bar[data-zero='true'] {
+  background: var(--qx-border);
+}
+
+/* Theme picker */
+.qx-themes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--qx-space-3);
+}
+
+.qx-theme {
+  display: grid;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-3);
+  min-height: 44px;
+  border: 2px solid var(--qx-border);
+  border-radius: var(--qx-radius-md, 12px);
+  background: var(--qx-surface);
+  color: inherit;
+  text-align: start;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform var(--qx-dur-press, 120ms) var(--qx-ease-out, ease-out), border-color 150ms ease;
+}
+
+.qx-theme:active {
+  transform: scale(0.97);
+}
+
+.qx-theme[aria-checked='true'] {
+  border-color: var(--qx-ink);
+}
+
+/* Mini preview: theme background, "Aa" in theme text colour, accent pill. */
+.qx-theme__swatch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding-inline: var(--qx-space-3);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+
+.qx-theme__aa {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.qx-theme__accent {
+  width: 28px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.qx-theme__name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-1);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.qx-theme__hint {
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--qx-surface-2);
+  font-size: var(--qx-text-xs, 12px);
+  font-weight: 600;
+}
+
+/* Logo preview */
+.qx-logo {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  border-radius: var(--qx-radius-md, 12px);
+  object-fit: cover;
+  background: var(--qx-surface-2);
+}
+
+.qx-logo--empty {
+  display: grid;
+  place-items: center;
+  color: var(--qx-ink-3);
+}
+
+.qx-media-row {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-4);
+  min-width: 0;
+}
+
+/* Allergen editor */
+.qx-allergen {
+  display: grid;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-3) var(--qx-space-4);
+}
+
+.qx-allergen + .qx-allergen {
+  border-top: 1px solid var(--qx-border);
+}
+
+/* QR */
+.qx-qr {
+  display: grid;
+  place-items: center;
+  padding: var(--qx-space-4);
+  border-radius: var(--qx-radius-md, 12px);
+  background: #fff; /* QR codes need a light quiet zone in both themes */
+}
+
+.qx-qr svg {
+  width: min(220px, 70vw);
+  height: auto;
+}
+
+.qx-url {
+  padding: var(--qx-space-3);
+  border-radius: var(--qx-radius-sm, 8px);
+  background: var(--qx-surface-2);
+  font-family: var(--qx-font-mono);
+  font-size: var(--qx-text-sm);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.qx-product-img {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--qx-radius-md, 12px);
+  background: var(--qx-surface-2);
+}
+
+.qx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--qx-text-sm);
+}
+
+.qx-table th,
+.qx-table td {
+  padding: var(--qx-space-2) var(--qx-space-3);
+  text-align: start;
+  border-bottom: 1px solid var(--qx-border);
+}
+
+.qx-table td.qx-num,
+.qx-table th.qx-num {
+  text-align: end;
+}
+
+/* Four columns fit a 320px phone: headers stay on one line ("Genel QR"), inner gaps are tighter. */
+.qx-table thead th {
+  white-space: nowrap;
+}
+
+.qx-table :is(th, td) + :is(th, td) {
+  padding-inline-start: var(--qx-space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qx-theme {
+    transition: none;
+  }
+}/* Category row: the link takes the row, reorder/edit tools sit at the end (44px targets). */
+.qx-cat-row {
+  gap: 0;
+  padding-inline-end: var(--qx-space-2);
+}
+
+.qx-cat-row > .qx-row {
+  flex: 1;
+  min-width: 0;
+}
+
+.qx-cat-row__tools {
+  display: flex;
+  flex: none;
+}
+
+/* Product row thumbnail */
+.qx-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--qx-radius-sm, 8px);
+  object-fit: cover;
+  background: var(--qx-surface-2);
+  flex: none;
+}
+
+.qx-thumb--empty {
+  display: grid;
+  place-items: center;
+  color: var(--qx-ink-3);
+}
+
+.qx-price {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.qx-product {
+  display: grid;
+  gap: var(--qx-space-2);
+  padding: var(--qx-space-3) var(--qx-space-4);
+}
+
+.qx-product + .qx-product {
+  border-top: 1px solid var(--qx-border);
+}
+
+.qx-product__head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-3);
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.qx-product__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.qx-product[data-availability='SOLD_OUT'] .qx-product__name,
+.qx-product[data-availability='HIDDEN'] .qx-product__name {
+  color: var(--qx-ink-2, inherit);
+}
+
+.qx-product[data-availability='SOLD_OUT'] .qx-price {
+  text-decoration: line-through;
+}
+
+
+/* Import preview: a wide sheet scrolls sideways inside its card instead of the page. */
+.qx-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.qx-scroll-x .qx-table td {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

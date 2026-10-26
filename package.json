@@ -1,27 +1,31 @@
 {
   "name": "qmenux",
   "private": true,
-  "packageManager": "pnpm@10.29.2",
+  "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=24 <27",
-    "pnpm": "10.29.2"
+    "node": ">=22"
   },
   "scripts": {
-    "dev": "turbo run dev",
-    "lint": "turbo run lint && eslint eslint.config.mjs playwright.config.ts tests infrastructure/spikes/*.mjs infrastructure/spikes/orm/probe.ts infrastructure/spikes/orm/*.mjs",
-    "typecheck": "turbo run typecheck && tsc --project tsconfig.json",
-    "test": "turbo run test && node --test infrastructure/spikes/trace-api.test.mjs && playwright test",
     "build": "turbo run build",
-    "test:smoke": "playwright test",
-    "spike:api-trace": "pnpm --filter @qmenux/api build && node infrastructure/spikes/trace-api.mjs"
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:start": "bash scripts/dev-db.sh start",
+    "db:stop": "bash scripts/dev-db.sh stop",
+    "db:reset-dev": "bash scripts/dev-db.sh reset-dev",
+    "db:migrate": "pnpm --filter @qmenux/database migrate",
+    "db:rollback": "pnpm --filter @qmenux/database rollback",
+    "db:seed": "pnpm --filter @qmenux/database seed",
+    "secret-scan": "node scripts/secret-scan.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1",
-    "@qmenux/config": "workspace:*",
-    "@types/node": "24.19.2",
-    "@vercel/nft": "1.11.0",
-    "eslint": "9.39.5",
-    "turbo": "2.11.10",
-    "typescript": "5.9.3"
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "eslint-plugin-react-hooks": "^7",
+    "globals": "^16.0.0",
+    "turbo": "^2.11.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.40.0"
   }
 }
