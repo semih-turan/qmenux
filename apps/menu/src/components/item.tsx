@@ -9,13 +9,14 @@ import {
   type AllergenStatus,
   type PublicMenuItem,
 } from '@qmenux/contracts';
-import { memo } from 'react';
+import { memo, useId } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { sendMetric } from '@/lib/beacon';
 import { allergenSummary } from '@/lib/discovery';
-import { Sheet } from './sheet';
 
 const short = (codes: AllergenCode[]) => codes.map((c) => ALLERGEN_SHORT_LABELS_TR[c]).join(', ');
 
-/** One line under the card. Unrecorded never reads as "free"; the full table is in the detail sheet. */
+/** One line under the card. Unrecorded never reads as "free"; the full table is in the inline detail. */
 function AllergenLine({ item }: { item: PublicMenuItem }) {
   const s = allergenSummary(item);
   if (s.kind === 'none-recorded') return <p className="m-card__al">Alerjen bilgisi girilmemiş</p>;
@@ -39,36 +40,47 @@ function AllergenLine({ item }: { item: PublicMenuItem }) {
   );
 }
 
-export const ItemCard = memo(function ItemCard({ item, onOpen }: { item: PublicMenuItem; onOpen: (item: PublicMenuItem) => void }) {
+export const ItemCard = memo(function ItemCard({ item }: { item: PublicMenuItem }) {
   const soldOut = item.availability === 'SOLD_OUT';
   const tags = item.tags.slice(0, 3);
   return (
-    <article className="m-card" data-soldout={soldOut}>
-      {item.imageUrl && <img className="m-card__img" src={item.imageUrl} alt="" width={88} height={88} loading="lazy" decoding="async" />}
-      <div className="m-card__body">
-        <div className="m-card__top">
-          <h3 className="m-card__name">
-            <button type="button" className="m-card__hit" aria-haspopup="dialog" onClick={() => onOpen(item)}>
-              {item.name}
-            </button>
-          </h3>
-          <span className="m-leader" aria-hidden="true" />
-          <span className="m-price">{formatMinor(item.priceMinor)}</span>
-        </div>
-        {item.description && <p className="m-card__desc">{item.description}</p>}
-        {(soldOut || tags.length > 0 || item.kcal !== null) && (
-          <div className="m-card__meta">
-            {soldOut && <span className="m-soldout">Tükendi</span>}
-            {tags.map((t) => (
-              <span className="m-tag" key={t}>
-                {t}
-              </span>
-            ))}
-            {item.kcal !== null && <span className="m-kcal">{item.kcal} kcal</span>}
+    <article className="m-product" data-soldout={soldOut}>
+      <details onToggle={(e) => {
+        if (e.currentTarget.open) sendMetric('item_view', item.id, true);
+      }}>
+        <summary className="m-card">
+          {item.imageUrl && <img className="m-card__img" src={item.imageUrl} alt="" width={88} height={88} loading="lazy" decoding="async" />}
+          <div className="m-card__body">
+            <div className="m-card__top">
+              <h3 className="m-card__name">
+                {item.name}
+              </h3>
+              <span className="m-leader" aria-hidden="true" />
+              <span className="m-price">{formatMinor(item.priceMinor)}</span>
+            </div>
+            {item.description && <p className="m-card__desc">{item.description}</p>}
+            {(soldOut || tags.length > 0 || item.kcal !== null) && (
+              <div className="m-card__meta">
+                {soldOut && <span className="m-soldout">Tükendi</span>}
+                {tags.map((t) => (
+                  <span className="m-tag" key={t}>
+                    {t}
+                  </span>
+                ))}
+                {item.kcal !== null && <span className="m-kcal">{item.kcal} kcal</span>}
+              </div>
+            )}
+            <AllergenLine item={item} />
+            <span className="m-card__more">Ürün bilgileri <ChevronDown size={16} aria-hidden="true" /></span>
           </div>
-        )}
-        <AllergenLine item={item} />
-      </div>
+        </summary>
+        <div className="m-item-detail">
+          {item.imageUrl && <img className="m-detail__img" src={item.imageUrl} alt={`${item.name} fotoğrafı`} loading="lazy" decoding="async" />}
+          {item.description && <p className="m-detail__desc">{item.description}</p>}
+          {item.tags.length > 0 && <ul className="m-card__meta" aria-label="Etiketler">{item.tags.map((tag) => <li className="m-tag" key={tag}>{tag}</li>)}</ul>}
+          <AllergenTable item={item} />
+        </div>
+      </details>
     </article>
   );
 });
@@ -81,14 +93,15 @@ const GROUPS: { status: AllergenStatus; title: string; cls: string }[] = [
 ];
 
 function AllergenTable({ item }: { item: PublicMenuItem }) {
+  const titleId = useId();
   const by = new Map<AllergenStatus, AllergenCode[]>(GROUPS.map((g) => [g.status, []]));
   for (const code of ALLERGEN_CODES) by.get(statusOf(item.allergens, code))!.push(code);
   const unknown = by.get('UNKNOWN')!.length;
   return (
-    <section aria-labelledby="m-al-title">
-      <h3 className="m-section-title" id="m-al-title">
+    <section aria-labelledby={titleId}>
+      <h4 className="m-section-title" id={titleId}>
         Alerjenler
-      </h3>
+      </h4>
       {unknown === ALLERGEN_CODES.length ? (
         <p className="m-note">
           İşletme bu ürün için alerjen bilgisi girmemiş. <strong>Bu, ürünün alerjen içermediği anlamına gelmez.</strong> Ciddi
@@ -102,7 +115,7 @@ function AllergenTable({ item }: { item: PublicMenuItem }) {
               if (!codes.length) return null;
               return (
                 <div className={`m-algroup ${g.cls}`} key={g.status}>
-                  <h4>{g.title}</h4>
+                  <h5>{g.title}</h5>
                   <ul>
                     {codes.map((c) => (
                       <li key={c}>{ALLERGEN_LABELS_TR[c]}</li>
@@ -123,35 +136,5 @@ function AllergenTable({ item }: { item: PublicMenuItem }) {
         </>
       )}
     </section>
-  );
-}
-
-/** Item detail. `item` is the last opened one, kept while the sheet slides out. */
-export function ItemSheet({ item, open, onClose }: { item: PublicMenuItem | null; open: boolean; onClose: () => void }) {
-  const soldOut = item?.availability === 'SOLD_OUT';
-  return (
-    <Sheet open={open && !!item} onClose={onClose} title={item?.name ?? ''}>
-      {item && (
-        <>
-          {item.imageUrl && <img className="m-sheet__img" src={item.imageUrl} alt={`${item.name} fotoğrafı`} decoding="async" />}
-          <div className="m-detail__price" data-soldout={soldOut}>
-            <span className="m-price">{formatMinor(item.priceMinor)}</span>
-            {soldOut && <span className="m-soldout">Tükendi</span>}
-            {item.kcal !== null && <span className="m-kcal">Enerji: {item.kcal} kcal</span>}
-          </div>
-          {item.description && <p className="m-detail__desc">{item.description}</p>}
-          {item.tags.length > 0 && (
-            <ul className="m-card__meta" aria-label="Etiketler">
-              {item.tags.map((t) => (
-                <li className="m-tag" key={t}>
-                  {t}
-                </li>
-              ))}
-            </ul>
-          )}
-          <AllergenTable item={item} />
-        </>
-      )}
-    </Sheet>
   );
 }

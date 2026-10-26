@@ -12,3 +12,10 @@ Admin chooses enabled languages; translation completeness visible by category/pr
 
 ## Test gates
 SEARCH-001, TABLEQR-001, I18N-001 plus geofence and theme cross-tests.
+
+## 2026-10-27 guest interaction clarification — T028
+Product details open inline in the menu using a native disclosure, not a product modal or a separate page. Full descriptions, the current product image, tags and allergen disclosures stay available; multiple products may be open, with unique accessible allergen headings. Expanded card/grid products span the row so details remain readable. The filter dialog remains a short, separate task.
+
+Filters include category, owner-entered tags, sold-out visibility, declared CONTAINS allergens and exclusions. A contains filter requires a published CONTAINS status; MAY_CONTAIN and unknown do not match it. Exclusions still separate unverified/unknown items and never report them as allergen-free. Category descriptions remain present in filtered results, and clearing filters resets category/contains/excludes together. Search announces pending work while its deferred results update; no query text is sent to analytics.
+
+Product information remains readable without JavaScript; no route loading boundary may hide the server-rendered menu or mask offline cache state. Missing product images/logos remain optional, with no fabricated placeholders or food claims. Unit evidence: `apps/menu/test/item.test.ts`, `apps/menu/test/discovery.test.ts`; browser/mobile evidence in PROGRESS.md.

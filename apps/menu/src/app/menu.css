@@ -668,36 +668,76 @@ main:focus {
   overflow-wrap: anywhere;
 }
 
-.m-card__hit {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
+.m-product {
+  min-width: 0;
+}
+
+.m-product > details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.m-product > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.m-card__more {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--t-accent-ink);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.m-card__more svg {
+  flex: none;
+}
+
+.m-product > details[open] .m-card__more svg {
+  transform: rotate(180deg);
+}
+
+.m-product > details[open] .m-card__img {
+  display: none;
+}
+
+:is([data-layout='tiles'], [data-layout='cards']) .m-product:has(> details[open]) {
+  grid-column: 1 / -1;
+}
+
+.m-item-detail {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--t-surface);
+  border: 1px solid var(--t-line);
+  border-radius: var(--t-radius);
+}
+
+.m-item-detail .m-tag {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.m-category-filter {
+  display: grid;
+  gap: 8px;
+  font-weight: 650;
+}
+
+.m-category-filter select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px;
   font: inherit;
-  text-align: inherit;
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-/* The whole card is the button's hit area; the button keeps the item name as its accessible name. */
-.m-card__hit::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-}
-
-.m-card__hit:focus-visible {
-  outline: none;
-}
-
-.m-card:has(.m-card__hit:focus-visible) {
-  outline: 3px solid var(--t-accent-ink);
-  outline-offset: 3px;
-}
-
-.m-card:has(.m-card__hit:active) {
-  transform: scale(0.985);
+  font-size: 16px;
+  color: var(--t-ink);
+  background: var(--t-surface);
+  border: 1px solid var(--t-line);
+  border-radius: var(--t-radius);
 }
 
 .m-leader {
@@ -827,11 +867,11 @@ main:focus {
   border-radius: 0;
 }
 
-[data-layout='list'] .m-card:last-child {
+[data-layout='list'] .m-product:last-child .m-card {
   border-bottom: 0;
 }
 
-[data-layout='list'] .m-card:has(.m-card__hit:active) {
+[data-layout='list'] .m-card:active {
   transform: none;
   background: color-mix(in srgb, var(--t-ink) 5%, transparent);
 }
@@ -926,7 +966,7 @@ main:focus {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .m-card:has(.m-card__hit:hover) .m-card__name {
+  .m-card:hover .m-card__name {
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
@@ -1306,21 +1346,13 @@ html:has(.m-sheet[open]) {
   margin-bottom: var(--safe-b);
 }
 
-.m-sheet__img {
+.m-detail__img {
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: max(var(--t-radius), 4px);
   background: var(--t-highlight);
-}
-
-.m-detail__price {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  font-size: 1.25rem;
 }
 
 .m-detail__desc {
@@ -1330,6 +1362,7 @@ html:has(.m-sheet[open]) {
 }
 
 .m-section-title {
+  margin: 0;
   font-size: 0.9375rem;
   font-weight: 700;
 }
@@ -1340,7 +1373,7 @@ html:has(.m-sheet[open]) {
   margin-top: 10px;
 }
 
-.m-algroup h4 {
+.m-algroup h5 {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1655,7 +1688,7 @@ html:has(.m-sheet[open]) {
     transition: none;
   }
 
-  .m-card:has(.m-card__hit:active),
+  .m-card:active,
   .m-chip:active,
   .m-btn:active,
   .m-toggle:active,

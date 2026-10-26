@@ -1,5 +1,5 @@
 'use client';
-import { ALLERGEN_CODES, ALLERGEN_LABELS_TR, ALLERGEN_SHORT_LABELS_TR, type AllergenCode } from '@qmenux/contracts';
+import { ALLERGEN_CODES, ALLERGEN_LABELS_TR, ALLERGEN_SHORT_LABELS_TR, type PublicMenuCategory } from '@qmenux/contracts';
 import { Check } from 'lucide-react';
 import { activeFilterCount, type Filters } from '@/lib/discovery';
 import { Sheet } from './sheet';
@@ -19,6 +19,7 @@ export function FilterSheet({
   filters,
   onChange,
   tags,
+  categories,
   count,
   uncertain,
 }: {
@@ -27,6 +28,7 @@ export function FilterSheet({
   filters: Filters;
   onChange: (f: Filters) => void;
   tags: string[];
+  categories: Pick<PublicMenuCategory, 'id' | 'name'>[];
   /** Items that match, allergen exclusions verified. */
   count: number;
   /** Items listed apart because their allergen record is missing. */
@@ -46,7 +48,7 @@ export function FilterSheet({
             type="button"
             className="m-btn"
             disabled={active === 0}
-            onClick={() => onChange({ ...filters, exclude: [], tags: [], hideSoldOut: false })}
+            onClick={() => onChange({ ...filters, exclude: [], contains: [], categoryId: null, tags: [], hideSoldOut: false })}
           >
             Temizle
           </button>
@@ -56,30 +58,35 @@ export function FilterSheet({
         </>
       }
     >
-      <fieldset className="m-fieldset">
-        <legend>Şunları içermesin</legend>
-        <p className="m-hint">
-          Yalnızca işletmenin içermediğini doğruladığı ürünler listelenir. Bilgisi eksik ürünler ayrıca gösterilir.
-        </p>
-        <div className="m-toggles">
-          {ALLERGEN_CODES.map((code: AllergenCode) => {
-            const on = filters.exclude.includes(code);
-            return (
-              <button
-                key={code}
-                type="button"
-                className="m-toggle"
-                aria-pressed={on}
-                title={ALLERGEN_LABELS_TR[code]}
-                onClick={() => onChange({ ...filters, exclude: toggle(filters.exclude, code) })}
-              >
-                {on && <Check size={16} aria-hidden="true" />}
-                {ALLERGEN_SHORT_LABELS_TR[code]}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
+      <label className="m-category-filter">
+        <span>Kategori</span>
+        <select value={filters.categoryId ?? ''} onChange={(e) => onChange({ ...filters, categoryId: e.target.value || null })}>
+          <option value="">Tüm kategoriler</option>
+          {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+        </select>
+      </label>
+
+      {([
+        { key: 'contains', title: 'Şunları içersin', hint: 'İşletmenin içerdiğini doğruladığı alerjenlere göre gösterilir.' },
+        { key: 'exclude', title: 'Şunları içermesin', hint: 'Yalnızca işletmenin içermediğini doğruladığı ürünler listelenir. Bilgisi eksik ürünler ayrıca gösterilir.' },
+      ] as const).map(({ key, title, hint }) => (
+        <fieldset className="m-fieldset" key={key}>
+          <legend>{title}</legend>
+          <p className="m-hint">{hint}</p>
+          <div className="m-toggles">
+            {ALLERGEN_CODES.map((code) => {
+              const on = filters[key].includes(code);
+              return (
+                <button key={code} type="button" className="m-toggle" aria-pressed={on} title={ALLERGEN_LABELS_TR[code]}
+                  onClick={() => onChange({ ...filters, [key]: toggle(filters[key], code) })}>
+                  {on && <Check size={16} aria-hidden="true" />}
+                  {ALLERGEN_SHORT_LABELS_TR[code]}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      ))}
 
       {tags.length > 0 && (
         <fieldset className="m-fieldset">
