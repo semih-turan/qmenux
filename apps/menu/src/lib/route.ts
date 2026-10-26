@@ -16,7 +16,8 @@ export const problem = (status: number, code: string) => json(status, { code });
  */
 export async function guestWrite<T>(req: Request, schema: ZodType<T>): Promise<{ slug: string; body: T } | Response> {
   const host = req.headers.get('host');
-  const slug = menuSlug(host, serverEnv().rootDomain);
+  const env = serverEnv();
+  const slug = menuSlug(host, env.rootDomain, env.previewMenu);
   if (!slug) return problem(404, 'NOT_FOUND');
   if (!sameOrigin(req.headers.get('origin'), host)) return problem(403, 'FORBIDDEN_ORIGIN');
   const raw = await readJson(req);

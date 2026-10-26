@@ -8,6 +8,17 @@ function post(body: BodyInit | null, h: Record<string, string> = { 'content-type
 }
 
 describe('menuSlug', () => {
+  it('maps only the explicitly configured Vercel preview host to a valid demo tenant', () => {
+    const preview = { host: 'pilot-123.vercel.app', slug: 'demo-kahve' };
+    expect(menuSlug(preview.host, 'qmenux.com', preview)).toBe('demo-kahve');
+    expect(menuSlug(preview.host, 'qmenux.com')).toBeNull();
+    expect(menuSlug('other.vercel.app', 'qmenux.com', preview)).toBeNull();
+    expect(menuSlug('pilot-123.vercel.app.evil.example', 'qmenux.com', preview)).toBeNull();
+    expect(menuSlug(preview.host, 'qmenux.com', { ...preview, slug: 'admin' })).toBeNull();
+    expect(menuSlug(preview.host, 'qmenux.com', { ...preview, slug: '../other' })).toBeNull();
+    expect(menuSlug('evil.example', 'qmenux.com', { ...preview, host: 'evil.example' })).toBeNull();
+    expect(menuSlug('other.qmenux.com', 'qmenux.com', preview)).toBe('other');
+  });
   it('takes the tenant from a menu subdomain', () => {
     expect(menuSlug('demo-kahve.qmenux.com', 'qmenux.com')).toBe('demo-kahve');
     expect(menuSlug('DEMO-KAHVE.qmenux.com', 'qmenux.com')).toBe('demo-kahve');

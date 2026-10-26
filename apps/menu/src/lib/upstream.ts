@@ -12,6 +12,7 @@ export async function upstream(
 ) {
   const env = serverEnv();
   const h = new Headers({ accept: 'application/json', 'x-qx-bff-key': env.bffKey });
+  if (process.env.VERCEL_ENV === 'preview' && process.env.QX_API_PROTECTION_BYPASS) h.set('x-vercel-protection-bypass', process.env.QX_API_PROTECTION_BYPASS);
   if (init.body !== undefined) h.set('content-type', 'application/json');
   if (init.geoPass) h.set('x-qx-geo-pass', init.geoPass);
   const ip = edgeClientIp(init.reqHeaders, env.trustForwardedFor);

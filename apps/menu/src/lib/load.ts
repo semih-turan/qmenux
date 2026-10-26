@@ -19,7 +19,7 @@ export type MenuLoad =
 export const loadMenu = cache(async (): Promise<MenuLoad> => {
   const env = serverEnv();
   const h = await headers();
-  const slug = menuSlug(h.get('host'), env.rootDomain);
+  const slug = menuSlug(h.get('host'), env.rootDomain, env.previewMenu);
   if (!slug) return { kind: 'not-found' };
   const geoPass = (await cookies()).get(geoCookieName(env.secure))?.value ?? null;
   let res: Response;

@@ -14,6 +14,7 @@ export interface Problem {
 export async function upstream(path: string, init: { method?: string; body?: BodyInit | null; contentType?: string; token?: string | null; reqHeaders?: Headers } = {}) {
   const env = serverEnv();
   const h = new Headers({ accept: 'application/json', 'x-qx-bff-key': env.bffKey });
+  if (process.env.VERCEL_ENV === 'preview' && process.env.QX_API_PROTECTION_BYPASS) h.set('x-vercel-protection-bypass', process.env.QX_API_PROTECTION_BYPASS);
   if (init.contentType) h.set('content-type', init.contentType);
   if (init.token) h.set('authorization', `Bearer ${init.token}`);
   const ip = edgeClientIp(init.reqHeaders ?? (await headers()), env.trustForwardedFor);
