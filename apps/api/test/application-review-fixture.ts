@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { Client } from 'pg';
+import { exerciseTenantProvisioning } from './tenant-provisioning-fixture.js';
 import { exerciseApplicationApproval } from './application-approval-fixture.js';
 import { exerciseDecisionRecovery } from './decision-recovery-fixture.js';
 import { exerciseReviewBff } from './review-bff-fixture.js';
@@ -114,4 +115,6 @@ export async function exerciseApplicationReview(database:Database,owner:Client,p
     const data=result.data as {items:{id:string;reason:string;requestId:string;reviewedAt:string}[];nextCursor:string};assert.equal(data.items.length,1);assert(data.items[0]!.reason);assert.equal(new Date(data.items[0]!.reviewedAt).toISOString(),data.items[0]!.reviewedAt);
     const next=await send('review/decisions',{...authority,after:data.nextCursor,limit:1});assert.equal(next.status,200);assert.notEqual((next.data.items as {id:string}[])[0]!.id,data.items[0]!.id);
   },review);
+  return exerciseTenantProvisioning(database,owner,review,passkeys,context,authenticate);
+
 }

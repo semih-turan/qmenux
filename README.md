@@ -197,3 +197,6 @@ Current local approval work extends the review panel and own history to explicit
 
 
 The next [provisioning/manual-license contract](docs/04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md) is a docs-only proposal: approved application → separately verified inactive tenant/initial branch/OWNER-PENDING → separately verified effective license grant. It documents the missing provisioning action/module capability, current session-revocation behavior, test/rollback gates and unresolved commercial choices. No provisioning/license runtime, route or commercial approval is added.
+
+
+Inactive tenant provisioning is now implemented locally: a separate exact-operation native proof creates one approved-but-inactive tenant, initial branch and OWNER/PENDING from the immutable approved applicant. Its receipt/audit/proof/membership session revocation are atomic and exact replay cannot duplicate setup. Old applicant sessions are revoked; a new login still has no licensed business access. There is no provisioning route/BFF/UI/deployment or license grant. [0023 evidence/rollback and remaining gates](docs/04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#local-inactive-provisioning-delivery-0023-2026-10-26).

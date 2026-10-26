@@ -345,9 +345,9 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     await owner.query('INSERT INTO qmenux_operator.passkey_grants(token_hash,operator_id,audience) VALUES($1,$2,$3)',[secretHash(auditedGrant),auditedId,audience]);
     await exerciseOperatorBrowser(passkeys,authorization,()=>assertion({sub:auditedSubject}),browser,owner,auditedId,auditedGrant,originalFetch);
     assert.deepEqual((await owner.query('SELECT kind,count(*) FROM qmenux_operator.session_events WHERE operator_id=$1 GROUP BY kind ORDER BY kind',[auditedId])).rows,[{kind:'ISSUED',count:'2'},{kind:'RETIRED',count:'2'}]);
-    await exerciseOperatorStepUp(database,owner,passkeys,authorization,{issuer,subject:'synthetic-step-up-operator',audience,assertion:()=>assertion({sub:'synthetic-step-up-operator'})},register,authenticate);
-    assert.deepEqual((await owner.query('SELECT * FROM qmenux.tenants ORDER BY id')).rows,tenants);
-    assert.deepEqual((await owner.query('SELECT * FROM qmenux_identity.memberships ORDER BY tenant_id,user_id')).rows,members);
+    const provisioned=await exerciseOperatorStepUp(database,owner,passkeys,authorization,{issuer,subject:'synthetic-step-up-operator',audience,assertion:()=>assertion({sub:'synthetic-step-up-operator'})},register,authenticate);
+    assert.deepEqual((await owner.query('SELECT * FROM qmenux.tenants ORDER BY id')).rows.filter(row=>!provisioned.includes(row.id)),tenants);
+    assert.deepEqual((await owner.query('SELECT * FROM qmenux_identity.memberships ORDER BY tenant_id,user_id')).rows.filter(row=>!provisioned.includes(row.tenant_id)),members);
     assert(network.length>0);assert(network.every(url=>url===`${issuer}/cdn-cgi/access/certs`));
   } finally {
     await browser?.close(); globalThis.fetch=originalFetch;

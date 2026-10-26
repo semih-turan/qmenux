@@ -33,6 +33,10 @@ test('health is minimal, readiness fails closed, business and checkout routes ar
       const denied = await fetch(`${origin}${path}`, { method: path.endsWith('checkout') ? 'POST' : 'GET' });
       assert.equal(denied.status, 404, path);
     }
+    for (const operation of ['start','finish','provision']) {
+      const response = await fetch(`${origin}/v1/internal/operator-provisioning/${operation}`, { method: 'POST' });
+      assert.equal(response.status, 404);
+    }
   } finally {
     await app.close();
     if (originalUrl === undefined) delete process.env.DATABASE_URL;

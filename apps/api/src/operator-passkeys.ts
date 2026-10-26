@@ -13,8 +13,8 @@ import { fields, invalid } from './request-input.js';
 const rpID = 'superman.qmenux.com', origin = `https://${rpID}`;
 const algorithms = [-7, -257];
 const secret = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_-]{43}$/.test(value);
-export type OperatorOperation = Readonly<{ action: 'tenant:approve'|'tenant:reject'|'license:grant'|'license:extend'|'license:suspend'|'license:revoke'|'operator:manage'; targetId: string; requestId: string; payloadHash: string }>;
-const actions=['tenant:approve','tenant:reject','license:grant','license:extend','license:suspend','license:revoke','operator:manage'];
+export type OperatorOperation = Readonly<{ action: 'tenant:approve'|'tenant:reject'|'tenant:provision'|'license:grant'|'license:extend'|'license:suspend'|'license:revoke'|'operator:manage'; targetId: string; requestId: string; payloadHash: string }>;
+const actions=['tenant:approve','tenant:reject','tenant:provision','license:grant','license:extend','license:suspend','license:revoke','operator:manage'];
 
 type Credential = { id: string; operator_id: string; public_key: Buffer; counter: string };
 

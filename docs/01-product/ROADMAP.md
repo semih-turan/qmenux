@@ -85,3 +85,7 @@ Current0022 approval is a pre-tenant decision. The next dependency-aware slices 
 4. Reviewed mobile transport/confirmation/recovery, actual provider/device/hosted and named security/privacy/legal/restore evidence before privileged enablement. T043 marketing remains last; V1 payments stay absent.
 
 Approval/provisioning/grant are separate explicit actions; existing ordinary membership creation revokes old sessions. This proposal introduces no new infrastructure or commercial default, and marks no task DONE. Inactive provisioning can be independently tested without selecting license coverage; real licensed activation cannot.
+
+## T041 inactive provisioning local delivery —2026-10-26
+
+The separately requested0023 internal slice now verifies purpose-bound inactive tenant/initial branch/OWNER-PENDING creation, immutable receipt/replay and same-transaction rollback/session revocation using real local native signatures/PostgreSQL. No provisioning transport/mobile UI/route, cloud migration or license/ACTIVE transition is enabled. Next independent slice can prepare the reviewed provisioning transport/mobile confirmation/result recovery; T010/T042 license schema/grant/current entitlement still requires explicit commercial coverage/policy decisions. Both remain real-user/provider/device/security/privacy/legal/recovery/restore review-gated. [Precise current evidence](../04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#local-inactive-provisioning-delivery-0023-2026-10-26). T043 remains last; no V1 payments.

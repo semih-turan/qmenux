@@ -89,7 +89,7 @@ export async function exerciseOperatorStepUp(database:Database,owner:Client,pass
   await assert.rejects(passkeys.beginStepUp(assertion(),browser,sixth.session,sixth.csrf,proof,operation),status(403));
   proof=await login();assert.equal((await owner.query('SELECT count(*) FROM qmenux_operator.step_up_challenges WHERE operator_id=$1',[id])).rows[0].count,'0');
   await assert.rejects(migrate('down'),code('P0001'));
-  await exerciseApplicationReview(database,owner,passkeys,{assertion,browser,session:pair.session,csrf:pair.csrf,proof,operatorId:id},authenticate);
+  const provisioned=await exerciseApplicationReview(database,owner,passkeys,{assertion,browser,session:pair.session,csrf:pair.csrf,proof,operatorId:id},authenticate);
   options=await begin();const revoked=await finish(options.challenge,await authenticate(options));
   await authorization.signOutBrowser(assertion(),pair.session,pair.csrf,proof,browser);await assert.rejects(execute(revoked),status(403));
   for(const invalidation of ['operator','key']){
@@ -114,4 +114,6 @@ export async function exerciseOperatorStepUp(database:Database,owner:Client,pass
   assert.equal(functions.length,5);for(const row of functions){assert.equal(row.public,false);assert.equal(row.runtime,row.proname!=='step_up_actor');assert.equal(row.prosecdef,true);assert.deepEqual(row.proconfig,['search_path=pg_catalog, pg_temp']);}
   await assert.rejects(migrate('down'),code('P0001'));
   await owner.query('DROP TABLE qmenux_operator.step_up_fixture_effects');
+  return provisioned;
+
 }

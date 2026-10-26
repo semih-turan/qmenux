@@ -649,3 +649,17 @@ Docs-only preparation on existing feat/T041-explicit-application-approval at645d
 - [ ] Actual provider/cloud/device/security/privacy/legal/restore and named review before registration/enablement.
 
 Existing migrations/app code/credentials/routes/history unchanged. No branch/stage/commit/push/merge/deployment or task/legal DONE/APPROVED. [Actual docs-only checks](PROGRESS.md#t041-provisioning-and-license-contract-2026-10-26).
+
+## T041 inactive tenant provisioning —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal reviewer/date pending. On existing feat/T041-explicit-application-approval at e1e5967, implement only the next local internal0023 provisioning slice from ADR026. No privileged route/real tenant/license/ACTIVE transition or commercial choice.
+
+- [x] Separate tenant:provision native ceremony and closed normalized command, own exact authenticated result replay, immutable one-application/tenant mapping.
+- [x] Module-owned current-transaction permit/capability, inactive tenant/one initial branch/OWNER-PENDING, atomic proof/result/identity session revocation and populated rollback refusal;0001–0022 unchanged.
+- [x] Real native Chromium/PostgreSQL invalid input/action/command/draft/pending/rejected/stale/missing target, direct SQL/GUC/historical/private-helper denial; audit insertion/deferred commit rollback, four-way retry, conflict and concurrent applicant suspension with actual transaction-lock wait.
+- [x] Existing applicant API/two admin sessions survive rollback then revoke on committed membership insert; new session still has no catalog access. Exact two new tenant/branch/PENDING-owner deltas; prior tenant/member/menu/approval history preserved; forced RLS/ACL/fixed-path/immutable audit checked.
+- [x] Root lint/typecheck/test/build/audit PASS; actual10 API entries including expanded native/PG cases,1 deadline/trace and63 Playwright entries. Existing frontend build results cached; API build executed. Real AppModule proposed provisioning POST routes404.
+- [ ] Privileged provisioning API/BFF/mobile confirmation/positive receipt recovery and applicant status projection.
+- [ ] Cross-operator/actual cloud/provider/device/abuse/retention/recovery/restore and named acceptance before enablement; license coverage/commercial decisions and T010/T042 schema/grant/current entitlement remain separate.
+
+[Current implementation/rollback](../04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#local-inactive-provisioning-delivery-0023-2026-10-26); [actual evidence/limits](PROGRESS.md#t041-inactive-tenant-provisioning-2026-10-26). No task/legal DONE/APPROVED, cloud migration, deployment or agent Git write. T041/T004/T011 remain IN_PROGRESS; no license/runtime completion inferred.
