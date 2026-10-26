@@ -17,6 +17,9 @@ export function serverEnv() {
     apiInternalOrigin: process.env.QX_API_INTERNAL_ORIGIN || apiOrigin,
     bffKey: required('QX_BFF_SHARED_KEY'),
     rootDomain,
+    previewMenu: process.env.VERCEL_ENV === 'preview'
+      ? { host: process.env.VERCEL_URL, slug: process.env.QX_PREVIEW_MENU_SLUG }
+      : undefined,
     // Menus are served over https everywhere except local *.localhost development.
     secure: !(rootDomain.endsWith('.localhost') || rootDomain === 'localhost'),
     // Only trust x-forwarded-for behind a proxy we control; on Vercel x-vercel-forwarded-for is used.

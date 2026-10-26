@@ -8,9 +8,12 @@ import { parseHost } from '@qmenux/contracts';
  */
 
 /** Tenant slug from the platform-verified Host header. Never from X-Forwarded-Host or the query string. */
-export function menuSlug(host: string | null | undefined, rootDomain: string): string | null {
+export function menuSlug(host: string | null | undefined, rootDomain: string, preview?: { host?: string; slug?: string }): string | null {
   const h = parseHost(host, [rootDomain]);
-  return h.kind === 'menu' ? h.slug : null;
+  if (h.kind === 'menu') return h.slug;
+  if (!preview?.host?.endsWith('.vercel.app') || host?.toLowerCase() !== preview.host || !preview.slug) return null;
+  const demo = parseHost(`${preview.slug}.${rootDomain}`, [rootDomain]);
+  return demo.kind === 'menu' ? demo.slug : null;
 }
 
 /**
