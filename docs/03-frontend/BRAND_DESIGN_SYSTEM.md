@@ -56,3 +56,8 @@ Superadmin reuses ManagementShell, Button and TextField for native passkey authe
 ## Applicant rejected-state delivery —2026-10-26
 
 Existing shared applicant cards now show terminal REJECTED with explicit no-access wording, including an authoritative decision returned after stale submission. Edit/submit controls remain draft-only; internal review notes/operator identifiers are absent. No palette/component/layout fork. Production-built320/375/390/430px,44px controls, keyboard, short viewport/enlarged text and390px visual QA passed with intercepted synthetic BFF data. Physical mobile/assistive technology and actual privileged review UI remain pending.
+
+
+## Operator mobile review confirmation —2026-10-26
+
+Superadmin uses existing Button/TextField/safe-area shell for pending list, explicit reason/verification and separate final rejection confirmation. Full frozen reason wraps even long words; native cancel and result/retry focus are explicit. Uncertain payload survives in-memory reauthentication and conflict preserves editable reason while requiring current-row reselection. Auth controls pause during active review. No theme/palette fork, raw credentials or request IDs in product flow; approval/license controls remain unavailable. Rendered four-width keyboard/confirmation/retry evidence and production visual QA are recorded in PROGRESS.md; physical iOS/Android/assistive validation remains pending.

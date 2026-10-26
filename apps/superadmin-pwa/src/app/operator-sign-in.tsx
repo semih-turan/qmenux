@@ -3,6 +3,8 @@
 import { Button } from '@qmenux/ui/button';
 import { TextField } from '@qmenux/ui/text-field';
 import { useEffect, useRef, useState } from 'react';
+import { ceremony,serialize,supported } from '../lib/operator-credentials';
+import ApplicationReview from './application-review';
 
 type State='loading'|'unavailable'|'ready'|'authenticated';
 type Phase='idle'|'starting'|'key'|'finishing'|'logout';
@@ -24,47 +26,17 @@ async function readSession(signal:AbortSignal):Promise<{state:State;mayHaveSessi
     throw error;
   }
 }
-const decode=(value:string)=>Uint8Array.from(atob(value.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-value.length%4)%4)),char=>char.charCodeAt(0));
-const encode=(value:ArrayBuffer)=>btoa(Array.from(new Uint8Array(value),byte=>String.fromCharCode(byte)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-function serialize(credential:PublicKeyCredential) {
-  if(typeof credential.toJSON==='function')return credential.toJSON();
-  const response=credential.response;
-  const common={id:credential.id,rawId:encode(credential.rawId),type:credential.type,clientExtensionResults:credential.getClientExtensionResults()};
-  if('attestationObject' in response){const attestation=response as AuthenticatorAttestationResponse;return {...common,response:{clientDataJSON:encode(response.clientDataJSON),attestationObject:encode(attestation.attestationObject),...(typeof attestation.getTransports==='function'?{transports:attestation.getTransports()}:{})}};}
-  const assertion=response as AuthenticatorAssertionResponse;
-  return {...common,response:{clientDataJSON:encode(response.clientDataJSON),authenticatorData:encode(assertion.authenticatorData),signature:encode(assertion.signature),userHandle:assertion.userHandle?encode(assertion.userHandle):null}};
-}
-async function ceremony(value:unknown,registration:boolean,signal:AbortSignal):Promise<PublicKeyCredential> {
-  const options=value as PublicKeyCredentialCreationOptionsJSON & PublicKeyCredentialRequestOptionsJSON;
-  if(!options||typeof options.challenge!=='string'||options.timeout!==60000)throw new Error();
-  let credential:Credential|null;
-  if(registration){
-    if(options.rp?.id!=='superman.qmenux.com'||options.authenticatorSelection?.userVerification!=='required'||options.attestation!=='none')throw new Error();
-    const publicKey:PublicKeyCredentialCreationOptions={challenge:decode(options.challenge),timeout:60000,
-      rp:{id:'superman.qmenux.com',name:'QMenuX platform'},user:{id:decode(options.user.id),name:'QMenuX operator',displayName:''},
-      pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],attestation:'none',
-      authenticatorSelection:{residentKey:'preferred',userVerification:'required'},extensions:{credProps:true}};
-    credential=await navigator.credentials.create({publicKey,signal});
-  }else{
-    if(options.rpId!=='superman.qmenux.com'||options.userVerification!=='required')throw new Error();
-    const publicKey:PublicKeyCredentialRequestOptions={challenge:decode(options.challenge),timeout:60000,rpId:'superman.qmenux.com',userVerification:'required',
-      allowCredentials:options.allowCredentials?.map(item=>({id:decode(item.id),type:'public-key'}))};
-    credential=await navigator.credentials.get({publicKey,signal});
-  }
-  if(!credential||credential.type!=='public-key')throw new Error();
-  return credential as PublicKeyCredential;
-}
-const supported=()=>window.isSecureContext&&typeof PublicKeyCredential!=='undefined'&&!!navigator.credentials?.get&&!!navigator.credentials?.create;
 
 export default function OperatorSignIn() {
   const [state,setState]=useState<State>('loading'),[phase,setPhase]=useState<Phase>('idle');
+  const [hadSession,setHadSession]=useState(false),[reviewBusy,setReviewBusy]=useState(false);
   const [capable,setCapable]=useState(false),[mayHaveSession,setMayHaveSession]=useState(false);
   const [grant,setGrant]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState(false);
   const current=useRef<AbortController|null>(null),login=useRef<HTMLButtonElement>(null);
   const busy=phase!=='idle';
   useEffect(()=>{
     const controller=new AbortController();
-    void readSession(controller.signal).then(result=>{if(!controller.signal.aborted){setState(result.state);setMayHaveSession(result.mayHaveSession);setCapable(supported());}})
+    void readSession(controller.signal).then(result=>{if(!controller.signal.aborted){setState(result.state);setHadSession(result.state==='authenticated');setMayHaveSession(result.mayHaveSession);setCapable(supported());}})
       .catch(()=>{if(!controller.signal.aborted){setState('unavailable');setCapable(supported());}});
     return ()=>{controller.abort();current.current?.abort();};
   },[]);
@@ -91,7 +63,7 @@ export default function OperatorSignIn() {
       setPhase('finishing');const response=JSON.stringify(serialize(credential));if(response.length>16384)throw new Error();
       const finished=await request(`${kind}/finish`,{response},controller.signal);
       if(registration){if(finished.status!=='registered')throw new Error();setState('ready');setMessage('Geçiş anahtarı kaydedildi. Giriş için ayrıca doğrulayın.');}
-      else{if(finished.status!=='signed_in')throw new Error();const confirmed=await readSession(controller.signal);if(confirmed.state!=='authenticated')throw new Error();setState('authenticated');setMayHaveSession(true);setMessage('Platform oturumu doğrulandı.');}
+      else{if(finished.status!=='signed_in')throw new Error();const confirmed=await readSession(controller.signal);if(confirmed.state!=='authenticated')throw new Error();setState('authenticated');setHadSession(true);setMayHaveSession(true);setMessage('Platform oturumu doğrulandı.');}
     }catch(cause){
       setState('ready');setError(true);
       setMessage(cause instanceof DOMException&&['AbortError','NotAllowedError'].includes(cause.name)?'İşlem iptal edildi veya süre doldu. Yeni bir işlem başlatabilirsiniz.'
@@ -101,11 +73,11 @@ export default function OperatorSignIn() {
   }
   async function logout() {
     setPhase('logout');setMessage('');setError(false);
-    try{const data=await request('logout',{});if(data.status!=='signed_out')throw new Error();setMayHaveSession(false);setState('ready');setMessage('Çıkış doğrulandı.');}
+    try{const data=await request('logout',{});if(data.status!=='signed_out')throw new Error();setMayHaveSession(false);setHadSession(false);setState('ready');setMessage('Çıkış doğrulandı.');}
     catch{setState('ready');setError(true);setMessage('Çıkış doğrulanamadı. Oturumunuz açık olabilir; bağlantınızı kontrol edip tekrar deneyin.');}
     finally{setPhase('idle');}
   }
-  return <section aria-label="Platform hesap erişimi" aria-busy={busy||state==='loading'}>
+  return <><section aria-label="Platform hesap erişimi" aria-busy={busy||state==='loading'}>
     {state==='loading'&&<p role="status">Platform erişimi doğrulanıyor…</p>}
     {state==='unavailable'&&<><p role="status">Platform yönetimi henüz kullanıma açılmadı veya bağlantı kurulamadı.</p><Button onClick={()=>window.location.reload()}>Yeniden kontrol et</Button></>}
     {message&&<p role={error?'alert':'status'}>{message}</p>}
@@ -113,14 +85,14 @@ export default function OperatorSignIn() {
       <h2>{state==='authenticated'?'Platform oturumu doğrulandı':'Platform erişimi'}</h2>
       <p>Kurumsal erişim ve yetkili platform hesabı gerekir. Geçiş anahtarı doğrulaması işletme veya lisans etkinleştirmez.</p>
       {!capable&&<p role="status">Geçiş anahtarı destekleyen güncel ve güvenli bir tarayıcı gerekir.</p>}
-      <div className="operator-actions"><Button ref={login} disabled={busy||!capable} onClick={()=>void submit()}>{phase==='starting'?'Doğrulama başlatılıyor…':phase==='key'?'Geçiş anahtarı bekleniyor…':phase==='finishing'?'Sonuç doğrulanıyor…':state==='authenticated'?'Doğrulamayı yenile':'Geçiş anahtarıyla doğrula'}</Button>
+      <div className="operator-actions"><Button ref={login} disabled={busy||reviewBusy||!capable} onClick={()=>void submit()}>{phase==='starting'?'Doğrulama başlatılıyor…':phase==='key'?'Geçiş anahtarı bekleniyor…':phase==='finishing'?'Sonuç doğrulanıyor…':state==='authenticated'?'Doğrulamayı yenile':'Geçiş anahtarıyla doğrula'}</Button>
         {phase==='key'&&<Button onClick={()=>current.current?.abort()}>İşlemi iptal et</Button>}</div>
       {state==='ready'&&<details><summary>İlk geçiş anahtarını kaydet</summary><p>Yalnızca bağımsız olarak verilen, kısa süreli kayıt izniyle kullanılabilir. Kayıt oturum açmaz.</p>
         <form onSubmit={event=>{event.preventDefault();void submit(true);}}>
-          <TextField id="operator-grant" label="Kayıt izin kodu" type="password" value={grant} maxLength={43} minLength={43} pattern="[A-Za-z0-9_-]{43}" required autoComplete="off" autoCapitalize="none" spellCheck={false} disabled={busy||!capable} onChange={event=>setGrant(event.target.value)}/>
+          <TextField id="operator-grant" label="Kayıt izin kodu" type="password" value={grant} maxLength={43} minLength={43} pattern="[A-Za-z0-9_-]{43}" required autoComplete="off" autoCapitalize="none" spellCheck={false} disabled={busy||reviewBusy||!capable} onChange={event=>setGrant(event.target.value)}/>
           <Button type="submit" disabled={busy||!capable||!/^[A-Za-z0-9_-]{43}$/.test(grant)}>Geçiş anahtarını kaydet</Button>
         </form></details>}
     </>}
-    {mayHaveSession&&<Button disabled={busy} onClick={()=>void logout()}>{phase==='logout'?'Çıkış doğrulanıyor…':'Çıkış yap'}</Button>}
-  </section>;
+    {mayHaveSession&&<Button disabled={busy||reviewBusy} onClick={()=>void logout()}>{phase==='logout'?'Çıkış doğrulanıyor…':'Çıkış yap'}</Button>}
+  </section>{hadSession&&<ApplicationReview capable={capable} available={state==='authenticated'&&phase==='idle'} onBusyChange={setReviewBusy}/>}</>;
 }

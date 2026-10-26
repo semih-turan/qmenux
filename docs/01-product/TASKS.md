@@ -596,3 +596,16 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal review
 - [ ] Approval/provisioning, license policy/integration, recovery/abuse/retention and named/provider/device/security/privacy/legal review.
 
 [Contract](../04-backend/OPERATOR_APPLICATION_REVIEW.md). No task DONE/APPROVED or deployment authorized.
+
+
+## T041 protected review transport/mobile confirmation —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal reviewer/date pending. Added review-only machine key/flag and fixed list/rejection ceremony/commit API controller plus canonical host-cookie BFF. Both remain deliberately unregistered; .env.example adds false/empty placeholders only. Actual mobile panel is shown after verified operator me and requires reason, native step-up and separate final confirmation.
+
+- [x] Actual HTTP/native WebAuthn/PostgreSQL review and combined actual BFF→HTTP→PG/native proof/replay integration.
+- [x] BFF gate/purpose/authority/CSRF/projection/error/cookie tests and actual browser proof isolation/logout cleanup.
+- [x] Rendered explicit confirmation, cancel/no finish, uncertain unchanged retry, conflict/reselection, expiry/reauth preservation and unavailable-start closure; root and production visual evidence in PROGRESS.md.
+- [ ] Real provider/edge/hosted/device/assistive and named review before route registration/enablement.
+- [ ] Durable uncertain-decision recovery, abuse/retention and audited operator recovery; approval/provisioning/license policy/integration remain open.
+
+No DONE/APPROVED, cloud migration, provider setup, production deployment or actual business activation. [Contract](../04-backend/OPERATOR_APPLICATION_REVIEW.md).

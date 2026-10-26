@@ -29,7 +29,7 @@ test('health is minimal, readiness fails closed, business and checkout routes ar
       assert.equal(ready.headers.get('cache-control'), 'no-store');
       assert.deepEqual(await ready.json(), { status: 'unavailable' });
     }
-    for (const path of ['/health', '/v1/admin/products', '/v1/superadmin/tenants', '/v1/internal/operator-auth/authentication/start', '/v1/billing/checkout']) {
+    for (const path of ['/health', '/v1/admin/products', '/v1/superadmin/tenants', '/v1/internal/operator-auth/authentication/start', '/v1/internal/operator-review/list', '/v1/billing/checkout']) {
       const denied = await fetch(`${origin}${path}`, { method: path.endsWith('checkout') ? 'POST' : 'GET' });
       assert.equal(denied.status, 404, path);
     }

@@ -1,17 +1,17 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
-const origin='https://superman.qmenux.com', api='https://api.qmenux.com/v1/internal/operator-auth';
-const proofPattern=/^[A-Za-z0-9_-]{43}$/;
-const names={session:'__Host-qmenux_operator_session',csrf:'__Host-qmenux_operator_csrf',proof:'__Host-qmenux_operator_mfa',browser:'__Host-qmenux_operator_browser',authentication:'__Host-qmenux_operator_authentication_challenge',registration:'__Host-qmenux_operator_registration_challenge'};
-class AuthError extends Error {
+export const origin='https://superman.qmenux.com';
+export const proofPattern=/^[A-Za-z0-9_-]{43}$/;
+export const names={session:'__Host-qmenux_operator_session',csrf:'__Host-qmenux_operator_csrf',proof:'__Host-qmenux_operator_mfa',browser:'__Host-qmenux_operator_browser',authentication:'__Host-qmenux_operator_authentication_challenge',registration:'__Host-qmenux_operator_registration_challenge',reviewChallenge:'__Host-qmenux_operator_review_challenge',reviewProof:'__Host-qmenux_operator_review_proof'};
+export class AuthError extends Error {
   constructor(readonly status: number) { super('Auth request failed'); }
 }
-function fail(status: number): never { throw new AuthError(status); }
+export function fail(status: number): never { throw new AuthError(status); }
 const headers = { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' };
-const json = (value: unknown, status = 200) => NextResponse.json(value, { status, headers });
+export const json = (value: unknown, status = 200) => NextResponse.json(value, { status, headers });
 
-function cookie(req: Request, name: string): string | undefined {
+export function cookie(req: Request, name: string): string | undefined {
   const entries = (req.headers.get('cookie') ?? '').split(';').map(value => value.trim())
     .filter(value => value.split('=')[0] === name);
   if (!entries.length) return undefined;
@@ -20,10 +20,10 @@ function cookie(req: Request, name: string): string | undefined {
   if (!proofPattern.test(value)) fail(400);
   return value;
 }
-function setCookie(res: NextResponse, name: string, value: string, maxAge: number, httpOnly = true) {
+export function setCookie(res: NextResponse, name: string, value: string, maxAge: number, httpOnly = true) {
   res.cookies.set(name, value, { secure: true, httpOnly, sameSite: 'strict', path: '/', maxAge });
 }
-async function boundedJson(body: ReadableStream<Uint8Array> | null, limit: number, signal: AbortSignal, flat = false): Promise<unknown> {
+export async function boundedJson(body: ReadableStream<Uint8Array> | null, limit: number, signal: AbortSignal, flat = false): Promise<unknown> {
   if (!body) fail(400);
   const reader = body.getReader();
   const cancel = () => { void reader.cancel().catch(() => {}); };
@@ -62,29 +62,31 @@ async function boundedJson(body: ReadableStream<Uint8Array> | null, limit: numbe
     void reader.cancel().catch(() => {});
   }
 }
-function object(value: unknown): Record<string, unknown> {
+export function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail(503);
   return value as Record<string, unknown>;
 }
 
-function settings(): string {
+export function settings(review=false): string {
+  if(review){settings();const key=process.env.OPERATOR_REVIEW_SECRET;if(process.env.OPERATOR_REVIEW_ENABLED!=='true'||!key||!proofPattern.test(key)||[process.env.OPERATOR_BFF_SECRET,process.env.ADMIN_BFF_SECRET,process.env.ADMIN_ONBOARDING_SECRET,process.env.CRON_SECRET].includes(key))fail(503);return key;}
   const key=process.env.OPERATOR_BFF_SECRET;
   if(process.env.OPERATOR_BFF_ENABLED!=='true' || process.env.OPERATOR_PASSKEY_ENABLED!=='true'
     || process.env.VERCEL_ENV==='preview' || process.env.NODE_TLS_REJECT_UNAUTHORIZED==='0' || !key || !proofPattern.test(key)
-    || [process.env.ADMIN_BFF_SECRET,process.env.ADMIN_ONBOARDING_SECRET,process.env.CRON_SECRET].includes(key)) fail(503);
+    || [process.env.ADMIN_BFF_SECRET,process.env.ADMIN_ONBOARDING_SECRET,process.env.CRON_SECRET,process.env.OPERATOR_REVIEW_SECRET].includes(key)) fail(503);
   return key;
 }
-async function call(key:string,action:string,body:Record<string,string>) {
+export async function call(key:string,action:string,body:Record<string,string|number>,review=false) {
+  const accepted=review?[400,401,403,404,409]:[400,401,403];
   try {
     const signal=AbortSignal.timeout(10000);
-    const response=await fetch(`${api}/${action}`,{method:'POST',cache:'no-store',redirect:'error',signal,
+    const response=await fetch(`https://api.qmenux.com/v1/internal/${review?'operator-review':'operator-auth'}/${action}`,{method:'POST',cache:'no-store',redirect:'error',signal,
       headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!response.ok) {void response.body?.cancel().catch(()=>{});fail([400,401,403].includes(response.status)?response.status:503);}
+    if(!response.ok) {void response.body?.cancel().catch(()=>{});fail(accepted.includes(response.status)?response.status:503);}
     if(!/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type')??'')){void response.body?.cancel().catch(()=>{});fail(503);}
     try { return object(await boundedJson(response.body,32768,signal)); } catch { fail(503); }
-  } catch(error) {if(error instanceof AuthError && [400,401,403].includes(error.status))throw error;fail(503);}
+  } catch(error) {if(error instanceof AuthError && accepted.includes(error.status))throw error;fail(503);}
 }
-function options(value:unknown,registration:boolean,forbidden:string[]) {
+export function options(value:unknown,registration:boolean,forbidden:string[]) {
   const row=object(value);
   const credential=(value:unknown)=>{
     const item=object(value);

@@ -2,3 +2,8 @@
 summary { min-height: 44px; padding-block: .5rem; cursor: pointer; }
 summary:focus-visible { outline: 3px solid var(--brand-ink); outline-offset: 4px; }
 section > button { margin-block: 1rem; }
+.review-list { list-style: none; padding: 0; }
+.review-list li { border-block-end: 1px solid var(--brand-ink); padding-block: 1rem; }
+section[aria-labelledby="review-title"] { border-block-start: 1px solid var(--brand-ink); margin-block-start: 2rem; padding-block-start: 1rem; }
+section[aria-labelledby="review-title"] form > button { margin-block: .75rem; }
+.review-reason { overflow-wrap: anywhere; }

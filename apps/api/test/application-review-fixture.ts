@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { Client } from 'pg';
+import { exerciseReviewBff } from './review-bff-fixture.js';
+import { withOperatorHttp } from './operator-http-fixture.js';
+import { OperatorAuthorization } from '../src/operator-authorization.js';
 import { Database } from '../src/database.js';
 import { IdentityStore } from '../src/identity-store.js';
 import { OnboardingApplications } from '../src/onboarding-applications.js';
@@ -70,5 +73,34 @@ export async function exerciseApplicationReview(database:Database,owner:Client,p
     await assert.rejects(owner.query("UPDATE qmenux_onboarding.applications SET status='REJECTED',reviewed_at=now(),reviewed_by=$2,review_request_id=$3,rejection_reason='forged' WHERE id=$1",[canaryPending.id,context.operatorId,randomUUID()]),code('42501'));
   }finally{await owner.query('ROLLBACK');}
   const direct=await database.begin();try{await assert.rejects(direct.query('SELECT * FROM qmenux_onboarding.applications'),code('42501'));await direct.query('ROLLBACK');}finally{direct.release();}
+  await withOperatorHttp(passkeys,new OperatorAuthorization(new OperatorAccess(),database),context.assertion,context.browser,async(send,apiOrigin)=>{
+    const authority={assertion:context.assertion(),browser:context.browser,session:context.session,csrf:context.csrf,proof:context.proof};
+    const key=process.env.OPERATOR_REVIEW_SECRET!;
+    process.env.OPERATOR_REVIEW_ENABLED='false';assert.equal((await send('review/list',authority)).status,503);process.env.OPERATOR_REVIEW_ENABLED='true';
+    assert.equal((await send('review/list',authority,'POST',{authorization:`Bearer ${process.env.OPERATOR_BFF_SECRET}`})).status,401);
+    process.env.OPERATOR_REVIEW_SECRET=process.env.OPERATOR_BFF_SECRET;assert.equal((await send('review/list',authority)).status,503);process.env.OPERATOR_REVIEW_SECRET=key;
+    for(const action of ['list','rejection/start','rejection/finish','reject']){
+      for(const method of ['GET','HEAD','OPTIONS'])assert.equal((await send(`review/${action}`,{},method)).status,405);
+      assert.equal((await send(`review/${action}`,{...authority,actorId:context.operatorId})).status,400);
+    }
+    assert.equal((await send('review/list?tenant=selected',authority)).status,400);
+    const listed=await send('review/list',{...authority,limit:20});assert.equal(listed.status,200);assert.equal(listed.cache,'no-store');assert.equal(listed.cookie,undefined);
+    const command={id:canaryPending.id,revision:canaryPending.revision,reason:'Synthetic HTTP rejection',requestId:randomUUID()};
+    const started=await send('review/rejection/start',{...authority,...command});assert.equal(started.status,200);
+    const options=started.data.options as Awaited<ReturnType<OperatorPasskeys['beginAuthentication']>>;
+    const signed=JSON.stringify(await authenticate(options));
+    const finished=await send('review/rejection/finish',{...authority,...command,challenge:options.challenge,response:signed});assert.equal(finished.status,200);assert.equal(finished.data.expiresIn,120);
+    assert.match(finished.data.stepUp as string,/^[A-Za-z0-9_-]{43}$/);assert.equal(finished.cookie,undefined);
+    assert.equal((await send('review/reject',{...authority,...command,stepUp:finished.data.stepUp,reason:'Changed HTTP reason'})).status,403);
+    const rejected=await send('review/reject',{...authority,...command,stepUp:finished.data.stepUp});assert.equal(rejected.status,200);
+    assert.equal((rejected.data.application as {status:string}).status,'REJECTED');
+    assert.deepEqual((await send('review/reject',{...authority,...command})).data,rejected.data);
+    assert.equal((await send('review/reject',{...authority,...command,reason:'Conflicting HTTP retry'})).status,409);
+    const bffDraft=await applications.create(applicant,applicantCsrf,{name:'Synthetic BFF review café',idempotencyKey:randomUUID()});
+    const bffPending=await applications.submit(applicant,applicantCsrf,bffDraft.id,{revision:1});
+    await exerciseReviewBff(apiOrigin,authority,{id:bffPending.id,revision:bffPending.revision,reason:'Synthetic combined BFF reason',requestId:randomUUID()},authenticate);
+    assert.equal((await applications.list(applicant,{})).items.find(item=>item.id===bffPending.id)!.status,'REJECTED');
+
+  },review);
   await assert.rejects(migrate('down'),code('P0001'));
 }

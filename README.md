@@ -185,3 +185,6 @@ Internal operation-bound step-up now uses a separate native passkey challenge an
 
 
 Pending application review now has an internal list/reject provider. Rejection requires a fresh operation-bound passkey proof for the exact revision/reason/request; application state, verified operator audit and consumption commit atomically. Applicant screens show terminal REJECTED without private review notes. No tenant/license/approval is created and no privileged review route is registered. See `docs/04-backend/OPERATOR_APPLICATION_REVIEW.md` for exact evidence and outstanding transport/approval/recovery/release work.
+
+
+The local-review superadmin panel now provides pending listing, reason-bound native verification and a separate explicit rejection confirmation, with honest immutable retries/cancel/conflict/reauth states. Dedicated default-off OPERATOR_REVIEW_ENABLED/empty OPERATOR_REVIEW_SECRET protect a prepared API/BFF; production routes remain unregistered404. Local native/HTTP/PG/BFF and rendered/browser-cookie checks are recorded in `docs/04-backend/OPERATOR_APPLICATION_REVIEW.md`. Real provider/device/security/legal review, durable recovery and approval/license rollout remain pending.
