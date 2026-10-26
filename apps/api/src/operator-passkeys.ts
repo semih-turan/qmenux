@@ -3,7 +3,7 @@ import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthe
   type AuthenticationResponseJSON, type RegistrationResponseJSON } from '@simplewebauthn/server';
 import { decodeAttestationObject } from '@simplewebauthn/server/helpers';
 import { randomBytes } from 'node:crypto';
-import type { QueryResultRow } from 'pg';
+import type { PoolClient, QueryResultRow } from 'pg';
 import { Database } from './database.js';
 import { secretHash } from './identity-store.js';
 import { OperatorAccess, type AccessIdentity } from './operator-access.js';
@@ -13,6 +13,9 @@ import { fields, invalid } from './request-input.js';
 const rpID = 'superman.qmenux.com', origin = `https://${rpID}`;
 const algorithms = [-7, -257];
 const secret = (value: unknown): value is string => typeof value === 'string' && /^[A-Za-z0-9_-]{43}$/.test(value);
+export type OperatorOperation = Readonly<{ action: 'tenant:approve'|'tenant:reject'|'license:grant'|'license:extend'|'license:suspend'|'license:revoke'|'operator:manage'; targetId: string; requestId: string; payloadHash: string }>;
+const actions=['tenant:approve','tenant:reject','license:grant','license:extend','license:suspend','license:revoke','operator:manage'];
+
 type Credential = { id: string; operator_id: string; public_key: Buffer; counter: string };
 
 @Injectable()
@@ -118,9 +121,16 @@ export class OperatorPasskeys {
     if (!secret(challenge)) throw new ForbiddenException();
     const row = this.response(response, false);
     const consumed = await this.consume(identity, browser as string, challenge, false);
+    const verified = await this.verifyAssertion(identity,challenge,row,consumed.operator_id);
+    const proof = randomBytes(32).toString('base64url');
+    await this.query('SELECT qmenux_operator.passkey_authenticate($1,$2,$3,$4,$5,$6,$7,$8)',
+      [...this.args(identity), verified.credential.id, verified.credential.counter, verified.counter, secretHash(proof), secretHash(browser as string)]);
+    return proof;
+  }
+  private async verifyAssertion(identity: AccessIdentity,challenge:string,row:Record<string,unknown>,operatorId:string) {
     const credential = await this.credentials(identity);
     const body = row.response as Record<string, unknown>;
-    if (row.id !== credential.id || consumed.operator_id !== credential.operator_id
+    if (row.id !== credential.id || operatorId !== credential.operator_id
       || (body.userHandle !== null && body.userHandle !== undefined && body.userHandle !== Buffer.from(credential.operator_id).toString('base64url'))) throw new ForbiddenException();
     let verified;
     try {
@@ -129,10 +139,58 @@ export class OperatorPasskeys {
         credential: { id: credential.id, publicKey: new Uint8Array(credential.public_key), counter: Number(credential.counter) } });
     } catch { throw new ForbiddenException(); }
     if (!verified.verified || !verified.authenticationInfo.userVerified) throw new ForbiddenException();
-    const proof = randomBytes(32).toString('base64url');
-    await this.query('SELECT qmenux_operator.passkey_authenticate($1,$2,$3,$4,$5,$6,$7,$8)',
-      [...this.args(identity), credential.id, credential.counter, verified.authenticationInfo.newCounter, secretHash(proof), secretHash(browser as string)]);
-    return proof;
+    return {credential,counter:verified.authenticationInfo.newCounter};
+  }
+  private operation(value:OperatorOperation) {
+    const row=fields(value,['action','targetId','requestId','payloadHash']);
+    const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    if(typeof row.action!=='string'||!actions.includes(row.action)||typeof row.targetId!=='string'||!uuid.test(row.targetId)
+      ||typeof row.requestId!=='string'||!uuid.test(row.requestId)||typeof row.payloadHash!=='string'||!/^[0-9a-f]{64}$/.test(row.payloadHash))invalid();
+    return [secretHash(JSON.stringify([row.action,row.targetId,row.requestId,row.payloadHash])),row.action,row.targetId,row.requestId] as [string,string,string,string];
+  }
+  private bindings(identity:AccessIdentity,session:unknown,csrf:unknown,proof:unknown,browser:unknown) {
+    if(![session,csrf,proof,browser].every(secret))throw new ForbiddenException();
+    return [...this.args(identity),...[session,csrf,proof,browser].map(value=>secretHash(value as string))];
+  }
+  async beginStepUp(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,operation:OperatorOperation) {
+    const identity=await this.identity(assertion,browser),[digest]=this.operation(operation);
+    const bindings=this.bindings(identity,session,csrf,proof,browser);
+    const credential=await this.credentials(identity);
+    const options=await generateAuthenticationOptions({rpID,userVerification:'required',timeout:60000,allowCredentials:[{id:credential.id}]});
+    await this.query('SELECT qmenux_operator.step_up_begin($1,$2,$3,$4,$5,$6,$7,$8,$9)',[...bindings,digest,secretHash(options.challenge)]);
+    return options;
+  }
+  async finishStepUp(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,operation:OperatorOperation,challenge:unknown,response:unknown) {
+    const identity=await this.identity(assertion,browser),[digest,action,target,request]=this.operation(operation);
+    const bindings=this.bindings(identity,session,csrf,proof,browser);
+    if(!secret(challenge))throw new ForbiddenException();
+    const row=this.response(response,false);
+    const consumed=await this.query<{operator_id:string}>('SELECT * FROM qmenux_operator.step_up_consume_challenge($1,$2,$3,$4,$5,$6,$7,$8,$9)',[...bindings,digest,secretHash(challenge)]);
+    if(consumed.length!==1)throw new ForbiddenException();
+    const verified=await this.verifyAssertion(identity,challenge,row,consumed[0]!.operator_id);
+    const token=randomBytes(32).toString('base64url');
+    await this.query('SELECT qmenux_operator.step_up_verify($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',
+      [...bindings,digest,verified.credential.id,verified.credential.counter,verified.counter,secretHash(token),action,target,request]);
+    return token;
+  }
+  async runStepUp<T>(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,stepUp:unknown,operation:OperatorOperation,
+    work:(client:PoolClient,operator:Readonly<{id:string;role:'PLATFORM_ADMIN'}>)=>Promise<T>):Promise<T> {
+    const identity=await this.identity(assertion,browser),[digest,action,target,request]=this.operation(operation);
+    const bindings=this.bindings(identity,session,csrf,proof,browser);
+    if(!secret(stepUp))throw new ForbiddenException();
+    const client=await this.database.begin();let clean=false;
+    try {
+      const result=await client.query<{id:string|null}>('SELECT qmenux_operator.step_up_use($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) AS id',
+        [...bindings,digest,secretHash(stepUp),action,target,request]);
+      if(!result.rows[0]?.id)throw new ForbiddenException();
+      // The callback must contain only transactional contracts/outbox writes, never external side effects.
+      const value=await work(client,Object.freeze({id:result.rows[0].id,role:'PLATFORM_ADMIN' as const}));
+      await client.query('COMMIT');clean=true;return value;
+    }catch(error){
+      try{await client.query('ROLLBACK');clean=true;}catch{/* Discard an unresettable connection. */}
+      if(error instanceof ForbiddenException)throw error;
+      throw new ServiceUnavailableException({status:'unavailable'});
+    }finally{client.release(!clean);}
   }
   policy(proof: unknown, browser: unknown): OperatorMfaPolicy {
     return async identity => {

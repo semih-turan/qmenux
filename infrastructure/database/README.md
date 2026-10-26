@@ -125,3 +125,8 @@ Function-only0017 replaces passkey_begin so a new authorized start retires only 
 ## Operator session audit (0018; local development)
 
 0018 adds random session audit UUIDs and a private forced-RLS append-only session_events table. Atomic insert/delete triggers record ISSUED/RETIRED; preexisting sessions receive OBSERVED baseline only. Events contain affected operator/application/expiry/time, no tokens/hashes or guessed human revoker/reason. Runtime has no direct table/function helper privilege. History and session audit identities are immutable; no unaudited TRUNCATE. Audit failure rolls back the session transition. Down locks tables with row_security=off and refuses any sessions/history; never delete retained events to force rollback. Earlier migrations/manual Neon guard0009 are unchanged; local PostgreSQL tests only, no cloud migration. Full semantics and privacy/recovery/retention limits are in OPERATOR_PASSKEY_CONTRACT.md.
+
+
+## Operator operation-bound step-up (0019; local development)
+
+0019 adds private forced-RLS challenge/proof/event records for a separate native passkey ceremony bound to current browser session/CSRF/MFA and exact operation digest. Proof use, audit and protected database callback are atomic; session/MFA replacement or revocation cascades pending evidence. Runtime receives four fixed-path EXECUTE contracts only; audit is append-only, with no raw command or reusable auth material. Up requires0001–0018; locked row_security=off down refuses any data/history. Older migrations/manual Neon guards remain unchanged; only disposable local tests apply0019. See OPERATOR_STEP_UP_CONTRACT.md for server command hashing, two-minute limits, domain/transport/recovery/retention gates and no-external-side-effect callback rule.

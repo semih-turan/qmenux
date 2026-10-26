@@ -179,3 +179,6 @@ The superadmin root includes a local-review mobile passkey sign-in/enrollment sc
 
 
 Operator session lifecycle audit is implemented locally in0018: private append-only events correlate random session UUIDs with affected operator/application/time, without retaining tokens or token hashes. Existing sessions receive a truthful observed baseline. Audit failures roll back session changes; populated rollback refuses history loss. Runtime routes remain unregistered; named recovery/provisioning actors/reasons, retention review and step-up remain pending. See the operator passkey contract for verification and release limits.
+
+
+Internal operation-bound step-up now uses a separate native passkey challenge and one-use two-minute proof with exact session/browser/current MFA and server-derived command binding. Consumption, immutable audit and protected database callback are atomic; normal sign-in proof cannot substitute. No business command/route or activation is enabled. See `docs/04-backend/OPERATOR_STEP_UP_CONTRACT.md` for verified scope, trusted hashing and remaining domain/mobile/recovery/release work.

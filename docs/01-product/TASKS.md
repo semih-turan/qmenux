@@ -570,3 +570,16 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy reviewer/dat
 - [ ] Reviewed history retention/export, provider/device/privacy/security/legal acceptance and privileged-route approval.
 
 Final actual checks and limits are recorded in PROGRESS.md; no DONE/APPROVED claim or cloud migration.
+
+
+## T004 operation-bound step-up prerequisite —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy reviewer/date pending. Added separate native UV ceremony and one-use two-minute proof, bound to current session/browser/CSRF/MFA and server-derived action/target/request/payload digest. Normal platform:read and review-gated routes unchanged; no actual business write or V1 payment/activation.
+
+- [x] Real native Chromium and PostgreSQL verify proof-type non-substitution, changed command/context denial, signature consumption, expiry/restart, four-way replay/concurrency and callback/audit atomic rollback.
+- [x] Verify challenge cap, MFA replacement/logout/operator/key revocation, migration rollback/down/reapply/version/populated refusal and immutable audit/RLS/ACL.
+- [ ] Connect validated business command builders and domain-specific idempotency/audit/authorization contracts.
+- [ ] Protected API/BFF/mobile operation confirmation; audited provisioning/recovery and retention/monitoring.
+- [ ] Actual provider/device/hosted and named architecture/security/privacy/legal review before route enablement.
+
+[Contract](../04-backend/OPERATOR_STEP_UP_CONTRACT.md); actual command results in PROGRESS.md. No DONE/APPROVED claim.
