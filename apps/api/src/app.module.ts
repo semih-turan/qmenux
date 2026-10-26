@@ -17,8 +17,9 @@ import { DraftCatalog } from './draft-catalog.js';
 import { TenantAuthorization } from './tenant-authorization.js';
 import { OperatorAccess } from './operator-access.js';
 import { OperatorAuthorization } from './operator-authorization.js';
+import { OperatorApplicationReview } from './operator-application-review.js';
 import { OperatorPasskeys } from './operator-passkeys.js';
 import { AuthMaintenanceController } from './auth-maintenance.controller.js';
 
-@Module({ controllers: [HealthController, AuthController, AdminAuthController, AdminOnboardingController, AuthMaintenanceController], providers: [{ provide: APP_FILTER, useClass: AdminAuthErrors }, Database, TenantTransactions, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, IdentityStore, TenantAuthorization, DraftCatalog, DraftStructure, OnboardingApplications, OperatorAccess, OperatorAuthorization, OperatorPasskeys] })
+@Module({ controllers: [HealthController, AuthController, AdminAuthController, AdminOnboardingController, AuthMaintenanceController], providers: [{ provide: APP_FILTER, useClass: AdminAuthErrors }, Database, TenantTransactions, GoogleOidc, MicrosoftOidc, AppleClientSecret, AppleOidc, IdentityStore, TenantAuthorization, DraftCatalog, DraftStructure, OnboardingApplications, OperatorAccess, OperatorAuthorization, OperatorPasskeys, OperatorApplicationReview] })
 export class AppModule {}

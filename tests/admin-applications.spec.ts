@@ -113,3 +113,20 @@ test('application unavailable state retries and pages own results; actual unconf
   await expect(page.getByRole('heading',{name:'Test Kafe 21',exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Daha fazla başvuru'})).toHaveCount(0);
 });
+
+
+test('rejected application is terminal and a stale submit reports its authoritative decision',async({page})=>{
+  await signedIn(page);let decided=false;
+  await page.route('**/api/onboarding/applications**',async route=>{
+    if(route.request().method()==='GET'){await route.fulfill({json:{items:[{...draft,status:'PENDING_APPROVAL',revision:2,submittedAt:draft.createdAt}],nextCursor:null}});return;}
+    decided=true;await route.fulfill({json:{application:{...draft,status:'REJECTED',revision:3,submittedAt:draft.createdAt}}});
+  });
+  // A stale draft view may submit after another session has already sent and reviewed it.
+  await page.route('**/api/onboarding/applications',route=>route.fulfill({json:{items:[decided?{...draft,status:'REJECTED',revision:3,submittedAt:draft.createdAt}:draft],nextCursor:null}}));
+  await page.goto('http://127.0.0.1:3001');await page.getByRole('button',{name:'Test Kafe başvurusunu onaya gönder'}).click();
+  await expect(page.getByRole('status')).toContainText('Başvurunuz reddedildi');
+  await expect(page.getByText('Reddedildi — işletme erişimi verilmedi',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Test Kafe başvurusunu onaya gönder'})).toHaveCount(0);expect(decided).toBe(true);
+  await page.reload();await expect(page.getByText('Reddedildi — işletme erişimi verilmedi',{exact:true})).toBeVisible();
+  for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+});

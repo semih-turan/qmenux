@@ -130,3 +130,8 @@ Function-only0017 replaces passkey_begin so a new authorized start retires only 
 ## Operator operation-bound step-up (0019; local development)
 
 0019 adds private forced-RLS challenge/proof/event records for a separate native passkey ceremony bound to current browser session/CSRF/MFA and exact operation digest. Proof use, audit and protected database callback are atomic; session/MFA replacement or revocation cascades pending evidence. Runtime receives four fixed-path EXECUTE contracts only; audit is append-only, with no raw command or reusable auth material. Up requires0001–0018; locked row_security=off down refuses any data/history. Older migrations/manual Neon guards remain unchanged; only disposable local tests apply0019. See OPERATOR_STEP_UP_CONTRACT.md for server command hashing, two-minute limits, domain/transport/recovery/retention gates and no-external-side-effect callback rule.
+
+
+## Pending application rejection (0020; local development)
+
+0020 adds REJECTED/reviewer/reason/request/timestamp consistency and APPLICANT/OPERATOR audit kinds to onboarding. Three explicit onboarding EXECUTE contracts list pending/replay/reject using operator-owned session/current-transaction rejection capability functions. A private canonical digest helper binds revision/reason. Future step-up audit rows receive transaction IDs; historical rows remain NULL. No cross-module direct table query or new runtime table grants. Down locks and refuses any review history or new transaction metadata rather than losing evidence. Earlier migrations/manual Neon guards remain unchanged; local tests only, no cloud migration. See OPERATOR_APPLICATION_REVIEW.md for authority, idempotency and remaining release gates.

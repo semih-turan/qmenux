@@ -583,3 +583,16 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy reviewer/dat
 - [ ] Actual provider/device/hosted and named architecture/security/privacy/legal review before route enablement.
 
 [Contract](../04-backend/OPERATOR_STEP_UP_CONTRACT.md); actual command results in PROGRESS.md. No DONE/APPROVED claim.
+
+
+## T041 pending review and explicit rejection —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal reviewer/date pending. Internal provider lists only pending applications and binds rejection to exact revision/reason/request plus actual passkey step-up. Same-transaction operator capability, application/audit/proof atomicity and authenticated idempotent result replay; no activation/license/member/tenant grant. Applicant BFF/model/UI now handles terminal REJECTED without private reason/operator fields.
+
+- [x] Real native WebAuthn/PostgreSQL tests: pending pagination/authority, invalid/stale/draft/missing/changed commands, normal-proof denial, audit rollback, concurrent/replayed decision and actual operator audit.
+- [x] Verify terminal applicant state/foreign isolation, forged actor and historical capability denial, migration rollback/reapply/version/populated refusal.
+- [x] BFF projection/rendered browser regression and production-built four-width/keyboard/enlarged-text visual checks; exact results in PROGRESS.md.
+- [ ] Privileged API/BFF/mobile operator review confirmation and real combined review transport acceptance.
+- [ ] Approval/provisioning, license policy/integration, recovery/abuse/retention and named/provider/device/security/privacy/legal review.
+
+[Contract](../04-backend/OPERATOR_APPLICATION_REVIEW.md). No task DONE/APPROVED or deployment authorized.

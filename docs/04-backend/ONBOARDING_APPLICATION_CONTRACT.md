@@ -21,7 +21,7 @@ Projection is id/requestedName/status/revision/createdAt/submittedAt only. Appli
 
 Create idempotency is scoped to the authenticated applicant and UUID key, serialized by a bounded transactional advisory lock plus a unique constraint. Same original payload returns the same application even after edits/submission; different original payload with the same key409. `initial_name` is retained privately to bind creation retries after `requested_name` changes. No business-name deduplication/approval policy is invented: distinct keys can represent distinct applications. Abuse limits and actual duplicate-business review remain release work.
 
-Edit/submit lock the authenticated applicant's row. Matching-revision edits reject lost updates; no-op edits preserve revision/history. Submit sets a server timestamp and increments revision once; retries of that action return the already pending result without a duplicate event. Submitted names/identity are immutable in this development model. Only DRAFT/PENDING_APPROVAL are database-valid; approval/rejection/provisioning need their later separately authorized audited operator contracts.
+Edit/submit lock the authenticated applicant's row. Matching-revision edits reject lost updates; no-op edits preserve revision/history. Submit sets a server timestamp and increments revision once; retries of that action return the already pending result without a duplicate event. Submitted names/identity are immutable in this development model. The original0013 baseline permits DRAFT/PENDING_APPROVAL.0020 adds separately authorized operator rejection below; approval/provisioning remain later audited contracts.
 
 ## Persistence and module boundaries (0013)
 
@@ -65,3 +65,8 @@ The registered-user mobile screen loads only the applicant's list, creates an ex
 Tests separate three trust boundaries: real API HTTP+disposable PostgreSQL, direct BFF handler with synthetic API responses including an actual browser's host-cookie/CSRF transport, and rendered Next UI with intercepted synthetic BFF responses. These do not claim one deployed browser→BFF→API→Neon/provider test or real applicant acceptance. Chromium covers320/375/390/430px, keyboard focus, touch size, create/edit/submit, unchanged create retry payload, stale edit, uncertain submit, empty/unavailable/retry and pagination. Production-built smoke and visual QA evidence is recorded in PROGRESS.md. Physical iOS/Android, assistive technology, actual providers/host forwarding, security/privacy/legal review, abuse controls and named review remain pending. Both flags stay off with empty keys; no real-user enablement or legal acceptance is inferred.
 
 Rollback removes the browser route/screen callers and retires the independent machine credential across deployed snapshots; leave populated0013 and immutable history intact. No new migration or dependency is needed for this browser slice.
+
+
+## Operator rejection and applicant terminal state (0020)
+
+The internal OperatorApplicationReview provider now lists pending-only records and rejects with exact-revision/reason/request-bound actual step-up, current transaction capability and immutable verified-operator audit. REJECTED is terminal, visible through own applicant list/create/submit retries and the mobile screen without internal reason/operator metadata. No tenant/member/license/approval is created; the privileged review API/BFF/mobile screen remains unregistered/unimplemented. [Full authority, idempotency, module, rollback and evidence contract](OPERATOR_APPLICATION_REVIEW.md).

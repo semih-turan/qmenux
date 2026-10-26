@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse,
   type AuthenticationResponseJSON, type RegistrationResponseJSON } from '@simplewebauthn/server';
 import { decodeAttestationObject } from '@simplewebauthn/server/helpers';
@@ -188,7 +188,7 @@ export class OperatorPasskeys {
       await client.query('COMMIT');clean=true;return value;
     }catch(error){
       try{await client.query('ROLLBACK');clean=true;}catch{/* Discard an unresettable connection. */}
-      if(error instanceof ForbiddenException)throw error;
+      if(error instanceof ForbiddenException||error instanceof ConflictException||error instanceof NotFoundException)throw error;
       throw new ServiceUnavailableException({status:'unavailable'});
     }finally{client.release(!clean);}
   }

@@ -77,7 +77,11 @@ test('application BFF pins all four operations, forwards only bound proofs and s
   expect((await handleOnboarding(request('PATCH',`/${id}`,JSON.stringify({name:'Test Kafe',revision:1})))).status).toBe(200);
   upstream = () => Response.json({application:{...row,status:'PENDING_APPROVAL',revision:2,submittedAt:row.createdAt}});
   expect((await handleOnboarding(request('POST',`/${id}/submit`,JSON.stringify({revision:1})))).status).toBe(200);
-  expect(calls.map(call=>call.url)).toEqual(['list','drafts',`drafts/${id}/edit`,`drafts/${id}/submit`].map(path=>`https://api.qmenux.com/v1/internal/admin-onboarding/${path}`));
+  const rejected={...row,status:'REJECTED',revision:3,submittedAt:row.createdAt};
+  upstream=()=>Response.json({application:{...rejected,rejection_reason:'private review reason',reviewed_by:id}});
+  expect(await (await handleOnboarding(request('POST',`/${id}/submit`,JSON.stringify({revision:1})))).json()).toEqual({application:rejected});
+
+  expect(calls.map(call=>call.url)).toEqual(['list','drafts',`drafts/${id}/edit`,`drafts/${id}/submit`,`drafts/${id}/submit`].map(path=>`https://api.qmenux.com/v1/internal/admin-onboarding/${path}`));
   for (const call of calls) {
     expect(call.init).toMatchObject({method:'POST',cache:'no-store',redirect:'error'});
     const headers = new Headers(call.init!.headers); expect(headers.get('authorization')).toBe(`Bearer ${key}`); expect(headers.has('cookie')).toBe(false);

@@ -51,3 +51,8 @@ T041's actual business-name form adds the shared TextField export: native associ
 ## Operator access screen implementation —2026-10-26
 
 Superadmin reuses ManagementShell, Button and TextField for native passkey authentication and separately granted enrollment. Shared Button now accepts React19's standard button props including ref for keyboard focus restoration; rendered markup is unchanged. Collapsible enrollment has44px summary/focus outline, masked16px input, explicit labels, status/error messages and cancellable native prompt. Layout uses the existing safe-area shell and brand tokens. Unregistered transport shows only unavailable/retry. Production-built320/375/390/430px, short viewport scrolling, enlarged text and keyboard checks passed locally; physical software keyboards, iOS/Android installed PWA and assistive technology acceptance remain pending.
+
+
+## Applicant rejected-state delivery —2026-10-26
+
+Existing shared applicant cards now show terminal REJECTED with explicit no-access wording, including an authoritative decision returned after stale submission. Edit/submit controls remain draft-only; internal review notes/operator identifiers are absent. No palette/component/layout fork. Production-built320/375/390/430px,44px controls, keyboard, short viewport/enlarged text and390px visual QA passed with intercepted synthetic BFF data. Physical mobile/assistive technology and actual privileged review UI remain pending.

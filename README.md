@@ -182,3 +182,6 @@ Operator session lifecycle audit is implemented locally in0018: private append-o
 
 
 Internal operation-bound step-up now uses a separate native passkey challenge and one-use two-minute proof with exact session/browser/current MFA and server-derived command binding. Consumption, immutable audit and protected database callback are atomic; normal sign-in proof cannot substitute. No business command/route or activation is enabled. See `docs/04-backend/OPERATOR_STEP_UP_CONTRACT.md` for verified scope, trusted hashing and remaining domain/mobile/recovery/release work.
+
+
+Pending application review now has an internal list/reject provider. Rejection requires a fresh operation-bound passkey proof for the exact revision/reason/request; application state, verified operator audit and consumption commit atomically. Applicant screens show terminal REJECTED without private review notes. No tenant/license/approval is created and no privileged review route is registered. See `docs/04-backend/OPERATOR_APPLICATION_REVIEW.md` for exact evidence and outstanding transport/approval/recovery/release work.
