@@ -12,7 +12,7 @@ type HttpResult={status:number;data:Record<string,unknown>;cache?:string;cookie?
 type Send=(action:string,body?:object|string,method?:string,headers?:Record<string,string|string[]>)=>Promise<HttpResult>;
 
 export async function withOperatorHttp<T>(passkeys: OperatorPasskeys, authorization: OperatorAuthorization, assertion: () => string,
-  browser: string, exercise:(send:Send)=>Promise<T>) {
+  browser: string, exercise:(send:Send,origin:string)=>Promise<T>) {
   const env={...process.env}, key=randomBytes(32).toString('base64url');
   process.env.OPERATOR_BFF_ENABLED='true';process.env.OPERATOR_BFF_SECRET=key;
   @Module({ controllers:[OperatorAuthController],providers:[{provide:APP_FILTER,useClass:AdminAuthErrors},
@@ -27,7 +27,7 @@ export async function withOperatorHttp<T>(passkeys: OperatorPasskeys, authorizat
         let raw='';res.setEncoding('utf8');res.on('data',part=>{raw+=part;});res.on('end',()=>resolve({status:res.statusCode!,data:raw?JSON.parse(raw):{},cache:res.headers['cache-control'],cookie:res.headers['set-cookie']}));
       });req.on('error',reject);req.setTimeout(5000,()=>req.destroy(new Error('Operator HTTP test timeout')));req.end(payload);
     });
-  try { return await exercise(send); } finally {
+  try { return await exercise(send,origin); } finally {
     await app.close();for(const name of Object.keys(process.env))if(!(name in env))delete process.env[name];Object.assign(process.env,env);
   }
 }

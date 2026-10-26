@@ -543,3 +543,17 @@ No DONE/APPROVED claim, tenant/license activation, deployment or commercial deci
 ## T004 registration HTTP evidence —2026-10-26
 
 IN_PROGRESS; Engineering owner, named reviewer/date pending. Added actual registration start/finish HTTP + native Chromium + PostgreSQL evidence, wrong grant/browser/replay denial, no-cookie/registered-only response and explicit no-session/no-MFA-proof assertions. Subsequent authentication uses the admitted credential. Shared test-only server fixture reused; no production routing/source/configuration/schema change. Combined BFF/API evidence and enrollment/recovery/session audit/step-up remain open; no DONE/APPROVED claim. Final verification is recorded in PROGRESS.md.
+
+
+## T004 combined browser transport evidence —2026-10-26
+
+IN_PROGRESS; Engineering owner, named reviewer/date pending. The actual BFF handler now composes with real controller HTTP, signed synthetic Access, native WebAuthn, browser cookies and disposable PostgreSQL in one fixture. No production routing/source/schema/configuration change.
+
+- [x] Enrollment grant consumed, no login/proof issued, credential finish cannot replay.
+- [x] Separate native authentication, minimal me and actual isolated browser cookies.
+- [x] BFF CSRF denial and API session-bound rejection of forged matching cookie/header without credential retirement.
+- [x] Uncertain logout preserves cookies; expired proof denies me but confirmed logout retires proof/session and cookies.
+- [x] Reauthentication and operator suspension deny subsequent access; existing tenant/member/RLS/audit checks retained.
+- [ ] Named review, provisioning/recovery/session audit/operation-bound step-up and actual provider/device/hosted acceptance remain outstanding.
+
+Final checks/failures are recorded in PROGRESS.md. This verifies a local combined transport chain with minimal browser document, not rendered Next UI-to-cloud acceptance or approval to register routes. No task marked DONE/APPROVED.

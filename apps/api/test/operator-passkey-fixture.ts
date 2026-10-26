@@ -10,6 +10,7 @@ import { secretHash } from '../src/identity-store.js';
 import { OperatorAccess } from '../src/operator-access.js';
 import { OperatorAuthorization } from '../src/operator-authorization.js';
 import { OperatorPasskeys } from '../src/operator-passkeys.js';
+import { exerciseOperatorBrowser } from './operator-browser-fixture.js';
 import { exerciseOperatorHttp, withOperatorHttp } from './operator-http-fixture.js';
 
 const secret = () => randomBytes(32).toString('base64url');
@@ -177,6 +178,11 @@ export async function exerciseOperatorPasskeys(database: Database, owner: Client
     const restartSql=(direction:string)=>readFileSync(new URL(`../../../../infrastructure/database/migrations/0017_operator_challenge_restart.${direction}.sql`,import.meta.url),'utf8');
     const restartMigration=async(direction:string,commit=true)=>{await owner.query('BEGIN');try{await owner.query(restartSql(direction));await owner.query(commit?'COMMIT':'ROLLBACK');}catch(error){await owner.query('ROLLBACK');throw error;}};
     await restartMigration('up',false);await restartMigration('up');await restartMigration('down');await restartMigration('up');
+
+    const combinedSubject='synthetic-combined-operator',combinedGrant=secret();
+    const combinedId=(await owner.query("INSERT INTO qmenux_operator.operators(issuer,subject,role,status) VALUES($1,$2,'PLATFORM_ADMIN','ACTIVE') RETURNING id",[issuer,combinedSubject])).rows[0].id as string;
+    await owner.query('INSERT INTO qmenux_operator.passkey_grants(token_hash,operator_id,audience) VALUES($1,$2,$3)',[secretHash(combinedGrant),combinedId,audience]);
+    await exerciseOperatorBrowser(passkeys,authorization,()=>assertion({sub:combinedSubject}),browser,owner,combinedId,combinedGrant,originalFetch);
 
 
     const token=await run(proof);
