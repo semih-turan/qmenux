@@ -64,6 +64,23 @@ describe('menuTags', () => {
 });
 
 describe('discover', () => {
+  it('filters by category without losing its description', () => {
+    const described = { ...menu, categories: menu.categories.map((c) => ({ ...c, description: 'Kategori açıklaması' })) };
+    const d = discover(described, f({ categoryId: 'sweet' }));
+    expect(ids(d.groups)).toEqual(['cheesecake', 'sorbe']);
+    expect(d.groups[0]!.category.description).toBe('Kategori açıklaması');
+    expect(activeFilterCount(f({ categoryId: 'sweet' }))).toBe(1);
+    expect(discover(menu, f({ categoryId: 'missing' })).count).toBe(0);
+  });
+
+  it('contains filters require a declared CONTAINS status, never unknown or may-contain', () => {
+    expect(ids(discover(menu, f({ contains: ['MILK'] })).groups)).toEqual(['latte']);
+    expect(discover(menu, f({ contains: ['MILK', 'GLUTEN'] })).count).toBe(0);
+    const contradictory = discover(menu, f({ contains: ['MILK'], exclude: ['MILK'] }));
+    expect(contradictory.count).toBe(0);
+    expect(contradictory.uncertainCount).toBe(0);
+    expect(activeFilterCount(f({ contains: ['MILK'] }))).toBe(1);
+  });
   it('returns the whole menu, grouped, when nothing is set', () => {
     const d = discover(menu, EMPTY_FILTERS);
     expect(d.groups.map((g) => g.category.id)).toEqual(['hot', 'sweet']);

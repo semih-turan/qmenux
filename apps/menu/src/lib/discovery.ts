@@ -18,14 +18,16 @@ import {
 export interface Filters {
   q: string;
   exclude: AllergenCode[];
+  contains: AllergenCode[];
+  categoryId: string | null;
   tags: string[];
   hideSoldOut: boolean;
 }
 
-export const EMPTY_FILTERS: Filters = { q: '', exclude: [], tags: [], hideSoldOut: false };
+export const EMPTY_FILTERS: Filters = { q: '', exclude: [], contains: [], categoryId: null, tags: [], hideSoldOut: false };
 
 export function activeFilterCount(f: Filters): number {
-  return f.exclude.length + f.tags.length + (f.hideSoldOut ? 1 : 0);
+  return f.exclude.length + f.contains.length + (f.categoryId ? 1 : 0) + f.tags.length + (f.hideSoldOut ? 1 : 0);
 }
 
 export function isFiltering(f: Filters): boolean {
@@ -44,7 +46,7 @@ export function menuTags(menu: PublicMenu): string[] {
 }
 
 export interface ResultGroup {
-  category: Pick<PublicMenuCategory, 'id' | 'name'>;
+  category: Pick<PublicMenuCategory, 'id' | 'name' | 'description'>;
   items: PublicMenuItem[];
 }
 
@@ -63,9 +65,11 @@ export function discover(menu: PublicMenu, f: Filters): Discovery {
   let count = 0;
   let uncertainCount = 0;
   for (const c of menu.categories) {
+    if (f.categoryId && c.id !== f.categoryId) continue;
     const ok: PublicMenuItem[] = [];
     const unsure: PublicMenuItem[] = [];
     for (const i of c.items) {
+      if (!f.contains.every((code) => statusOf(i.allergens, code) === 'CONTAINS')) continue;
       if (f.hideSoldOut && i.availability === 'SOLD_OUT') continue;
       if (f.q && !matchesSearch([i.name, i.description, c.name, ...i.tags], f.q)) continue;
       if (wantTags.length) {
@@ -76,8 +80,8 @@ export function discover(menu: PublicMenu, f: Filters): Discovery {
       if (bucket === 'safe') ok.push(i);
       else if (bucket === 'uncertain') unsure.push(i);
     }
-    if (ok.length) groups.push({ category: { id: c.id, name: c.name }, items: ok });
-    if (unsure.length) uncertain.push({ category: { id: c.id, name: c.name }, items: unsure });
+    if (ok.length) groups.push({ category: { id: c.id, name: c.name, description: c.description }, items: ok });
+    if (unsure.length) uncertain.push({ category: { id: c.id, name: c.name, description: c.description }, items: unsure });
     count += ok.length;
     uncertainCount += unsure.length;
   }

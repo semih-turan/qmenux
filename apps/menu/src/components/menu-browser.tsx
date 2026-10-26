@@ -1,26 +1,27 @@
 'use client';
-import type { PublicMenu, PublicMenuItem } from '@qmenux/contracts';
-import { AlertTriangle, Search, SearchX, SlidersHorizontal, X } from 'lucide-react';
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import type { PublicMenu } from '@qmenux/contracts';
+import { AlertTriangle, LoaderCircle, Search, SearchX, SlidersHorizontal, X } from 'lucide-react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { sendMetric } from '@/lib/beacon';
 import { activeFilterCount, discover, EMPTY_FILTERS, isFiltering, menuTags, type Filters, type ResultGroup } from '@/lib/discovery';
 import { FilterSheet } from './filter-sheet';
 import { Freshness } from './freshness';
-import { ItemCard, ItemSheet } from './item';
+import { ItemCard } from './item';
 
 const SEARCH_METRIC_DELAY_MS = 1200;
 // How far the guest has to scroll on their own after a chip tap before scroll-spy takes over again.
 const SPY_RELEASE_PX = 48;
 
-function Group({ g, onOpen, prefix }: { g: ResultGroup; onOpen: (i: PublicMenuItem) => void; prefix: string }) {
+function Group({ g, prefix }: { g: ResultGroup; prefix: string }) {
   return (
     <section className="m-cat" aria-labelledby={`${prefix}-${g.category.id}`}>
       <h2 className="m-cat__title" id={`${prefix}-${g.category.id}`}>
         {g.category.name}
       </h2>
+      {g.category.description && <p className="m-cat__desc">{g.category.description}</p>}
       <div className="m-items">
         {g.items.map((i) => (
-          <ItemCard key={i.id} item={i} onOpen={onOpen} />
+          <ItemCard key={i.id} item={i} />
         ))}
       </div>
     </section>
@@ -31,8 +32,6 @@ const prefersReducedMotion = () => typeof window !== 'undefined' && window.match
 
 export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt: string }) {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
-  const [selected, setSelected] = useState<PublicMenuItem | null>(null);
-  const [itemOpen, setItemOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeCat, setActiveCat] = useState<string | null>(menu.categories[0]?.id ?? null);
   const [stuck, setStuck] = useState(false);
@@ -45,31 +44,13 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
   const jumpRef = useRef<{ landedAt: number | null } | null>(null);
 
   const q = useDeferredValue(filters.q);
+  const searching = q !== filters.q;
   const view = useMemo(() => ({ ...filters, q }), [filters, q]);
   const filtering = isFiltering(view);
   const result = useMemo(() => (filtering ? discover(menu, view) : null), [filtering, menu, view]);
   const tags = useMemo(() => menuTags(menu), [menu]);
   const itemCount = useMemo(() => menu.categories.reduce((n, c) => n + c.items.length, 0), [menu]);
   const active = activeFilterCount(filters);
-
-  // Sold-out-only filtering still has a meaning here; the latest live menu decides what is listed.
-  const openItem = useCallback((item: PublicMenuItem) => {
-    setSelected(item);
-    setItemOpen(true);
-    sendMetric('item_view', item.id, true);
-  }, []);
-
-  // Keep the open detail in step with a refreshed menu (sold out while reading, price change).
-  useEffect(() => {
-    if (!selected) return;
-    for (const c of menu.categories) {
-      const fresh = c.items.find((i) => i.id === selected.id);
-      if (fresh) {
-        if (fresh !== selected) setSelected(fresh);
-        return;
-      }
-    }
-  }, [menu, selected]);
 
   // Sticky bar height feeds scroll-margin and scroll-padding so headings never hide under it.
   useEffect(() => {
@@ -201,7 +182,9 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
           <Freshness renderedAt={renderedAt} />
           <search className="m-search" aria-label="Menüde ara">
             <div className="m-search__field">
-              <Search className="m-search__icon" size={20} aria-hidden="true" />
+              {searching
+                ? <LoaderCircle className="m-search__icon m-spin" size={20} aria-hidden="true" />
+                : <Search className="m-search__icon" size={20} aria-hidden="true" />}
               <input
                 ref={inputRef}
                 className="m-input"
@@ -278,9 +261,9 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
         </div>
       </div>
 
-      <main id="menu" className="m-wrap" tabIndex={-1}>
+      <main id="menu" className="m-wrap" tabIndex={-1} aria-busy={searching}>
         <p className="m-sr" role="status">
-          {result
+          {searching ? 'Aranıyor…' : result
             ? total > 0
               ? `${result.count} ürün bulundu${result.uncertainCount > 0 ? `, ${result.uncertainCount} ürünün alerjen bilgisi eksik` : ''}`
               : 'Sonuç bulunamadı'
@@ -330,7 +313,7 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
                 )}
                 <div className="m-cats">
                   {result.groups.map((g) => (
-                    <Group key={g.category.id} g={g} onOpen={openItem} prefix="r" />
+                    <Group key={g.category.id} g={g} prefix="r" />
                   ))}
                 </div>
                 {result.uncertain.length > 0 && (
@@ -344,7 +327,7 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
                       personele danışın.
                     </p>
                     {result.uncertain.map((g) => (
-                      <Group key={g.category.id} g={g} onOpen={openItem} prefix="u" />
+                      <Group key={g.category.id} g={g} prefix="u" />
                     ))}
                   </section>
                 )}
@@ -361,7 +344,7 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
                 {c.description && <p className="m-cat__desc">{c.description}</p>}
                 <div className="m-items">
                   {c.items.map((i) => (
-                    <ItemCard key={i.id} item={i} onOpen={openItem} />
+                    <ItemCard key={i.id} item={i} />
                   ))}
                 </div>
               </section>
@@ -370,13 +353,13 @@ export function MenuBrowser({ menu, renderedAt }: { menu: PublicMenu; renderedAt
         )}
       </main>
 
-      <ItemSheet item={selected} open={itemOpen} onClose={() => setItemOpen(false)} />
       <FilterSheet
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
         filters={filters}
         onChange={setFilters}
         tags={tags}
+        categories={menu.categories}
         count={result ? result.count : itemCount}
         uncertain={result ? result.uncertainCount : 0}
       />
