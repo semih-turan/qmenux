@@ -22,7 +22,9 @@ export class AdminAuthErrors extends BaseExceptionFilter {
     const path = host.switchToHttp().getRequest<IncomingMessage>().url?.split('?')[0];
     const onboarding = path === '/v1/internal/admin-onboarding' || path?.startsWith('/v1/internal/admin-onboarding/');
     const review = path === '/v1/internal/operator-review' || path?.startsWith('/v1/internal/operator-review/');
-    const operator = review || path === '/v1/internal/operator-auth' || path?.startsWith('/v1/internal/operator-auth/');
+    const provisioning = path === '/v1/internal/operator-provisioning' || path?.startsWith('/v1/internal/operator-provisioning/');
+    const operation = review || provisioning;
+    const operator = operation || path === '/v1/internal/operator-auth' || path?.startsWith('/v1/internal/operator-auth/');
     if (!operator && !onboarding && path !== '/v1/internal/admin-auth' && !path?.startsWith('/v1/internal/admin-auth/')) return super.catch(error, host);
     const status = error instanceof HttpException ? error.getStatus()
       : (error as { statusCode?: number } | null)?.statusCode;
@@ -31,7 +33,7 @@ export class AdminAuthErrors extends BaseExceptionFilter {
     res.statusCode = code; res.setHeader('Cache-Control', 'no-store'); res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ status: code === 503 ? 'unavailable' : code === 401 ? 'unauthorized'
-      : operator && code === 403 ? 'forbidden' : (onboarding || review) && code === 404 ? 'not_found' : (onboarding || review) && code === 409 ? 'conflict' : 'invalid_request' }));
+      : operator && code === 403 ? 'forbidden' : (onboarding || operation) && code === 404 ? 'not_found' : (onboarding || operation) && code === 409 ? 'conflict' : 'invalid_request' }));
   }
 }
 

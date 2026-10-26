@@ -663,3 +663,17 @@ IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal review
 - [ ] Cross-operator/actual cloud/provider/device/abuse/retention/recovery/restore and named acceptance before enablement; license coverage/commercial decisions and T010/T042 schema/grant/current entitlement remain separate.
 
 [Current implementation/rollback](../04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#local-inactive-provisioning-delivery-0023-2026-10-26); [actual evidence/limits](PROGRESS.md#t041-inactive-tenant-provisioning-2026-10-26). No task/legal DONE/APPROVED, cloud migration, deployment or agent Git write. T041/T004/T011 remain IN_PROGRESS; no license/runtime completion inferred.
+
+## T041 provisioning API adapter —2026-10-26
+
+IN_PROGRESS; Engineering owner, named architecture/security/privacy/legal reviewer/date pending. On existing feat/T041-explicit-application-approval atca98280, prepare only unregistered fixed start/finish/provision HTTP adapter; no production/BFF/mobile/license enablement.
+
+- [x] Independent false/empty provisioning flag/key, current operator/native authority, shared bounded duplicate-safe JSON and key reuse denial in both sign-in/review directions.
+- [x] Explicit required/allowed inputs, private proof metadata, five-field receipt projection, sanitized domain/parser errors,405/no-store and optional proof only for exact authenticated replay.
+- [x] Actual HTTP→native Chromium→services/PostgreSQL finish/replay/changed-command/CSRF/purpose-key/concurrent commit evidence; exactly one additional inactive tenant/branch/PENDING owner/CONSUMED audit, unchanged previous records. Production AppModule proposed paths remain404.
+- [x] Boundary HTTP stub only verifies dispatch/projection/error isolation and no invocation on malformed transport; it is not successful native/business authorization evidence.
+- [x] Final root lint/typecheck/test/build/audit PASS (11 API entries,1 trace/deadline,63 Playwright). Required-suite old focus race fixed by post-commit focus;8 focused stress repeats and final complete browser run pass. Initial failed run is retained/reported in PROGRESS.
+- [ ] Canonical superadmin provisioning BFF/proof cookies/CSRF, explicit mobile confirmation/receipt recovery and applicant status projection.
+- [ ] Real key lifecycle/edge/provider/hosting/device/abuse/retention/recovery/restore and named architecture/security/privacy/legal review before registration/enablement. T010/T042 coverage/commercial/license policy remains unresolved.
+
+[Exact API contract](../04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#dedicated-provisioning-api-adapter-unregistered-2026-10-26), proposed ADR027 and [actual commands/limits](PROGRESS.md#t041-provisioning-api-adapter-2026-10-26). No task/legal DONE/APPROVED, remote key/config/DB/deployment or agent Git write.

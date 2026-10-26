@@ -155,3 +155,7 @@ OperatorPasskeys now verifies enrollment/authentication and supplies the existin
 ### Operator adapter review implementation (unregistered)
 
 Six fixed internal operator ceremony/session POST operations are implemented for isolated tests, with independent machine auth and actual Access/passkey/server-bound-CSRF contracts. Production AppModule does not register them; current runtime404 is intentional under the review gate. Do not infer enabled endpoints from the controller source. [Bodies, private credential outputs, limits, fixture evidence and remaining gates](OPERATOR_PASSKEY_CONTRACT.md#dedicated-operator-api-adapter-unregistered-review-implementation).
+
+## T041 provisioning API adapter (unregistered development contract)
+
+Prepared POST /v1/internal/operator-provisioning/start, /finish and /provision require their independent default-off flag/key plus current operator Access/session/CSRF/MFA and exact provisioning native proof. They are not registered in production AppModule, so actual application probes remain404 even though private fixture HTTP is implemented. Response includes server-only proof metadata or only the five immutable receipt fields; no business access/license is granted. [Closed fields, bounds, status/projection/key separation and actual evidence](TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#dedicated-provisioning-api-adapter-unregistered-2026-10-26). Browser BFF/mobile/provider/reviewer gates remain; no new public API promise.

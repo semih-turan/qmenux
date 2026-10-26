@@ -200,3 +200,6 @@ The next [provisioning/manual-license contract](docs/04-backend/TENANT_PROVISION
 
 
 Inactive tenant provisioning is now implemented locally: a separate exact-operation native proof creates one approved-but-inactive tenant, initial branch and OWNER/PENDING from the immutable approved applicant. Its receipt/audit/proof/membership session revocation are atomic and exact replay cannot duplicate setup. Old applicant sessions are revoked; a new login still has no licensed business access. There is no provisioning route/BFF/UI/deployment or license grant. [0023 evidence/rollback and remaining gates](docs/04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#local-inactive-provisioning-delivery-0023-2026-10-26).
+
+
+A separate provisioning API adapter now exists for private local tests: independent default-off OPERATOR_PROVISIONING_ENABLED/empty OPERATOR_PROVISIONING_SECRET, fixed start/finish/provision, current operator/native authority and minimal receipt projection. Production AppModule still does not register it; no BFF/UI/license/ACTIVE state or remote key is enabled. [Exact adapter contract and verification limits](docs/04-backend/TENANT_PROVISIONING_AND_LICENSE_CONTRACT.md#dedicated-provisioning-api-adapter-unregistered-2026-10-26).

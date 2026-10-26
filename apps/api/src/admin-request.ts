@@ -6,11 +6,11 @@ export type AdminRequest = IncomingMessage & { rawBody?: Buffer };
 const countHeader = (req: IncomingMessage, name: string) =>
   req.rawHeaders.filter((value, index) => index % 2 === 0 && value.toLowerCase() === name).length;
 
-export function readAdminJson(req: AdminRequest, key: 'ADMIN_BFF_SECRET' | 'ADMIN_ONBOARDING_SECRET' | 'OPERATOR_BFF_SECRET' | 'OPERATOR_REVIEW_SECRET'): Record<string, unknown> {
+export function readAdminJson(req: AdminRequest, key: 'ADMIN_BFF_SECRET' | 'ADMIN_ONBOARDING_SECRET' | 'OPERATOR_BFF_SECRET' | 'OPERATOR_REVIEW_SECRET' | 'OPERATOR_PROVISIONING_SECRET'): Record<string, unknown> {
   const configured = process.env[key];
   if (!configured || !/^[A-Za-z0-9_-]{43}$/.test(configured) || process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0'
     || (key === 'ADMIN_ONBOARDING_SECRET' && (configured === process.env.ADMIN_BFF_SECRET || configured === process.env.CRON_SECRET))
-    || (key.startsWith('OPERATOR_') && ['ADMIN_BFF_SECRET','ADMIN_ONBOARDING_SECRET','CRON_SECRET','OPERATOR_BFF_SECRET','OPERATOR_REVIEW_SECRET'].some(name=>name!==key&&process.env[name]===configured))) {
+    || (key.startsWith('OPERATOR_') && ['ADMIN_BFF_SECRET','ADMIN_ONBOARDING_SECRET','CRON_SECRET','OPERATOR_BFF_SECRET','OPERATOR_REVIEW_SECRET','OPERATOR_PROVISIONING_SECRET'].some(name=>name!==key&&process.env[name]===configured))) {
     throw new ServiceUnavailableException({ status: 'unavailable' });
   }
   const actual = Buffer.from(req.headers.authorization ?? ''), expected = Buffer.from(`Bearer ${configured}`);
