@@ -31,4 +31,3 @@ export async function ceremony(value:unknown,registration:boolean,signal:AbortSi
   return credential as PublicKeyCredential;
 }
 export const supported=()=>window.isSecureContext&&typeof PublicKeyCredential!=='undefined'&&!!navigator.credentials?.get&&!!navigator.credentials?.create;
-
