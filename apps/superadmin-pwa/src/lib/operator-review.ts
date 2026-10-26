@@ -8,7 +8,7 @@ export async function handleOperatorReview(req:Request):Promise<NextResponse> {
   let finishing=false,committing=false;
   try{
     const url=new URL(req.url),action=url.pathname.slice('/api/operator-review/'.length);
-    if(!url.pathname.startsWith('/api/operator-review/')||!['applications','decisions','rejection/start','rejection/finish','reject'].includes(action))return json({status:'invalid_request'},404);
+    if(!url.pathname.startsWith('/api/operator-review/')||!['applications','decisions','rejection/start','rejection/finish','reject','approval/start','approval/finish','approve'].includes(action))return json({status:'invalid_request'},404);
     const reading=action==='applications'||action==='decisions';
     const method=reading?'GET':'POST';if(req.method!==method){const res=json({status:'invalid_request'},405);res.headers.set('Allow',method);return res;}
     const key=settings(true);
@@ -24,7 +24,7 @@ export async function handleOperatorReview(req:Request):Promise<NextResponse> {
       const data=await call(key,action==='applications'?'list':'decisions',{...authority,limit,...(after?{after:after.toLowerCase()}:{})},true);
       if(!Array.isArray(data.items)||data.items.length>limit)fail(503);
       const items=data.items.map(action==='decisions'?reviewDecision:reviewApplication);
-      if(items.some(item=>item.status!==(action==='decisions'?'REJECTED':'PENDING_APPROVAL'))||new Set(items.map(item=>item.id)).size!==items.length
+      if((action==='applications'&&items.some(item=>item.status!=='PENDING_APPROVAL'))||new Set(items.map(item=>item.id)).size!==items.length
         ||(data.nextCursor!==null&&(typeof data.nextCursor!=='string'||!uuidPattern.test(data.nextCursor)||items.length!==limit||data.nextCursor!==items.at(-1)?.id)))fail(503);
       const result={items,nextCursor:data.nextCursor};if(forbidden.some(value=>JSON.stringify(result).includes(value)))fail(503);return json(result);
     }
@@ -32,16 +32,16 @@ export async function handleOperatorReview(req:Request):Promise<NextResponse> {
       ||!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers.get('content-type')??''))fail(400);
     const header=req.headers.get('x-csrf-token');if(!header||!proofPattern.test(header)||!timingSafeEqual(Buffer.from(header),Buffer.from(csrf)))fail(400);
     const body=object(await boundedJson(req.body,32768,AbortSignal.timeout(5000),true));
-    const fields=['id','revision','reason','requestId',...(action==='rejection/finish'?['response']:[])];
+    const fields=['id','revision','reason','requestId',...(action.endsWith('/finish')?['response']:[])];
     if(Object.keys(body).length!==fields.length||fields.some(name=>!Object.hasOwn(body,name))||typeof body.id!=='string'||!uuidPattern.test(body.id)
       ||typeof body.requestId!=='string'||!uuidPattern.test(body.requestId)||!Number.isInteger(body.revision)||(body.revision as number)<1||(body.revision as number)>2147483646
       ||typeof body.reason!=='string'||!body.reason.trim()||body.reason.length>1000||/[\x00-\x1f\x7f]/.test(body.reason))fail(400);
     const command={id:body.id.toLowerCase(),revision:body.revision as number,reason:body.reason.trim(),requestId:body.requestId.toLowerCase()};
-    if(action==='rejection/start'){
+    if(action.endsWith('/start')){
       const data=await call(key,action,{...authority,...command},true),result=options(data.options,false,forbidden);
       const res=json({options:result});setCookie(res,names.reviewChallenge,result.challenge,120);setCookie(res,names.reviewProof,'',0);return res;
     }
-    if(action==='rejection/finish'){
+    if(action.endsWith('/finish')){
       const challenge=cookie(req,names.reviewChallenge);if(!challenge)fail(401);
       if(typeof body.response!=='string'||body.response.length>16384)fail(400);
       try{if(JSON.stringify(JSON.parse(body.response))!==body.response)fail(400);}catch{fail(400);}
@@ -50,8 +50,8 @@ export async function handleOperatorReview(req:Request):Promise<NextResponse> {
       const res=json({status:'verified'});setCookie(res,names.reviewProof,data.stepUp,120);setCookie(res,names.reviewChallenge,'',0);return res;
     }
     const stepUp=cookie(req,names.reviewProof);committing=true;
-    const data=await call(key,'reject',{...authority,...command,...(stepUp?{stepUp}:{})},true),application=reviewApplication(data.application);
-    if(application.id!==command.id||application.status!=='REJECTED'||application.revision!==command.revision+1||forbidden.some(value=>JSON.stringify(application).includes(value)))fail(503);
+    const data=await call(key,action,{...authority,...command,...(stepUp?{stepUp}:{})},true),application=reviewApplication(data.application);
+    if(application.id!==command.id||application.status!==(action==='approve'?'APPROVED':'REJECTED')||application.revision!==command.revision+1||forbidden.some(value=>JSON.stringify(application).includes(value)))fail(503);
     const res=json({application});setCookie(res,names.reviewProof,'',0);setCookie(res,names.reviewChallenge,'',0);return res;
   }catch(error){
     const status=error instanceof AuthError?error.status:503;

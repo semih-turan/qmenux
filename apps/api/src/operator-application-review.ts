@@ -6,7 +6,7 @@ import { OperatorAccess } from './operator-access.js';
 import { OperatorPasskeys, type OperatorOperation } from './operator-passkeys.js';
 import { fields, integer, text, uuid } from './request-input.js';
 
-type Application={id:string;requestedName:string;status:'PENDING_APPROVAL'|'REJECTED';revision:number;createdAt:Date;submittedAt:Date};
+type Application={id:string;requestedName:string;status:'PENDING_APPROVAL'|'REJECTED'|'APPROVED';revision:number;createdAt:Date;submittedAt:Date};
 function unavailable(error:unknown):never {
   if(error instanceof NotFoundException||error instanceof ConflictException)throw error;
   const code=(error as {code?:string})?.code;
@@ -19,10 +19,10 @@ function unavailable(error:unknown):never {
 export class OperatorApplicationReview {
   constructor(private readonly database:Database,private readonly access:OperatorAccess,private readonly passkeys:OperatorPasskeys) {}
 
-  private command(value:unknown,input:unknown) {
+  private command(value:unknown,input:unknown,approving=false) {
     const id=uuid(value),body=fields(input,['revision','reason','requestId']);
     const revision=integer(body.revision,1,2147483646),reason=text(body.reason,1000,true),requestId=uuid(body.requestId);
-    const operation:OperatorOperation=Object.freeze({action:'tenant:reject',targetId:id,requestId,payloadHash:secretHash(`${revision}:${reason}`)});
+    const operation:OperatorOperation=Object.freeze({action:approving?'tenant:approve':'tenant:reject',targetId:id,requestId,payloadHash:secretHash(`${revision}:${reason}`)});
     return {id,revision,reason,requestId,operation};
   }
   private async bindings(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown) {
@@ -51,20 +51,39 @@ export class OperatorApplicationReview {
     const rows=await this.query<Application & {reviewedAt:Date;reason:string;requestId:string}>('SELECT * FROM qmenux_onboarding.list_rejections($1,$2,$3,$4,$5,$6,$7,$8,$9)',[...bindings,after,limit+1]);
     return {items:rows.slice(0,limit),nextCursor:rows.length>limit?rows[limit-1]!.id:null};
   }
+  async allDecisions(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,input:unknown) {
+    const body=fields(input,['after','limit']),after=Object.hasOwn(body,'after')?uuid(body.after):null;
+    const limit=Object.hasOwn(body,'limit')?integer(body.limit,1,100):20;
+    const bindings=await this.bindings(assertion,browser,session,csrf,proof);
+    const rows=await this.query<Application & {reviewedAt:Date;reason:string;requestId:string}>('SELECT * FROM qmenux_onboarding.list_decisions($1,$2,$3,$4,$5,$6,$7,$8,$9)',[...bindings,after,limit+1]);
+    return {items:rows.slice(0,limit),nextCursor:rows.length>limit?rows[limit-1]!.id:null};
+  }
   async beginReject(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,id:unknown,input:unknown) {
     return this.passkeys.beginStepUp(assertion,browser,session,csrf,proof,this.command(id,input).operation);
   }
   async finishReject(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,id:unknown,input:unknown,challenge:unknown,response:unknown) {
     return this.passkeys.finishStepUp(assertion,browser,session,csrf,proof,this.command(id,input).operation,challenge,response);
   }
+  async beginApprove(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,id:unknown,input:unknown) {
+    return this.passkeys.beginStepUp(assertion,browser,session,csrf,proof,this.command(id,input,true).operation);
+  }
+  async finishApprove(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,id:unknown,input:unknown,challenge:unknown,response:unknown) {
+    return this.passkeys.finishStepUp(assertion,browser,session,csrf,proof,this.command(id,input,true).operation,challenge,response);
+  }
   async reject(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,stepUp:unknown,id:unknown,input:unknown):Promise<Application> {
-    const command=this.command(id,input),bindings=await this.bindings(assertion,browser,session,csrf,proof);
-    const replay=()=>this.query<Application>('SELECT * FROM qmenux_onboarding.replay_rejection($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+    return this.decide(false,assertion,browser,session,csrf,proof,stepUp,id,input);
+  }
+  async approve(assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,stepUp:unknown,id:unknown,input:unknown):Promise<Application> {
+    return this.decide(true,assertion,browser,session,csrf,proof,stepUp,id,input);
+  }
+  private async decide(approving:boolean,assertion:unknown,browser:unknown,session:unknown,csrf:unknown,proof:unknown,stepUp:unknown,id:unknown,input:unknown):Promise<Application> {
+    const command=this.command(id,input,approving),bindings=await this.bindings(assertion,browser,session,csrf,proof);
+    const replay=()=>this.query<Application>(`SELECT * FROM qmenux_onboarding.${approving?'replay_approval':'replay_rejection'}($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
       [...bindings,command.id,command.requestId,command.revision,command.reason]);
     const previous=await replay();if(previous[0])return previous[0];
     try{return await this.passkeys.runStepUp(assertion,browser,session,csrf,proof,stepUp,command.operation,async(client:PoolClient)=>{
       try{
-        const result=await client.query<Application>('SELECT * FROM qmenux_onboarding.reject_application($1,$2,$3,$4)',[command.id,command.requestId,command.revision,command.reason]);
+        const result=await client.query<Application>(`SELECT * FROM qmenux_onboarding.${approving?'approve_application':'reject_application'}($1,$2,$3,$4)`,[command.id,command.requestId,command.revision,command.reason]);
         if(!result.rows[0])throw new NotFoundException({status:'not_found'});
         return result.rows[0];
       }catch(error){unavailable(error);}

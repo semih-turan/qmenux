@@ -7,3 +7,4 @@ section > button { margin-block: 1rem; }
 section[aria-labelledby="review-title"] { border-block-start: 1px solid var(--brand-ink); margin-block-start: 2rem; padding-block-start: 1rem; }
 section[aria-labelledby="review-title"] form > button { margin-block: .75rem; }
 .review-reason { overflow-wrap: anywhere; }
+.operator-actions [aria-pressed="true"] { outline: 3px solid var(--brand-ink); outline-offset: 3px; }

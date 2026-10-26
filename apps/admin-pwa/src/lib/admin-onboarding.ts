@@ -44,7 +44,7 @@ export async function handleOnboarding(req: Request): Promise<NextResponse> {
     const path = id ? `drafts/${id}/${submit ? 'submit' : 'edit'}` : 'drafts';
     const data = await call(key, `internal/admin-onboarding/${path}`, { session, csrf, ...body as Record<string, string | number> }, 'onboarding');
     const application = parseApplication(data.application);
-    if (id && (application.id !== id || !(submit ? ['PENDING_APPROVAL','REJECTED'] : ['DRAFT']).includes(application.status))) fail(503);
+    if (id && (application.id !== id || !(submit ? ['PENDING_APPROVAL','REJECTED','APPROVED'] : ['DRAFT']).includes(application.status))) fail(503);
     return json({ application });
   } catch (error) {
     const status = error instanceof AuthError ? error.status : 503;

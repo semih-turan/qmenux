@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { Client } from 'pg';
+import { exerciseApplicationApproval } from './application-approval-fixture.js';
 import { exerciseDecisionRecovery } from './decision-recovery-fixture.js';
 import { exerciseReviewBff } from './review-bff-fixture.js';
 import { withOperatorHttp } from './operator-http-fixture.js';
@@ -80,7 +81,7 @@ export async function exerciseApplicationReview(database:Database,owner:Client,p
     process.env.OPERATOR_REVIEW_ENABLED='false';assert.equal((await send('review/list',authority)).status,503);process.env.OPERATOR_REVIEW_ENABLED='true';
     assert.equal((await send('review/list',authority,'POST',{authorization:`Bearer ${process.env.OPERATOR_BFF_SECRET}`})).status,401);
     process.env.OPERATOR_REVIEW_SECRET=process.env.OPERATOR_BFF_SECRET;assert.equal((await send('review/list',authority)).status,503);process.env.OPERATOR_REVIEW_SECRET=key;
-    for(const action of ['list','decisions','rejection/start','rejection/finish','reject']){
+    for(const action of ['list','decisions','rejection/start','rejection/finish','reject','approval/start','approval/finish','approve']){
       for(const method of ['GET','HEAD','OPTIONS'])assert.equal((await send(`review/${action}`,{},method)).status,405);
       assert.equal((await send(`review/${action}`,{...authority,actorId:context.operatorId})).status,400);
     }
@@ -106,6 +107,7 @@ export async function exerciseApplicationReview(database:Database,owner:Client,p
   await assert.rejects(migrate('down'),code('P0001'));
   const foreignPending=await applications.submit(other,otherCsrf,unsubmitted.id,{revision:1});
   await exerciseDecisionRecovery(database,owner,review,context,foreignPending);
+  await exerciseApplicationApproval(database,owner,review,passkeys,context,applicant,applicantCsrf,authenticate);
   await withOperatorHttp(passkeys,new OperatorAuthorization(new OperatorAccess(),database),context.assertion,context.browser,async send=>{
     const authority={assertion:context.assertion(),browser:context.browser,session:context.session,csrf:context.csrf,proof:context.proof};
     const result=await send('review/decisions',{...authority,limit:1});assert.equal(result.status,200);assert.equal(result.cache,'no-store');

@@ -3,7 +3,7 @@ import { Database } from './database.js';
 import { secretHash } from './identity-store.js';
 import { fields, integer, text, uuid } from './request-input.js';
 
-type Application = { id: string; requestedName: string; status: 'DRAFT' | 'PENDING_APPROVAL' | 'REJECTED'; revision: number;
+type Application = { id: string; requestedName: string; status: 'DRAFT' | 'PENDING_APPROVAL' | 'REJECTED' | 'APPROVED'; revision: number;
   createdAt: Date; submittedAt: Date | null };
 function credential(value: unknown): string {
   if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(value)) throw new UnauthorizedException({ status: 'unauthorized' });

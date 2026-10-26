@@ -69,7 +69,7 @@ export default function Applications() {
       const confirmed = parseApplication(data.application);
       setItems(previous => [confirmed, ...previous.filter(item => item.id !== confirmed.id)]);
       if (!application) { pendingCreate.current = null; setUncertain(false); setName(''); setEditing(null); }
-      setMessage(confirmed.status === 'REJECTED' ? 'Başvurunuz reddedildi. İşletme erişimi verilmedi.' : confirmed.status === 'PENDING_APPROVAL' ? 'Başvurunuz onay bekliyor. İşletme erişimi henüz verilmedi.' : 'Taslak kaydedildi. Göndermeden önce işletme adını kontrol edin.');
+      setMessage(confirmed.status === 'APPROVED' ? 'Başvurunuz onaylandı. İşletme erişimi ve lisans henüz verilmedi.' : confirmed.status === 'REJECTED' ? 'Başvurunuz reddedildi. İşletme erişimi verilmedi.' : confirmed.status === 'PENDING_APPROVAL' ? 'Başvurunuz onay bekliyor. İşletme erişimi henüz verilmedi.' : 'Taslak kaydedildi. Göndermeden önce işletme adını kontrol edin.');
     } catch (error) {
       if (!application && !editing && pendingCreate.current) setUncertain(true);
       if (error instanceof RequestError && error.status === 409) {
@@ -101,7 +101,7 @@ export default function Applications() {
       {items.length === 0 && <p>Henüz başvurunuz yok.</p>}
       <ul className="application-list">{items.map(application => <li key={application.id}>
         <h3>{application.requestedName}</h3>
-        <p>{application.status === 'DRAFT' ? 'Taslak — henüz gönderilmedi' : application.status === 'REJECTED' ? 'Reddedildi — işletme erişimi verilmedi' : 'Onay bekliyor — işletme erişimi henüz verilmedi'}</p>
+        <p>{application.status === 'DRAFT' ? 'Taslak — henüz gönderilmedi' : application.status === 'APPROVED' ? 'Onaylandı — işletme erişimi ve lisans henüz verilmedi' : application.status === 'REJECTED' ? 'Reddedildi — işletme erişimi verilmedi' : 'Onay bekliyor — işletme erişimi henüz verilmedi'}</p>
         {application.status === 'DRAFT' && <div className="application-actions">
           <Button disabled={busy || uncertain} onClick={() => edit(application)} aria-label={`${application.requestedName} taslağını düzenle`}>Düzenle</Button>
           <Button disabled={busy || uncertain || editing?.id === application.id} onClick={() => void save(application)}

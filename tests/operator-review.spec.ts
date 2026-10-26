@@ -95,3 +95,13 @@ test('decision recovery projects only validated own decision fields and rejects 
   upstream=()=>Response.json({items:[bad],nextCursor:null});expect((await handleOperatorReview(request('decisions'))).status).toBe(503);
  }
 });
+
+
+test('approval transport uses its own purpose, keeps proof private and accepts only the matching terminal decision',async()=>{
+ upstream=()=>Response.json({options});const start=await handleOperatorReview(request('approval/start',command));expect(start.status).toBe(200);
+ expect(calls.at(-1)!.url).toBe('https://api.qmenux.com/v1/internal/operator-review/approval/start');
+ upstream=()=>Response.json({stepUp,expiresIn:120});const finish=await handleOperatorReview(request('approval/finish',{...command,response:'{}'},{cookie:`${full}; ${names.reviewChallenge}=${challenge}`}));expect(await finish.json()).toEqual({status:'verified'});
+ upstream=()=>Response.json({application:{...application,status:'REJECTED',revision:3}});expect((await handleOperatorReview(request('approve',command))).status).toBe(503);
+ upstream=()=>Response.json({application:{...application,status:'APPROVED',revision:3,approval_reason:'private'}});const result=await handleOperatorReview(request('approve',command,{cookie:`${full}; ${names.reviewProof}=${stepUp}`}));
+ expect(await result.json()).toEqual({application:{...application,status:'APPROVED',revision:3}});expect(result.cookies.get(names.reviewProof)!.maxAge).toBe(0);
+});

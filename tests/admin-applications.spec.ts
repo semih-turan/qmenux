@@ -130,3 +130,10 @@ test('rejected application is terminal and a stale submit reports its authoritat
   await page.reload();await expect(page.getByText('Reddedildi — işletme erişimi verilmedi',{exact:true})).toBeVisible();
   for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
 });
+
+
+test('approved application remains read-only and explicitly grants no license or business access',async({page})=>{
+ await signedIn(page);await page.route('**/api/onboarding/applications**',route=>route.fulfill({json:{items:[{...draft,status:'APPROVED',revision:3,submittedAt:draft.createdAt}],nextCursor:null}}));
+ await page.goto('http://127.0.0.1:3001');await expect(page.getByText('Onaylandı — işletme erişimi ve lisans henüz verilmedi',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Test Kafe başvurusunu onaya gönder'})).toHaveCount(0);await expect(page.getByRole('button',{name:'Test Kafe taslağını düzenle'})).toHaveCount(0);
+});
